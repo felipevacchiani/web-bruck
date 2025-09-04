@@ -37,18 +37,31 @@ import {
 
 // Floating Particles Component (optimized for mobile)
 const FloatingParticles = () => {
+  const [particles, setParticles] = useState<Array<{
+    left: string;
+    top: string;
+    animationDelay: string;
+    animationDuration: string;
+  }>>([])
+
+  useEffect(() => {
+    // Generar partículas solo en el cliente para evitar errores de hidratación
+    const newParticles = [...Array(15)].map(() => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      animationDelay: `${Math.random() * 3}s`,
+      animationDuration: `${2 + Math.random() * 3}s`,
+    }))
+    setParticles(newParticles)
+  }, [])
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(15)].map((_, i) => (
+      {particles.map((particle, i) => (
         <div
           key={i}
           className="absolute w-1 h-1 bg-[#99D0B8] rounded-full opacity-20 animate-pulse"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 3}s`,
-            animationDuration: `${2 + Math.random() * 3}s`,
-          }}
+          style={particle}
         />
       ))}
     </div>
