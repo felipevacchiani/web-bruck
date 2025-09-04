@@ -1,11 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
+  experimental: {
+    runtime: 'nodejs',
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // Configuración para Cloudflare Pages con @cloudflare/next-on-pages
   images: {
     unoptimized: true,
   },

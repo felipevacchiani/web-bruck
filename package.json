@@ -7,7 +7,9 @@
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
-    "deploy": "npx @cloudflare/next-on-pages"
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "pages:deploy": "npm run pages:build && wrangler pages deploy",
+    "pages:dev": "npx @cloudflare/next-on-pages --experimental-minify"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
