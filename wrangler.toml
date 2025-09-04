@@ -2,12 +2,11 @@ name = "web-bruck"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Configuración para Cloudflare Pages
 [env.production]
 compatibility_flags = ["nodejs_compat"]
+compatibility_date = "2024-01-01"
 
-# Para Cloudflare Pages
-pages_build_output_dir = ".vercel/output/static"
-
-# Variables de entorno (opcional)
-# [vars]
-# NODE_ENV = "production"
+# Variables de entorno
+[vars]
+NODE_ENV = "production"

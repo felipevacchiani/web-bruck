@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    runtime: 'nodejs',
-  },
-  // Configuración para Cloudflare Pages con @cloudflare/next-on-pages
+  // Configuración para Cloudflare Pages - Static Export
+  output: 'export',
+  distDir: 'out',
+  trailingSlash: true,
   images: {
     unoptimized: true,
   },
