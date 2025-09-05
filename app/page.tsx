@@ -55,6 +55,7 @@ const FloatingParticles = () => {
     setParticles(newParticles)
   }, [])
 
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {particles.map((particle, i) => (

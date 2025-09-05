@@ -17,7 +17,7 @@ export function useIntersectionObserver({
 }: UseIntersectionObserverProps = {}) {
   const [entry, setEntry] = useState<IntersectionObserverEntry>()
   const [isVisible, setIsVisible] = useState(false)
-  const elementRef = useRef<HTMLDivElement>(null)
+  const elementRef = useRef<Element>()
 
   const frozen = entry?.isIntersecting && freezeOnceVisible
 
