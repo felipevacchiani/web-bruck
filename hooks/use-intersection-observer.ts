@@ -9,7 +9,7 @@ interface UseIntersectionObserverProps {
   freezeOnceVisible?: boolean
 }
 
-export function useIntersectionObserver({
+export function useIntersectionObserver<T extends HTMLElement = HTMLDivElement>({
   threshold = 0.1,
   root = null,
   rootMargin = "0%",
@@ -17,7 +17,7 @@ export function useIntersectionObserver({
 }: UseIntersectionObserverProps = {}) {
   const [entry, setEntry] = useState<IntersectionObserverEntry>()
   const [isVisible, setIsVisible] = useState(false)
-  const elementRef = useRef<Element>()
+  const elementRef = useRef<T>(null)
 
   const frozen = entry?.isIntersecting && freezeOnceVisible
 
