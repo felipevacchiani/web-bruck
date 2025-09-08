@@ -238,12 +238,36 @@ export default function BruckWebsiteTech() {
 
     setIsSubmitting(true)
 
-    setTimeout(() => {
+    try {
+      // Enviar datos a la API
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nombre: contactForm.nombre,
+          empresa: contactForm.empresa,
+          email: contactForm.email,
+          mensaje: contactForm.mensaje,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setSubmitSuccess(true)
+        setContactForm({ nombre: "", empresa: "", email: "", mensaje: "" })
+        setTimeout(() => setSubmitSuccess(false), 8000)
+      } else {
+        alert(`Error: ${result.message}`)
+      }
+    } catch (error) {
+      console.error('Error enviando formulario:', error)
+      alert('Error al enviar el mensaje. Por favor, inténtalo nuevamente.')
+    } finally {
       setIsSubmitting(false)
-      setSubmitSuccess(true)
-      setContactForm({ nombre: "", empresa: "", email: "", mensaje: "" })
-      setTimeout(() => setSubmitSuccess(false), 5000)
-    }, 1000)
+    }
   }
 
   return (
