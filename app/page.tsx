@@ -243,6 +243,15 @@ export default function BruckWebsiteTech() {
       const emailMode = process.env.NEXT_PUBLIC_EMAIL_MODE || 'local'
       const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL
       
+      // DEBUG: Mostrar variables de entorno
+      console.log('🔍 DEBUG Variables de entorno:', {
+        NEXT_PUBLIC_EMAIL_MODE: process.env.NEXT_PUBLIC_EMAIL_MODE,
+        NEXT_PUBLIC_WORKER_URL: process.env.NEXT_PUBLIC_WORKER_URL,
+        emailMode,
+        workerUrl,
+        NODE_ENV: process.env.NODE_ENV
+      })
+      
       let apiUrl: string
       let logMessage: string
       
