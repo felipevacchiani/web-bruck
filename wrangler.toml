@@ -8,6 +8,7 @@ pages_build_output_dir = "out"
 compatibility_flags = ["nodejs_compat"]
 compatibility_date = "2024-01-01"
 
-# Variables de entorno
-[vars]
+# Variables de entorno para producción
+[env.production.vars]
 NODE_ENV = "production"
+STATIC_EXPORT = "true"
