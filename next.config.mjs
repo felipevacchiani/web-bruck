@@ -18,8 +18,8 @@ const nextConfig = {
   },
   // Variables de entorno públicas
   env: {
-    NEXT_PUBLIC_EMAIL_MODE: process.env.EMAIL_MODE || 'local',
-    NEXT_PUBLIC_WORKER_URL: process.env.WORKER_URL,
+    NEXT_PUBLIC_EMAIL_MODE: process.env.NEXT_PUBLIC_EMAIL_MODE || process.env.EMAIL_MODE || 'local',
+    NEXT_PUBLIC_WORKER_URL: process.env.NEXT_PUBLIC_WORKER_URL || process.env.WORKER_URL,
   },
 }
 
