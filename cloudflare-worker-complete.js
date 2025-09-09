@@ -1,155 +1,124 @@
-import { NextRequest, NextResponse } from 'next/server';
-
-// Configurar CORS para permitir requests del frontend
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-// Manejar preflight requests (OPTIONS)
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: corsHeaders,
-  });
-}
-
-// Interfaz para los datos del formulario de contacto
-interface ContactFormData {
-  nombre: string;
-  empresa?: string;
-  email: string;
-  mensaje: string;
-}
-
-// Manejar requests POST para envío de emails
-export async function POST(request: NextRequest) {
-  try {
-    // Verificar que existan las variables de entorno necesarias
-    if (!process.env.SENDGRID_API_KEY) {
-      console.error('❌ SENDGRID_API_KEY no configurada');
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Configuración de SendGrid incompleta' 
-        },
-        { 
-          status: 500,
-          headers: corsHeaders 
-        }
-      );
+// BRUCK Contact Handler - Cloudflare Worker con SendGrid
+// Archivo final para usar en Cloudflare Workers
+export default {
+  async fetch(request, env, ctx) {
+    // Configurar CORS para tu dominio
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*', // Cambia por tu dominio: 'https://somosbruck.com'
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
     }
 
-    // Parsear el cuerpo de la request
-    const body: ContactFormData = await request.json();
-    
-    // Validar datos requeridos
-    if (!body.nombre || !body.email || !body.mensaje) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Faltan campos requeridos: nombre, email y mensaje' 
-        },
-        { 
-          status: 400,
-          headers: corsHeaders 
-        }
-      );
-    }
-
-    // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(body.email)) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Formato de email inválido' 
-        },
-        { 
-          status: 400,
-          headers: corsHeaders 
-        }
-      );
-    }
-
-    // Validar longitud mínima del mensaje
-    if (body.mensaje.length < 10) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: 'El mensaje debe tener al menos 10 caracteres' 
-        },
-        { 
-          status: 400,
-          headers: corsHeaders 
-        }
-      );
-    }
-
-    console.log('📧 Procesando envío de email local con SendGrid para:', body.email);
-
-    // Enviar el email usando SendGrid API
-    const result = await sendEmailWithSendGrid(body);
-
-    if (result.success) {
-      console.log('✅ Email procesado exitosamente');
-      return NextResponse.json(
-        {
-          success: true,
-          message: 'Mensaje enviado exitosamente. Te responderemos pronto!',
-        },
-        { 
-          status: 200,
-          headers: corsHeaders 
-        }
-      );
-    } else {
-      console.error('❌ Error en el envío:', result.error);
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Error al enviar el mensaje. Por favor, inténtalo nuevamente.',
-          error: result.error
-        },
-        { 
-          status: 500,
-          headers: corsHeaders 
-        }
-      );
-    }
-
-  } catch (error) {
-    console.error('❌ Error procesando request:', error);
-    
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Error interno del servidor. Por favor, inténtalo nuevamente.',
-        error: error instanceof Error ? error.message : 'Error desconocido'
-      },
-      { 
-        status: 500,
+    // Manejar preflight requests (OPTIONS)
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { 
+        status: 200,
         headers: corsHeaders 
+      })
+    }
+
+    // Solo permitir POST
+    if (request.method !== 'POST') {
+      return new Response(
+        JSON.stringify({ success: false, message: 'Método no permitido' }),
+        { 
+          status: 405, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    try {
+      // Parsear datos del formulario
+      const data = await request.json()
+      
+      // Validar campos requeridos
+      if (!data.nombre || !data.email || !data.mensaje) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: 'Faltan campos requeridos: nombre, email y mensaje' 
+          }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
       }
-    );
+
+      // Validar email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(data.email)) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: 'Formato de email inválido' 
+          }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      // Enviar email
+      const emailResult = await sendEmailWithSendGrid(data, env)
+      
+      if (emailResult.success) {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: 'Mensaje enviado exitosamente. Te responderemos pronto!' 
+          }),
+          { 
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      } else {
+        console.error('Error enviando email:', emailResult.error)
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: 'Error al enviar el mensaje. Por favor, inténtalo nuevamente.' 
+          }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+    } catch (error) {
+      console.error('Error procesando request:', error)
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: 'Error interno del servidor' 
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
   }
 }
 
-// Función para enviar email usando SendGrid API
-async function sendEmailWithSendGrid(data: ContactFormData) {
+// Función para enviar email usando SendGrid
+async function sendEmailWithSendGrid(data, env) {
   try {
     // Email principal a BRUCK
     const mainEmailPayload = {
       personalizations: [{
         to: [{ 
-          email: process.env.CONTACT_EMAIL || 'contacto@somosbruck.com',
+          email: env.CONTACT_EMAIL || 'contacto@somosbruck.com',
           name: 'BRUCK Contacto'
         }],
         subject: `Nuevo contacto desde la web: ${data.nombre}`
       }],
       from: { 
-        email: process.env.FROM_EMAIL || 'somos.bruck@gmail.com',
+        email: env.FROM_EMAIL || 'somos.bruck@gmail.com',
         name: 'BRUCK Website'
       },
       content: [{
@@ -198,21 +167,21 @@ async function sendEmailWithSendGrid(data: ContactFormData) {
           </div>
         `
       }]
-    };
+    }
 
     // Enviar email principal
     const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
+        'Authorization': `Bearer ${env.SENDGRID_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(mainEmailPayload)
-    });
+    })
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`SendGrid error: ${response.status} - ${errorText}`);
+      const errorText = await response.text()
+      throw new Error(`SendGrid error: ${response.status} - ${errorText}`)
     }
 
     // Email de confirmación al remitente
@@ -225,7 +194,7 @@ async function sendEmailWithSendGrid(data: ContactFormData) {
         subject: 'Gracias por contactarte con BRUCK - Hemos recibido tu mensaje'
       }],
       from: { 
-        email: process.env.FROM_EMAIL || 'somos.bruck@gmail.com',
+        email: env.FROM_EMAIL || 'somos.bruck@gmail.com',
         name: 'BRUCK'
       },
       content: [{
@@ -266,50 +235,25 @@ async function sendEmailWithSendGrid(data: ContactFormData) {
           </div>
         `
       }]
-    };
+    }
 
     // Enviar confirmación
     await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
+        'Authorization': `Bearer ${env.SENDGRID_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(confirmationPayload)
-    });
+    })
 
-    console.log('✅ Email de confirmación enviado al remitente');
-
-    return {
-      success: true,
-      message: 'Email enviado exitosamente'
-    };
+    return { success: true }
 
   } catch (error) {
-    console.error('❌ Error enviando email:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Error desconocido',
-      message: 'Error al enviar el email'
-    };
-  }
-}
-
-// Método GET para verificar que la API esté funcionando
-export async function GET() {
-  return NextResponse.json(
-    {
-      message: 'API de contacto funcionando correctamente',
-      timestamp: new Date().toISOString(),
-      mode: 'local',
-      environment: {
-        nodeEnv: process.env.NODE_ENV,
-        hasSendGridConfig: !!process.env.SENDGRID_API_KEY
-      }
-    },
-    { 
-      status: 200,
-      headers: corsHeaders 
+    console.error('Error en SendGrid:', error)
+    return { 
+      success: false, 
+      error: error.message 
     }
-  );
+  }
 }

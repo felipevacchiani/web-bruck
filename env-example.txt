@@ -1,0 +1,19 @@
+# Configuración para envío de emails - Copia este contenido a .env.local
+
+# Modo de envío: 'local' o 'worker'
+# - 'local': Envía emails directamente desde Next.js usando SendGrid API
+# - 'worker': Envía emails a través del Cloudflare Worker
+EMAIL_MODE=local
+
+# Credenciales SendGrid (necesarias para modo 'local')
+SENDGRID_API_KEY=SG.tu_api_key_de_sendgrid_aqui
+CONTACT_EMAIL=contacto@somosbruck.com
+FROM_EMAIL=tu_email_de_sendgrid@gmail.com
+
+# URL del Worker (necesaria para modo 'worker')
+WORKER_URL=https://bruck-contact-handler.TU_USUARIO.workers.dev
+
+# Instrucciones:
+# 1. Copia este archivo como .env.local
+# 2. Para probar localmente: EMAIL_MODE=local y configura SENDGRID_API_KEY
+# 3. Para usar Worker: EMAIL_MODE=worker y configura WORKER_URL

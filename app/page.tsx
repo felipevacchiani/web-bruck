@@ -239,8 +239,34 @@ export default function BruckWebsiteTech() {
     setIsSubmitting(true)
 
     try {
-      // Enviar datos a la API
-      const response = await fetch('/api/contact', {
+      // Determinar el modo de envío basado en variables de entorno
+      const emailMode = process.env.NEXT_PUBLIC_EMAIL_MODE || 'local'
+      const workerUrl = process.env.NEXT_PUBLIC_WORKER_URL
+      
+      let apiUrl: string
+      let logMessage: string
+      
+      if (emailMode === 'worker' && workerUrl) {
+        // Modo Worker: usar Cloudflare Worker
+        apiUrl = workerUrl
+        logMessage = '🌐 MODO WORKER - Enviando al Cloudflare Worker'
+      } else {
+        // Modo Local: usar API route local con SendGrid
+        apiUrl = '/api/contact'
+        logMessage = '📧 MODO LOCAL - Enviando con SendGrid directo'
+      }
+      
+      console.log(logMessage, {
+        nombre: contactForm.nombre,
+        empresa: contactForm.empresa,
+        email: contactForm.email,
+        mensaje: contactForm.mensaje,
+        modo: emailMode,
+        url: apiUrl
+      })
+
+      // Enviar datos a la API (local o Worker)
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -259,11 +285,13 @@ export default function BruckWebsiteTech() {
         setSubmitSuccess(true)
         setContactForm({ nombre: "", empresa: "", email: "", mensaje: "" })
         setTimeout(() => setSubmitSuccess(false), 8000)
+        console.log('✅ Email enviado exitosamente')
       } else {
+        console.error('❌ Error:', result.message)
         alert(`Error: ${result.message}`)
       }
     } catch (error) {
-      console.error('Error enviando formulario:', error)
+      console.error('❌ Error enviando formulario:', error)
       alert('Error al enviar el mensaje. Por favor, inténtalo nuevamente.')
     } finally {
       setIsSubmitting(false)
