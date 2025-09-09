@@ -16,10 +16,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Variables de entorno públicas
+  // Variables de entorno públicas - Forzar valores para debug
   env: {
-    NEXT_PUBLIC_EMAIL_MODE: process.env.NEXT_PUBLIC_EMAIL_MODE || process.env.EMAIL_MODE || 'local',
-    NEXT_PUBLIC_WORKER_URL: process.env.NEXT_PUBLIC_WORKER_URL || process.env.WORKER_URL,
+    NEXT_PUBLIC_EMAIL_MODE: process.env.NEXT_PUBLIC_EMAIL_MODE || process.env.EMAIL_MODE || 'worker',
+    NEXT_PUBLIC_WORKER_URL: process.env.NEXT_PUBLIC_WORKER_URL || process.env.WORKER_URL || 'https://bruck-contact-handler.felipevacchiani.workers.dev',
   },
 }
 
