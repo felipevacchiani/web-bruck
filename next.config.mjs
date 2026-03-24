@@ -1,25 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuración condicional según el entorno
-  ...(process.env.NODE_ENV === 'production' && process.env.STATIC_EXPORT === 'true' 
-    ? {
-        // Configuración para Cloudflare Pages - Static Export
-        output: 'export',
-        distDir: 'out',
-        trailingSlash: true,
-      }
-    : {
-        // Configuración para desarrollo con API routes
-        distDir: '.next',
-      }
-  ),
-  images: {
-    unoptimized: true,
-  },
-  // Variables de entorno públicas - Forzar valores para debug
-  env: {
-    NEXT_PUBLIC_EMAIL_MODE: process.env.NEXT_PUBLIC_EMAIL_MODE || process.env.EMAIL_MODE || 'worker',
-    NEXT_PUBLIC_WORKER_URL: process.env.NEXT_PUBLIC_WORKER_URL || process.env.WORKER_URL || 'https://bruck-contact-handler.felipevacchiani.workers.dev',
+  // Permite que el iframe cargue signed URLs de Supabase Storage
+  async headers() {
+    return [
+      {
+        source: '/view/:path*',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self'",
+          },
+        ],
+      },
+    ]
   },
 }
 
