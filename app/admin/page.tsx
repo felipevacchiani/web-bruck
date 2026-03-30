@@ -18,9 +18,9 @@ export default async function AdminPage() {
     .eq('role', 'client')
     .order('created_at', { ascending: false })
 
-  const clientsWithCount = (clients || []).map(c => ({
+ const clientsWithCount = (clients || []).map((c: any) => ({
     ...c,
-    file_count: (c.files as any)?.[0]?.count ?? 0
+    file_count: c.files?.[0]?.count ?? 0
   }))
 
   return (
