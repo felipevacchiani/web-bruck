@@ -7,7 +7,7 @@ async function verifyAdmin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  return profile?.role === 'admin' ? supabase : null
+  return (profile as any)?.role === 'admin' ? supabase : null
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
