@@ -1,15 +1,17 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminPage() {
   const supabase = await createClient()
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Obtener todos los clientes con conteo de archivos
-  const { data: clients } = await supabase
+  const adminSupabase = createAdminClient()
+
+  const { data: clients } = await adminSupabase
     .from('profiles')
     .select(`
       *,
@@ -18,7 +20,7 @@ export default async function AdminPage() {
     .eq('role', 'client')
     .order('created_at', { ascending: false })
 
- const clientsWithCount = (clients || []).map((c: any) => ({
+  const clientsWithCount = (clients || []).map((c: any) => ({
     ...c,
     file_count: c.files?.[0]?.count ?? 0
   }))
