@@ -17,6 +17,12 @@ export default function LoginPage() {
   const [forgotSent, setForgotSent] = useState(false)
 
   useEffect(() => {
+    // Si llega un token de recovery, redirigir a reset-password
+    const hash = window.location.hash
+    if (hash.includes('type=recovery')) {
+      router.push('/reset-password' + hash)
+      return
+    }
     const errorParam = searchParams.get('error')
     if (errorParam === 'account_disabled') setError('Tu cuenta está desactivada. Contactá al administrador.')
     if (errorParam === 'profile_not_found') setError('No se encontró tu perfil. Contactá al administrador.')
