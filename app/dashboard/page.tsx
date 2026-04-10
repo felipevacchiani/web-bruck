@@ -8,11 +8,14 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
+
+  // Si no hay perfil, redirigir al login con error
+  if (profileError || !profile) redirect('/login?error=profile_not_found')
 
   const { data: files } = await supabase
     .from('files')

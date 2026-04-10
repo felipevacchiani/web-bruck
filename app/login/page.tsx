@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
 
   const [email, setEmail] = useState('')
@@ -14,6 +15,12 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [mode, setMode] = useState<'login' | 'forgot'>('login')
   const [forgotSent, setForgotSent] = useState(false)
+
+  useEffect(() => {
+    const errorParam = searchParams.get('error')
+    if (errorParam === 'account_disabled') setError('Tu cuenta está desactivada. Contactá al administrador.')
+    if (errorParam === 'profile_not_found') setError('No se encontró tu perfil. Contactá al administrador.')
+  }, [searchParams])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,7 +35,6 @@ export default function LoginPage() {
       return
     }
 
-    // Obtener rol para redirigir correctamente
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -59,14 +65,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-
-        {/* Logo */}
         <div className="text-center mb-10">
           <span className="text-2xl font-bold tracking-widest text-white">BRUCK</span>
           <p className="text-zinc-500 text-sm mt-1 tracking-wide">PORTAL DE CLIENTES</p>
         </div>
 
-        {/* Card */}
         <div className="bg-[#111] border border-zinc-800 rounded-xl p-8">
 
           {mode === 'login' && (
@@ -91,7 +94,6 @@ export default function LoginPage() {
                     placeholder="tu@email.com"
                   />
                 </div>
-
                 <div>
                   <label className="text-zinc-400 text-sm block mb-1.5">Contraseña</label>
                   <input
@@ -103,7 +105,6 @@ export default function LoginPage() {
                     placeholder="••••••••"
                   />
                 </div>
-
                 <button
                   type="submit"
                   disabled={loading}
@@ -131,13 +132,11 @@ export default function LoginPage() {
                   <p className="text-zinc-500 text-sm mb-6">
                     Ingresá tu email y te enviamos un link para restablecer tu contraseña.
                   </p>
-
                   {error && (
                     <div className="bg-red-950/50 border border-red-800 text-red-400 text-sm rounded-lg px-4 py-3 mb-5">
                       {error}
                     </div>
                   )}
-
                   <form onSubmit={handleForgotPassword} className="space-y-4">
                     <div>
                       <label className="text-zinc-400 text-sm block mb-1.5">Email</label>
@@ -150,7 +149,6 @@ export default function LoginPage() {
                         placeholder="tu@email.com"
                       />
                     </div>
-
                     <button
                       type="submit"
                       disabled={loading}

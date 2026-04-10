@@ -3,16 +3,20 @@ import { redirect, notFound } from 'next/navigation'
 import ClientDetail from './client-detail'
 
 interface Props {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function ClientDetailPage({ params }: Props) {
+  const { id } = await params
   const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: client } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('role', 'client')
     .single()
 
@@ -21,7 +25,7 @@ export default async function ClientDetailPage({ params }: Props) {
   const { data: files } = await supabase
     .from('files')
     .select('*')
-    .eq('client_id', params.id)
+    .eq('client_id', id)
     .order('created_at', { ascending: false })
 
   return <ClientDetail client={client} files={files ?? []} />
