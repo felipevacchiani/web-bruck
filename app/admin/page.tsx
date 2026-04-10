@@ -13,16 +13,23 @@ export default async function AdminPage() {
 
   const { data: clients } = await adminSupabase
     .from('profiles')
-    .select(`
-      *,
-      files(count)
-    `)
+    .select('*')
     .eq('role', 'client')
     .order('created_at', { ascending: false })
 
+  // Contar archivos por cliente en query separada
+  const { data: fileCounts } = await adminSupabase
+    .from('files')
+    .select('client_id')
+
+  const fileCountMap: Record<string, number> = {}
+  for (const f of fileCounts || []) {
+    fileCountMap[f.client_id] = (fileCountMap[f.client_id] || 0) + 1
+  }
+
   const clientsWithCount = (clients || []).map((c: any) => ({
     ...c,
-    file_count: c.files?.[0]?.count ?? 0
+    file_count: fileCountMap[c.id] ?? 0
   }))
 
   return (
@@ -36,9 +43,6 @@ export default async function AdminPage() {
             <span className="text-zinc-700 text-xs uppercase tracking-wider">Panel Admin</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/admin/files" className="text-zinc-400 hover:text-white text-sm transition-colors">
-              Archivos
-            </Link>
             <form action="/api/auth/logout" method="POST">
               <button className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors">
                 Salir
@@ -119,7 +123,7 @@ export default async function AdminPage() {
                     <td className="px-6 py-4 text-right">
                       <Link
                         href={`/admin/clients/${client.id}`}
-                        className="text-zinc-400 hover:text-white text-sm transition-colors mr-3"
+                        className="text-zinc-400 hover:text-white text-sm transition-colors"
                       >
                         Ver
                       </Link>
