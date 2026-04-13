@@ -1,6 +1,8 @@
 // lib/supabase/types.ts
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[]
 
+export type FileCategory = 'financiero' | 'tributario' | 'laboral' | 'otro'
+
 export interface Database {
   public: {
     Tables: {
@@ -39,6 +41,7 @@ export interface Database {
           description: string | null
           storage_path: string
           file_size: number | null
+          category: FileCategory | null
           created_at: string
           updated_at: string
         }
@@ -48,12 +51,14 @@ export interface Database {
           description?: string | null
           storage_path: string
           file_size?: number | null
+          category?: FileCategory | null
         }
         Update: {
           name?: string
           description?: string | null
           storage_path?: string
           file_size?: number | null
+          category?: FileCategory | null
         }
       }
     }
@@ -64,3 +69,10 @@ export interface Database {
 export type Profile = Database['public']['Tables']['profiles']['Row']
 export type FileRecord = Database['public']['Tables']['files']['Row']
 export type FileWithClient = FileRecord & { profiles: Profile }
+
+export const FILE_CATEGORIES: { value: FileCategory; label: string; icon: string }[] = [
+  { value: 'financiero', label: 'Informes Financieros', icon: '📊' },
+  { value: 'tributario', label: 'Informes Tributarios', icon: '🧾' },
+  { value: 'laboral', label: 'Informes Laborales', icon: '👥' },
+  { value: 'otro', label: 'Otros', icon: '📁' },
+]

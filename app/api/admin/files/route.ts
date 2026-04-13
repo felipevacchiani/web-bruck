@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
   const client_id = formData.get('client_id') as string
   const name = formData.get('name') as string
   const description = formData.get('description') as string
+  const category = (formData.get('category') as string) || 'financiero'
 
   if (!file || !client_id)
     return NextResponse.json({ error: 'Archivo y cliente son requeridos' }, { status: 400 })
@@ -24,7 +25,11 @@ export async function POST(req: NextRequest) {
   if (!file.name.match(/\.(html?|htm)$/i))
     return NextResponse.json({ error: 'Solo se permiten archivos HTML' }, { status: 400 })
 
-  // Path: client_id/timestamp-filename.html (evita colisiones)
+  // Validar categoría
+  const validCategories = ['financiero', 'tributario', 'laboral', 'otro']
+  const safeCategory = validCategories.includes(category) ? category : 'financiero'
+
+  // Path: client_id/timestamp-filename.html
   const timestamp = Date.now()
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
   const storagePath = `${client_id}/${timestamp}-${safeName}`
@@ -50,6 +55,7 @@ export async function POST(req: NextRequest) {
       description: description || null,
       storage_path: storagePath,
       file_size: file.size,
+      category: safeCategory,
     })
     .select()
     .single()
