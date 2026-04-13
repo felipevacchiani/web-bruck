@@ -46,7 +46,7 @@ export default function FileViewer({ file, signedUrl }: Props) {
       </header>
 
       {/* iframe con srcdoc */}
-      <div className="flex-1 relative bg-white">
+      <div className="flex-1 relative">
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center bg-[#0a0a0a]">
             <span className="text-zinc-500 text-sm">Cargando...</span>
@@ -57,6 +57,7 @@ export default function FileViewer({ file, signedUrl }: Props) {
             className="absolute inset-0 w-full h-full border-0"
             title={file.name}
             sandbox="allow-scripts allow-same-origin"
+            style={{ backgroundColor: 'white', colorScheme: 'light' }}
           />
         )}
       </div>
