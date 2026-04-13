@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import type { FileRecord } from '@/lib/supabase/types'
 
 interface Props {
@@ -10,6 +11,18 @@ interface Props {
 
 export default function FileViewer({ file, signedUrl }: Props) {
   const router = useRouter()
+  const [htmlContent, setHtmlContent] = useState<string>('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(signedUrl)
+      .then(res => res.text())
+      .then(html => {
+        setHtmlContent(html)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [signedUrl])
 
   return (
     <div className="h-screen flex flex-col bg-[#0a0a0a]">
@@ -32,17 +45,20 @@ export default function FileViewer({ file, signedUrl }: Props) {
         <span className="text-white font-bold tracking-widest text-sm">BRUCK</span>
       </header>
 
-      {/* iframe — ocupa todo el espacio restante */}
-      <div className="flex-1 relative">
-        <iframe
-          src={signedUrl}
-          className="absolute inset-0 w-full h-full border-0"
-          title={file.name}
-          sandbox="allow-scripts allow-same-origin"
-          // 'allow-same-origin' necesario para que el HTML pueda cargar sus recursos
-          // 'allow-scripts' necesario para HTML interactivo
-          // NO incluir 'allow-downloads', 'allow-forms', 'allow-popups'
-        />
+      {/* iframe con srcdoc */}
+      <div className="flex-1 relative bg-white">
+        {loading ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0a0a0a]">
+            <span className="text-zinc-500 text-sm">Cargando...</span>
+          </div>
+        ) : (
+          <iframe
+            srcDoc={htmlContent}
+            className="absolute inset-0 w-full h-full border-0"
+            title={file.name}
+            sandbox="allow-scripts allow-same-origin"
+          />
+        )}
       </div>
     </div>
   )
