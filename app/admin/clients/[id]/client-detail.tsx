@@ -3,8 +3,8 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import type { Profile, FileRecord, FileCategory, TaxSubcategory } from '@/lib/supabase/types'
-import { FILE_CATEGORIES, TAX_SUBCATEGORIES } from '@/lib/supabase/types'
+import type { Profile, FileRecord, FileCategory, TaxSubcategory, DocStatus } from '@/lib/supabase/types'
+import { FILE_CATEGORIES, TAX_SUBCATEGORIES, DOC_STATUSES, MONTHS, FISCAL_YEARS } from '@/lib/supabase/types'
 
 interface Props { client: Profile; files: FileRecord[] }
 
@@ -24,12 +24,55 @@ const fileIcon = (mime: string|null, name: string) => {
   return '📄'
 }
 
+const daysUntilDue = (due: string | null): number | null => {
+  if (!due) return null
+  const diff = new Date(due).getTime() - new Date().setHours(0,0,0,0)
+  return Math.ceil(diff / 86400000)
+}
+
+const DueBadge = ({ due }: { due: string | null }) => {
+  const days = daysUntilDue(due)
+  if (days === null) return null
+  if (days < 0)  return <span style={{ fontSize:11, padding:'2px 8px', borderRadius:6, background:'rgba(239,68,68,0.12)', border:'1px solid rgba(239,68,68,0.25)', color:'#f87171', fontWeight:600 }}>Vencido</span>
+  if (days === 0) return <span style={{ fontSize:11, padding:'2px 8px', borderRadius:6, background:'rgba(239,68,68,0.12)', border:'1px solid rgba(239,68,68,0.25)', color:'#f87171', fontWeight:600 }}>Vence hoy</span>
+  if (days <= 5)  return <span style={{ fontSize:11, padding:'2px 8px', borderRadius:6, background:'rgba(250,204,21,0.1)', border:'1px solid rgba(250,204,21,0.25)', color:'#facc15', fontWeight:600 }}>Vence en {days}d</span>
+  return <span style={{ fontSize:11, padding:'2px 8px', borderRadius:6, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', color:'#71717a' }}>{new Date(due!).toLocaleDateString('es-AR',{day:'2-digit',month:'short'})}</span>
+}
+
+const StatusBadge = ({ status, onClick }: { status: DocStatus; onClick?: () => void }) => {
+  const s = DOC_STATUSES.find(d => d.value === status) || DOC_STATUSES[0]
+  return (
+    <span
+      onClick={onClick}
+      style={{ fontSize:11, padding:'2px 9px', borderRadius:6, background:s.bg, border:`1px solid ${s.border}`, color:s.color, fontWeight:500, cursor:onClick?'pointer':'default', whiteSpace:'nowrap' }}
+    >
+      {s.label}
+    </span>
+  )
+}
+
 const INP: React.CSSProperties = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', outline:'none', width:'100%', color:'white', fontSize:13, borderRadius:9, padding:'9px 12px', boxSizing:'border-box', transition:'border-color 0.15s' }
 const LBL: React.CSSProperties = { color:'#a1a1aa', fontSize:11, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', display:'block', marginBottom:6 }
+const SEL: React.CSSProperties = { ...{} as any, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', outline:'none', width:'100%', color:'white', fontSize:13, borderRadius:9, padding:'9px 12px', boxSizing:'border-box' as any }
 
 interface DocEntry { label: string; file: File|null }
-interface UF { groupTitle:string; category:FileCategory; taxSub:TaxSubcategory|null; description:string; docs:DocEntry[] }
-const defForm = (): UF => ({ groupTitle:'', category:'financiero', taxSub:null, description:'', docs:[{label:'',file:null}] })
+interface UF {
+  groupTitle: string
+  category: FileCategory
+  taxSub: TaxSubcategory | null
+  description: string
+  fiscalMonth: number | null
+  fiscalYear: number | null
+  dueDate: string
+  docs: DocEntry[]
+}
+const defForm = (): UF => ({
+  groupTitle: '', category: 'financiero', taxSub: null, description: '',
+  fiscalMonth: new Date().getMonth() + 1,
+  fiscalYear: new Date().getFullYear(),
+  dueDate: '',
+  docs: [{ label: '', file: null }]
+})
 
 export default function ClientDetail({ client, files: initialFiles }: Props) {
   const router = useRouter()
@@ -40,12 +83,22 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const [showUpload, setShowUpload] = useState(false)
   const [editing, setEditing] = useState(false)
   const [activeTab, setActiveTab] = useState<FileCategory|'todos'>('todos')
+  const [filterYear, setFilterYear] = useState<number|null>(null)
+  const [filterMonth, setFilterMonth] = useState<number|null>(null)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [deletingId, setDeletingId] = useState<string|null>(null)
-  const [clientForm, setClientForm] = useState({ full_name:client.full_name||'', company:client.company||'', active:client.active })
+  const [clientForm, setClientForm] = useState({ full_name: client.full_name||'', company: client.company||'', active: client.active })
   const fileRefs = useRef<(HTMLInputElement|null)[]>([])
 
-  const filtered = activeTab==='todos' ? files : files.filter(f=>f.category===activeTab)
+  const availableYears = [...new Set(files.map(f => f.fiscal_year).filter(Boolean) as number[])].sort((a,b)=>b-a)
+
+  const filtered = files.filter(f => {
+    if (activeTab !== 'todos' && f.category !== activeTab) return false
+    if (filterYear  !== null && f.fiscal_year  !== filterYear)  return false
+    if (filterMonth !== null && f.fiscal_month !== filterMonth) return false
+    return true
+  })
+
   const grouped = filtered.reduce<Record<string,FileRecord[]>>((acc,f) => {
     const k = f.file_group_id||f.id; if(!acc[k]) acc[k]=[]; acc[k].push(f); return acc
   }, {})
@@ -54,10 +107,24 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const countBy = (cat:FileCategory) => files.filter(f=>f.category===cat).length
   const isHTML = (f:FileRecord) => f.mime_type==='text/html'||f.name.endsWith('.html')||f.name.endsWith('.htm')
 
-  const addDoc = () => setForm(f=>({...f,docs:[...f.docs,{label:'',file:null}]}))
-  const removeDoc = (i:number) => setForm(f=>({...f,docs:f.docs.filter((_,j)=>j!==i)}))
+  const addDoc = () => setForm(f=>({...f, docs:[...f.docs,{label:'',file:null}]}))
+  const removeDoc = (i:number) => setForm(f=>({...f, docs:f.docs.filter((_,j)=>j!==i)}))
   const setDocLabel = (i:number,label:string) => setForm(f=>{const d=[...f.docs];d[i]={...d[i],label};return{...f,docs:d}})
-  const setDocFile = (i:number,file:File|null) => setForm(f=>{const d=[...f.docs];d[i]={...d[i],file};return{...f,docs:d}})
+  const setDocFile  = (i:number,file:File|null) => setForm(f=>{const d=[...f.docs];d[i]={...d[i],file};return{...f,docs:d}})
+
+  const cycleStatus = async (gf: FileRecord[]) => {
+    const current = gf[0].doc_status
+    const order: DocStatus[] = ['pendiente','visto','aprobado']
+    const next = order[(order.indexOf(current)+1) % order.length]
+    await Promise.all(gf.map(f =>
+      fetch(`/api/admin/files/${f.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ doc_status: next })
+      })
+    ))
+    setFiles(p => p.map(f => gf.find(gff=>gff.id===f.id) ? {...f, doc_status:next} : f))
+  }
 
   const handleUpload = async (e:React.FormEvent) => {
     e.preventDefault()
@@ -69,13 +136,19 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
     const newFiles: FileRecord[] = []
     for (const doc of valid) {
       const fd = new FormData()
-      fd.append('file',doc.file!); fd.append('client_id',client.id)
-      fd.append('name',doc.file!.name); fd.append('description',form.description)
-      fd.append('category',form.category)
-      if (form.taxSub) fd.append('tax_subcategory',form.taxSub)
-      fd.append('file_group_id',groupId); fd.append('group_title',form.groupTitle)
-      fd.append('document_label',doc.label||doc.file!.name)
-      const res = await fetch('/api/admin/files',{method:'POST',body:fd})
+      fd.append('file', doc.file!)
+      fd.append('client_id', client.id)
+      fd.append('name', doc.file!.name)
+      fd.append('description', form.description)
+      fd.append('category', form.category)
+      if (form.taxSub) fd.append('tax_subcategory', form.taxSub)
+      fd.append('file_group_id', groupId)
+      fd.append('group_title', form.groupTitle)
+      fd.append('document_label', doc.label||doc.file!.name)
+      if (form.fiscalMonth) fd.append('fiscal_month', String(form.fiscalMonth))
+      if (form.fiscalYear)  fd.append('fiscal_year',  String(form.fiscalYear))
+      if (form.dueDate)     fd.append('due_date', form.dueDate)
+      const res = await fetch('/api/admin/files', { method:'POST', body:fd })
       const data = await res.json()
       if (!res.ok) { setUploadError(data.error||'Error al subir'); setUploading(false); return }
       newFiles.push(data.file)
@@ -83,34 +156,34 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
     setFiles(p=>[...newFiles,...p]); setShowUpload(false); setForm(defForm()); fileRefs.current=[]; setUploading(false)
   }
 
-  const deleteFile = async (id:string,sp:string) => {
+  const deleteFile = async (id:string, sp:string) => {
     if (!confirm('¿Eliminar este archivo?')) return
     setDeletingId(id)
-    const res = await fetch(`/api/admin/files/${id}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({storage_path:sp})})
+    const res = await fetch(`/api/admin/files/${id}`, { method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({storage_path:sp}) })
     if (res.ok) setFiles(p=>p.filter(f=>f.id!==id))
     setDeletingId(null)
   }
 
   const deleteGroup = async (gf:FileRecord[]) => {
     if (!confirm(`¿Eliminar "${gf[0]?.group_title||'este grupo'}" y sus ${gf.length} archivo(s)?`)) return
-    for (const f of gf) await fetch(`/api/admin/files/${f.id}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({storage_path:f.storage_path})})
+    for (const f of gf) await fetch(`/api/admin/files/${f.id}`, { method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({storage_path:f.storage_path}) })
     const ids = new Set(gf.map(f=>f.id))
     setFiles(p=>p.filter(f=>!ids.has(f.id)))
   }
 
   const updateClient = async (e:React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch(`/api/admin/clients/${client.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(clientForm)})
+    const res = await fetch(`/api/admin/clients/${client.id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(clientForm) })
     if (res.ok) { setEditing(false); router.refresh() }
   }
 
   const deleteClient = async () => {
     if (!confirm(`¿Eliminar a ${client.full_name||client.email}? Se eliminarán todos sus archivos.`)) return
-    const res = await fetch(`/api/admin/clients/${client.id}`,{method:'DELETE'})
+    const res = await fetch(`/api/admin/clients/${client.id}`, { method:'DELETE' })
     if (res.ok) router.push('/admin')
   }
 
-  const download = async (id:string,name:string) => {
+  const download = async (id:string, name:string) => {
     const res = await fetch(`/api/admin/files/${id}/download`)
     if (!res.ok) return
     const blob = await res.blob()
@@ -118,12 +191,16 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
     const a = document.createElement('a'); a.href=url; a.download=name; a.click(); URL.revokeObjectURL(url)
   }
 
+  const urgentCount = files.filter(f => { const d = daysUntilDue(f.due_date); return d !== null && d <= 5 }).length
+
   return (
     <div style={{ minHeight:'100vh', background:'#080808' }}>
       <style>{`
         .cd-hpad { padding: 0 24px; }
         .cd-pad { padding: 28px 24px; }
         .cd-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+        .cd-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .cd-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .cd-tabs { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
         .cd-top-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
         .cd-doc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
@@ -134,6 +211,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
         .group-row { padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
         .group-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .doc-row-indent { padding-left: 64px; }
+        .filter-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
         @media(max-width:640px){
           .cd-hpad { padding: 0 14px; }
           .cd-pad { padding: 18px 14px; }
@@ -143,13 +221,13 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
           .cd-tax-grid { grid-template-columns: 1fr; }
           .cd-client-top { flex-direction: column; gap: 12px; }
           .cd-actions { width: 100%; }
-          .cd-actions button { flex: 1; text-align: center; justify-content: center; }
+          .cd-3col { grid-template-columns: 1fr; }
+          .cd-2col { grid-template-columns: 1fr; }
           .group-meta { display: none; }
-          .group-row { padding: 12px 12px; gap: 10px; }
-          .doc-row-indent { padding-left: 44px; }
           .stat-bar { display: none !important; }
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        select option { background: #1a1a1a; color: white; }
       `}</style>
 
       <header style={{ position:'sticky', top:0, zIndex:10, borderBottom:'1px solid rgba(255,255,255,0.06)', background:'rgba(10,10,10,0.97)', backdropFilter:'blur(12px)' }}>
@@ -163,7 +241,14 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
               <span style={{ color:'#3f3f46' }}>/</span>
               <span style={{ color:'#a1a1aa', fontSize:13, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:180 }}>{client.full_name||client.email}</span>
             </div>
-            <span style={{ color:'white', fontWeight:900, letterSpacing:'0.2em', fontSize:12 }}>BRUCK</span>
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              {urgentCount > 0 && (
+                <span style={{ fontSize:11, padding:'3px 9px', borderRadius:6, background:'rgba(239,68,68,0.12)', border:'1px solid rgba(239,68,68,0.25)', color:'#f87171', fontWeight:600 }}>
+                  ⚠️ {urgentCount} venc.
+                </span>
+              )}
+              <span style={{ color:'white', fontWeight:900, letterSpacing:'0.2em', fontSize:12 }}>BRUCK</span>
+            </div>
           </div>
         </div>
       </header>
@@ -171,7 +256,6 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
       <main style={{ maxWidth:1000, margin:'0 auto' }}>
         <div className="cd-pad">
 
-          {/* Card cliente */}
           <div style={{ background:'rgba(14,14,14,0.8)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, overflow:'hidden', marginBottom:24 }}>
             <div style={{ padding:'20px 20px' }}>
               <div className="cd-client-top">
@@ -231,7 +315,6 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
             </div>
           </div>
 
-          {/* Archivos */}
           <div className="cd-top-row">
             <div style={{ display:'flex', alignItems:'center', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:10, padding:4, overflowX:'auto', maxWidth:'100%' }}>
               <div className="cd-tabs">
@@ -252,7 +335,30 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
             </button>
           </div>
 
-          {/* Form upload */}
+          {availableYears.length > 0 && (
+            <div className="filter-bar">
+              <span style={{ color:'#52525b', fontSize:11, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' }}>Período:</span>
+              <button onClick={()=>{setFilterYear(null);setFilterMonth(null)}} style={{ padding:'4px 10px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:filterYear===null?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.04)', color:filterYear===null?'white':'#71717a' }}>
+                Todos
+              </button>
+              {availableYears.map(y=>(
+                <button key={y} onClick={()=>{setFilterYear(filterYear===y?null:y);setFilterMonth(null)}} style={{ padding:'4px 10px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:filterYear===y?'rgba(49,174,121,0.15)':'rgba(255,255,255,0.04)', color:filterYear===y?'#31AE79':'#71717a', fontWeight:filterYear===y?600:400 }}>
+                  {y}
+                </button>
+              ))}
+              {filterYear !== null && (
+                <>
+                  <span style={{ color:'#3f3f46', fontSize:11 }}>|</span>
+                  {[...new Set(files.filter(f=>f.fiscal_year===filterYear).map(f=>f.fiscal_month).filter(Boolean) as number[])].sort((a,b)=>a-b).map(m=>(
+                    <button key={m} onClick={()=>setFilterMonth(filterMonth===m?null:m)} style={{ padding:'4px 10px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:filterMonth===m?'rgba(96,165,250,0.15)':'rgba(255,255,255,0.04)', color:filterMonth===m?'#60a5fa':'#71717a' }}>
+                      {MONTHS[m-1]}
+                    </button>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
+
           {showUpload && (
             <div style={{ background:'rgba(14,14,14,0.95)', border:'1px solid rgba(49,174,121,0.2)', borderRadius:16, padding:20, marginBottom:20 }}>
               <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:18 }}>
@@ -264,6 +370,27 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                 <div style={{ marginBottom:16 }}>
                   <label style={LBL}>Título del grupo <span style={{ color:'#ef4444' }}>*</span></label>
                   <input value={form.groupTitle} onChange={e=>setForm(f=>({...f,groupTitle:e.target.value}))} placeholder="Ej: 931 - Abril 2025, Balance Q1" style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
+                </div>
+
+                <div className="cd-3col" style={{ marginBottom:16 }}>
+                  <div>
+                    <label style={LBL}>Mes fiscal</label>
+                    <select value={form.fiscalMonth||''} onChange={e=>setForm(f=>({...f,fiscalMonth:e.target.value?parseInt(e.target.value):null}))} style={SEL}>
+                      <option value="">Sin mes</option>
+                      {MONTHS.map((m,i)=><option key={i+1} value={i+1}>{m}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={LBL}>Año fiscal</label>
+                    <select value={form.fiscalYear||''} onChange={e=>setForm(f=>({...f,fiscalYear:e.target.value?parseInt(e.target.value):null}))} style={SEL}>
+                      <option value="">Sin año</option>
+                      {FISCAL_YEARS.map(y=><option key={y} value={y}>{y}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={LBL}>Fecha de vencimiento</label>
+                    <input type="date" value={form.dueDate} onChange={e=>setForm(f=>({...f,dueDate:e.target.value}))} style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
+                  </div>
                 </div>
 
                 <div style={{ marginBottom:16 }}>
@@ -333,7 +460,6 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
             </div>
           )}
 
-          {/* Lista grupos */}
           {Object.keys(grouped).length===0 ? (
             <div style={{ border:'1px solid rgba(255,255,255,0.06)', borderRadius:14, padding:'40px 24px', textAlign:'center' }}>
               <p style={{ color:'#52525b', fontSize:13 }}>{activeTab==='todos'?'No hay archivos para este cliente.':'No hay archivos en esta categoría.'}</p>
@@ -353,48 +479,57 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                       <div style={{ width:36,height:36,borderRadius:9,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:16 }}>
                         {taxSub?.icon||cat?.icon||'📄'}
                       </div>
-                      <div style={{ flex:1,minWidth:0 }}>
-                        <div style={{ color:'white',fontSize:13,fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{first.group_title||first.name}</div>
-                        <div style={{ display:'flex',gap:8,marginTop:3,flexWrap:'wrap' }}>
-                          {taxSub && <span style={{ color:'#31AE79',fontSize:11 }}>{taxSub.label}</span>}
-                          {first.description && <span style={{ color:'#52525b',fontSize:11 }}>{first.description}</span>}
-                          <span style={{ color:'#3f3f46',fontSize:11 }}>{fmt(first.created_at)}</span>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                          <span style={{ color:'white', fontSize:13, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{first.group_title||first.name}</span>
+                          {(first.fiscal_month || first.fiscal_year) && (
+                            <span style={{ fontSize:11, padding:'2px 7px', borderRadius:5, background:'rgba(96,165,250,0.08)', border:'1px solid rgba(96,165,250,0.15)', color:'#60a5fa', whiteSpace:'nowrap' }}>
+                              {first.fiscal_month ? MONTHS[first.fiscal_month-1] : ''}{first.fiscal_month && first.fiscal_year ? ' ' : ''}{first.fiscal_year||''}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ display:'flex', gap:8, marginTop:4, flexWrap:'wrap', alignItems:'center' }}>
+                          {taxSub && <span style={{ color:'#31AE79', fontSize:11 }}>{taxSub.label}</span>}
+                          {first.description && <span style={{ color:'#52525b', fontSize:11 }}>{first.description}</span>}
+                          <span style={{ color:'#3f3f46', fontSize:11 }}>{fmt(first.created_at)}</span>
+                          <DueBadge due={first.due_date} />
                         </div>
                       </div>
-                      <div className="group-meta">
-                        <span style={{ color:'#52525b',fontSize:11,padding:'3px 8px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.04)',borderRadius:6 }}>{cat?.label}</span>
-                        {multi && <span style={{ color:'#31AE79',fontSize:11,padding:'3px 8px',background:'rgba(49,174,121,0.08)',border:'1px solid rgba(49,174,121,0.15)',borderRadius:6 }}>{gf.length} docs</span>}
+                      <div className="group-meta" style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
+                        <StatusBadge status={first.doc_status} onClick={()=>cycleStatus(gf)} />
+                        <span style={{ color:'#52525b', fontSize:11, padding:'3px 8px', background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.04)', borderRadius:6 }}>{cat?.label}</span>
+                        {multi && <span style={{ color:'#31AE79', fontSize:11, padding:'3px 8px', background:'rgba(49,174,121,0.08)', border:'1px solid rgba(49,174,121,0.15)', borderRadius:6 }}>{gf.length} docs</span>}
                       </div>
-                      <div style={{ display:'flex',gap:6,flexShrink:0 }}>
+                      <div style={{ display:'flex', gap:6, flexShrink:0 }}>
                         {multi ? (
-                          <button onClick={()=>toggleGroup(gk)} style={{ background:'none',border:'1px solid rgba(255,255,255,0.1)',color:'#a1a1aa',fontSize:12,padding:'5px 12px',borderRadius:7,cursor:'pointer' }}>
+                          <button onClick={()=>toggleGroup(gk)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>
                             {expanded?'Ocultar':'Ver'}
                           </button>
                         ) : isHTML(first) ? (
-                          <button onClick={()=>router.push(`/view/${first.id}`)} style={{ background:'none',border:'1px solid rgba(255,255,255,0.1)',color:'#a1a1aa',fontSize:12,padding:'5px 12px',borderRadius:7,cursor:'pointer' }}>Ver</button>
+                          <button onClick={()=>router.push(`/view/${first.id}`)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>Ver</button>
                         ) : (
-                          <button onClick={()=>download(first.id,first.name)} style={{ background:'none',border:'1px solid rgba(255,255,255,0.1)',color:'#a1a1aa',fontSize:12,padding:'5px 12px',borderRadius:7,cursor:'pointer' }}>↓</button>
+                          <button onClick={()=>download(first.id,first.name)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>↓</button>
                         )}
-                        <button onClick={()=>deleteGroup(gf)} style={{ background:'none',border:'1px solid rgba(239,68,68,0.18)',color:'#f87171',fontSize:12,padding:'5px 12px',borderRadius:7,cursor:'pointer',opacity:0.7 }}>Eliminar</button>
+                        <button onClick={()=>deleteGroup(gf)} style={{ background:'none', border:'1px solid rgba(239,68,68,0.18)', color:'#f87171', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer', opacity:0.7 }}>Eliminar</button>
                       </div>
                     </div>
 
                     {multi && expanded && (
-                      <div style={{ borderTop:'1px solid rgba(255,255,255,0.05)',background:'rgba(0,0,0,0.2)' }}>
+                      <div style={{ borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(0,0,0,0.2)' }}>
                         {gf.map(f=>(
-                          <div key={f.id} className="doc-row-indent" style={{ padding:'10px 16px',display:'flex',alignItems:'center',gap:10,borderBottom:'1px solid rgba(255,255,255,0.03)' }}>
-                            <span style={{ fontSize:14,flexShrink:0 }}>{fileIcon(f.mime_type,f.name)}</span>
-                            <div style={{ flex:1,minWidth:0 }}>
-                              <span style={{ color:'#d4d4d8',fontSize:12,fontWeight:500 }}>{f.document_label||f.name}</span>
-                              {f.file_size && <span style={{ color:'#3f3f46',fontSize:11,marginLeft:6 }}>{fmtSize(f.file_size)}</span>}
+                          <div key={f.id} className="doc-row-indent" style={{ padding:'10px 16px', display:'flex', alignItems:'center', gap:10, borderBottom:'1px solid rgba(255,255,255,0.03)' }}>
+                            <span style={{ fontSize:14, flexShrink:0 }}>{fileIcon(f.mime_type,f.name)}</span>
+                            <div style={{ flex:1, minWidth:0 }}>
+                              <span style={{ color:'#d4d4d8', fontSize:12, fontWeight:500 }}>{f.document_label||f.name}</span>
+                              {f.file_size && <span style={{ color:'#3f3f46', fontSize:11, marginLeft:6 }}>{fmtSize(f.file_size)}</span>}
                             </div>
-                            <div style={{ display:'flex',gap:6,flexShrink:0 }}>
+                            <div style={{ display:'flex', gap:6, flexShrink:0 }}>
                               {isHTML(f) ? (
-                                <button onClick={()=>router.push(`/view/${f.id}`)} style={{ background:'none',border:'1px solid rgba(255,255,255,0.08)',color:'#71717a',fontSize:11,padding:'4px 10px',borderRadius:6,cursor:'pointer' }}>Ver</button>
+                                <button onClick={()=>router.push(`/view/${f.id}`)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.08)', color:'#71717a', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer' }}>Ver</button>
                               ) : (
-                                <button onClick={()=>download(f.id,f.name)} style={{ background:'none',border:'1px solid rgba(255,255,255,0.08)',color:'#71717a',fontSize:11,padding:'4px 10px',borderRadius:6,cursor:'pointer' }}>↓</button>
+                                <button onClick={()=>download(f.id,f.name)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.08)', color:'#71717a', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer' }}>↓</button>
                               )}
-                              <button onClick={()=>deleteFile(f.id,f.storage_path)} disabled={deletingId===f.id} style={{ background:'none',border:'1px solid rgba(239,68,68,0.15)',color:'#f87171',fontSize:11,padding:'4px 10px',borderRadius:6,cursor:'pointer',opacity:deletingId===f.id?0.4:0.6 }}>
+                              <button onClick={()=>deleteFile(f.id,f.storage_path)} disabled={deletingId===f.id} style={{ background:'none', border:'1px solid rgba(239,68,68,0.15)', color:'#f87171', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer', opacity:deletingId===f.id?0.4:0.6 }}>
                                 {deletingId===f.id?'...':'✕'}
                               </button>
                             </div>
