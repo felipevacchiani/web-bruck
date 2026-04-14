@@ -1,28 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+interface Params { params: Promise<{ id: string }> }
+
+export async function DELETE(req: NextRequest, { params }: Params) {
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const { data: profile } = await supabase
-    .from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin')
-    return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
-  const { storage_path } = await req.json()
-
-  if (storage_path) {
-    await supabase.storage.from('client-files').remove([storage_path])
+  const body = await req.json().catch(() => ({}))
+  if (body.storage_path) {
+    await admin.storage.from('client-files').remove([body.storage_path])
   }
 
-  const { error } = await supabase.from('files').delete().eq('id', id)
+  const { error } = await admin.from('files').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ ok: true })
 }

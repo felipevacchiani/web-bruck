@@ -1,58 +1,52 @@
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+
+interface Params { params: Promise<{ id: string }> }
 
 async function verifyAdmin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
-  const { data: profile } = await supabase
-    .from('profiles').select('role').eq('id', user.id).single()
-  return (profile as any)?.role === 'admin' ? supabase : null
+  const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
+  return profile?.role === 'admin' ? admin : null
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(req: NextRequest, { params }: Params) {
   const { id } = await params
-  const supabase = await verifyAdmin()
-  if (!supabase) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  const admin = await verifyAdmin()
+  if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const body = await req.json()
-  const { error } = await supabase
-    .from('profiles')
-    .update({
-      full_name: body.full_name,
-      company: body.company,
-      active: body.active,
-    })
-    .eq('id', id)
+  const { error } = await admin.from('profiles').update({
+    full_name: body.full_name,
+    company: body.company,
+    active: body.active,
+  }).eq('id', id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json({ success: true })
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_req: NextRequest, { params }: Params) {
   const { id } = await params
-  const supabase = await verifyAdmin()
-  if (!supabase) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  const admin = await verifyAdmin()
+  if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
-  const { data: files } = await supabase
-    .from('files').select('storage_path').eq('client_id', id)
-
-  const adminSupabase = createAdminClient()
-
-  if (files && files.length > 0) {
-    await adminSupabase.storage
-      .from('client-files')
-      .remove(files.map((f: any) => f.storage_path))
+  // 1. Obtener y eliminar archivos del storage
+  const { data: files } = await admin.from('files').select('storage_path').eq('client_id', id)
+  if (files?.length) {
+    const paths = files.map((f: any) => f.storage_path)
+    await admin.storage.from('client-files').remove(paths)
   }
 
-  const { error } = await adminSupabase.auth.admin.deleteUser(id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  // 2. Eliminar registros de files
+  await admin.from('files').delete().eq('client_id', id)
 
-  return NextResponse.json({ success: true })
+  // 3. Eliminar usuario de Auth (profiles se elimina por cascade)
+  const { error } = await admin.auth.admin.deleteUser(id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  return NextResponse.json({ ok: true })
 }
