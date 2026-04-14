@@ -15,14 +15,17 @@ export async function POST(req: NextRequest) {
   const file = formData.get('file') as File | null
   if (!file) return NextResponse.json({ error: 'Archivo requerido' }, { status: 400 })
 
-  const clientId    = formData.get('client_id') as string
-  const name        = (formData.get('name') as string) || file.name
-  const description = (formData.get('description') as string) || null
-  const category    = (formData.get('category') as string) || 'otro'
-  const taxSub      = (formData.get('tax_subcategory') as string) || null
-  const groupId     = (formData.get('file_group_id') as string) || crypto.randomUUID()
-  const groupTitle  = (formData.get('group_title') as string) || name
-  const docLabel    = (formData.get('document_label') as string) || file.name
+  const clientId     = formData.get('client_id') as string
+  const name         = (formData.get('name') as string) || file.name
+  const description  = (formData.get('description') as string) || null
+  const category     = (formData.get('category') as string) || 'otro'
+  const taxSub       = (formData.get('tax_subcategory') as string) || null
+  const groupId      = (formData.get('file_group_id') as string) || crypto.randomUUID()
+  const groupTitle   = (formData.get('group_title') as string) || name
+  const docLabel     = (formData.get('document_label') as string) || file.name
+  const fiscalMonth  = formData.get('fiscal_month') ? parseInt(formData.get('fiscal_month') as string) : null
+  const fiscalYear   = formData.get('fiscal_year')  ? parseInt(formData.get('fiscal_year') as string)  : null
+  const dueDate      = (formData.get('due_date') as string) || null
 
   if (!clientId) return NextResponse.json({ error: 'client_id requerido' }, { status: 400 })
 
@@ -48,6 +51,10 @@ export async function POST(req: NextRequest) {
     file_group_id:   groupId,
     group_title:     groupTitle,
     document_label:  docLabel,
+    fiscal_month:    fiscalMonth,
+    fiscal_year:     fiscalYear,
+    doc_status:      'pendiente',
+    due_date:        dueDate || null,
   }).select().single()
 
   if (dbError) {
