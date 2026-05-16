@@ -4,11 +4,17 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { MONTHS, CI_CATEGORIAS, CI_MOV_ESTADOS } from '@/lib/supabase/types'
 
-interface Props { clientId: string; clientName: string }
+interface Props {
+  clientId?: string
+  clientName: string
+  /** Override the API base URL. Defaults to /api/admin/ci/{clientId} */
+  apiBase?: string
+  /** Link shown as "← back" in the header */
+  backHref?: string
+  backLabel?: string
+}
 
 type Tab = 'dashboard' | 'movimientos' | 'cuentas' | 'rubros' | 'contables'
-
-const API = (clientId: string) => `/api/admin/ci/${clientId}`
 
 const fmt = (n: number) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
 const fmtDate = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -19,7 +25,8 @@ const LBL: React.CSSProperties = { color: '#a1a1aa', fontSize: 11, fontWeight: 6
 const BTN_P: React.CSSProperties = { background: 'linear-gradient(135deg,#31AE79,#27a06d)', color: 'white', fontWeight: 600, fontSize: 13, padding: '9px 16px', borderRadius: 9, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
 const BTN_S: React.CSSProperties = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#71717a', fontSize: 12, padding: '7px 13px', borderRadius: 8, cursor: 'pointer' }
 
-export default function ContabilidadPanel({ clientId, clientName }: Props) {
+export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBaseProp, backHref, backLabel }: Props) {
+  const base = apiBaseProp ?? `/api/admin/ci/${clientId}`
   const [tab, setTab]       = useState<Tab>('dashboard')
   const [dashboard, setDash] = useState<any>(null)
   const [movs, setMovs]     = useState<any[]>([])
@@ -49,8 +56,6 @@ export default function ContabilidadPanel({ clientId, clientName }: Props) {
   const [rubroForm, setRubroForm]   = useState({ nombre: '', categoria: 'egreso' })
   const [contForm, setContForm]     = useState({ nombre: '', tipo: 'gasto', rubro_id: '', keywords: '' })
   const [clasificarForm, setClasificarForm] = useState({ cuenta_contable_id: '', rubro_id: '', estado: 'conciliado' })
-
-  const base = API(clientId)
 
   const loadDash    = useCallback(async () => { const r = await fetch(`${base}/dashboard`); const d = await r.json(); setDash(d) }, [base])
   const loadCuentas = useCallback(async () => { const r = await fetch(`${base}/cuentas-bancarias`); const d = await r.json(); setCuentas(d.data || []) }, [base])
@@ -164,7 +169,7 @@ export default function ContabilidadPanel({ clientId, clientName }: Props) {
                 <span style={{ color: '#31AE79', fontWeight: 900, fontSize: 12 }}>B</span>
               </div>
             </Link>
-            <Link href={`/admin/clients/${clientId}`} style={{ color: '#52525b', fontSize: 12, textDecoration: 'none' }}>← {clientName}</Link>
+            <Link href={backHref ?? `/admin/clients/${clientId}`} style={{ color: '#52525b', fontSize: 12, textDecoration: 'none' }}>← {backLabel ?? clientName}</Link>
             <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.1)' }} />
             <span style={{ color: '#31AE79', fontSize: 12, fontWeight: 600 }}>Contabilidad Interna</span>
           </div>

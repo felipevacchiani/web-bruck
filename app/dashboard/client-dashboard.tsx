@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile, FileRecord, FileCategory } from '@/lib/supabase/types'
 import { FILE_CATEGORIES, TAX_SUBCATEGORIES } from '@/lib/supabase/types'
@@ -109,6 +110,12 @@ export default function ClientDashboard({ profile, files }: Props) {
               </button>
             ))}
           </div>
+          <div style={{ padding:'12px 10px', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
+            <Link href="/dashboard/contabilidad" onClick={()=>setSidebarOpen(false)} style={{ display:'flex', alignItems:'center', gap:9, padding:'9px 10px', borderRadius:9, border:'1px solid rgba(49,174,121,0.2)', background:'rgba(49,174,121,0.07)', textDecoration:'none', color:'#31AE79' }}>
+              <span style={{ fontSize:15 }}>📊</span>
+              <span style={{ fontSize:13, fontWeight:500 }}>Contabilidad</span>
+            </Link>
+          </div>
           <div style={{ padding:'12px 16px', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
             <div style={{ color:'white', fontSize:13, fontWeight:500 }}>{profile.full_name||profile.email}</div>
             {profile.company && <div style={{ color:'#52525b', fontSize:12 }}>{profile.company}</div>}
@@ -130,6 +137,12 @@ export default function ClientDashboard({ profile, files }: Props) {
               </button>
             ))}
           </nav>
+          <div style={{ padding:'10px 10px', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
+            <Link href="/dashboard/contabilidad" style={{ display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, border:'1px solid rgba(49,174,121,0.2)', background:'rgba(49,174,121,0.07)', textDecoration:'none', color:'#31AE79' }}>
+              <span style={{ fontSize:14 }}>📊</span>
+              <span style={{ fontSize:13, fontWeight:500 }}>Contabilidad</span>
+            </Link>
+          </div>
           <div style={{ padding:'12px 16px', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
             <div style={{ color:'white', fontSize:12, fontWeight:500 }}>{profile.full_name||profile.email}</div>
             {profile.company && <div style={{ color:'#52525b', fontSize:11 }}>{profile.company}</div>}
