@@ -27,6 +27,17 @@ export default function ClientDashboard({ profile, files }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [informesOpen, setInformesOpen] = useState(true)
+  const [contabOpen, setContabOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
+  const CI_TABS = [
+    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'movimientos', label: 'Movimientos', icon: '↕' },
+    { id: 'bancos', label: 'Bancos', icon: '🏦' },
+    { id: 'cuentas', label: 'Ctas Banc. y Caja', icon: '💳' },
+    { id: 'contables', label: 'Cuentas Contables', icon: '📒' },
+    { id: 'rubros', label: 'Rubros', icon: '🏷' },
+  ]
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push('/login'); router.refresh() }
   const handleDownload = async (id:string,name:string) => {
@@ -48,7 +59,8 @@ export default function ClientDashboard({ profile, files }: Props) {
   return (
     <div style={{ minHeight:'100vh', background:'#080808', display:'flex', flexDirection:'column' }}>
       <style>{`
-        .db-sidebar { width:220px; flex-shrink:0; border-right:1px solid rgba(255,255,255,0.06); background:#0a0a0a; display:flex; flex-direction:column; }
+        .db-sidebar { width:220px; flex-shrink:0; border-right:1px solid rgba(255,255,255,0.06); background:#0a0a0a; display:flex; flex-direction:column; transition:width 0.2s ease, opacity 0.2s ease; overflow:hidden; }
+        .db-sidebar.collapsed { width:0; opacity:0; border-right:none; }
         .db-sidebar-mobile { display:none; }
         .db-main-pad { padding: 28px 28px; }
         @media(max-width:768px){
@@ -64,7 +76,7 @@ export default function ClientDashboard({ profile, files }: Props) {
       <header style={{ borderBottom:'1px solid rgba(255,255,255,0.06)', background:'rgba(10,10,10,0.97)', backdropFilter:'blur(12px)', flexShrink:0, position:'sticky', top:0, zIndex:20 }}>
         <div style={{ padding:'0 16px', height:52, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <button onClick={()=>setSidebarOpen(!sidebarOpen)} style={{ background:'none', border:'none', cursor:'pointer', color:'#71717a', padding:4, display:'flex', alignItems:'center' }}>
+            <button onClick={()=>{ if(window.innerWidth<=768) setSidebarOpen(o=>!o); else setSidebarCollapsed(o=>!o) }} style={{ background:'none', border:'none', cursor:'pointer', color:'#71717a', padding:4, display:'flex', alignItems:'center' }}>
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 4.5h14M2 9h14M2 13.5h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
             </button>
             <div style={{ display:'flex', alignItems:'center', gap:9 }}>
@@ -120,12 +132,22 @@ export default function ClientDashboard({ profile, files }: Props) {
 
             {/* CONTABILIDAD INTERNA */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 10px', marginBottom:6 }}>Contabilidad</div>
+              <button onClick={()=>setContabOpen(o=>!o)} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px', borderRadius:9, border:'none', background:'none', cursor:'pointer', marginBottom:4 }}>
+                <span style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' }}>Contabilidad</span>
+                <span style={{ color:'#52525b', fontSize:12 }}>{contabOpen ? '▾' : '▸'}</span>
+              </button>
               <Link href="/dashboard/contabilidad" onClick={()=>setSidebarOpen(false)}
-                style={{ display:'flex', alignItems:'center', gap:9, padding:'9px 10px', borderRadius:9, border:'1px solid rgba(49,174,121,0.2)', background:'rgba(49,174,121,0.07)', textDecoration:'none', color:'#31AE79' }}>
+                style={{ display:'flex', alignItems:'center', gap:9, padding:'9px 10px', borderRadius:9, border:'1px solid rgba(49,174,121,0.2)', background:'rgba(49,174,121,0.07)', textDecoration:'none', color:'#31AE79', marginBottom: contabOpen ? 6 : 0 }}>
                 <span style={{ fontSize:14 }}>📊</span>
                 <span style={{ fontSize:13, fontWeight:500 }}>Contabilidad Interna</span>
               </Link>
+              {contabOpen && CI_TABS.map(t => (
+                <Link key={t.id} href={`/dashboard/contabilidad?tab=${t.id}`} onClick={()=>setSidebarOpen(false)}
+                  style={{ display:'flex', alignItems:'center', gap:9, padding:'8px 10px 8px 20px', borderRadius:9, textDecoration:'none', color:'#71717a', marginBottom:2, border:'1px solid transparent' }}>
+                  <span style={{ fontSize:13 }}>{t.icon}</span>
+                  <span style={{ fontSize:13 }}>{t.label}</span>
+                </Link>
+              ))}
             </div>
           </div>
           <div style={{ padding:'12px 16px', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
@@ -135,7 +157,7 @@ export default function ClientDashboard({ profile, files }: Props) {
         </div>
 
         {/* Sidebar desktop */}
-        <aside className="db-sidebar">
+        <aside className={`db-sidebar${sidebarCollapsed?' collapsed':''}`}>
           <nav style={{ padding:'16px 10px', flex:1, overflowY:'auto' }}>
             {/* INFORMES */}
             <button onClick={()=>setInformesOpen(o=>!o)} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 10px', borderRadius:9, border:'none', background:'none', cursor:'pointer', marginBottom:4 }}>
@@ -158,12 +180,24 @@ export default function ClientDashboard({ profile, files }: Props) {
 
             {/* CONTABILIDAD INTERNA */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 10px', marginBottom:6 }}>Contabilidad</div>
+              <button onClick={()=>setContabOpen(o=>!o)} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 10px', borderRadius:9, border:'none', background:'none', cursor:'pointer', marginBottom:4 }}>
+                <span style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' }}>Contabilidad</span>
+                <span style={{ color:'#52525b', fontSize:11 }}>{contabOpen ? '▾' : '▸'}</span>
+              </button>
               <Link href="/dashboard/contabilidad"
-                style={{ display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, border:'1px solid rgba(49,174,121,0.2)', background:'rgba(49,174,121,0.07)', textDecoration:'none', color:'#31AE79' }}>
+                style={{ display:'flex', alignItems:'center', gap:9, padding:'7px 10px', borderRadius:9, border:'1px solid rgba(49,174,121,0.2)', background:'rgba(49,174,121,0.07)', textDecoration:'none', color:'#31AE79', marginBottom: contabOpen ? 6 : 0 }}>
                 <span style={{ fontSize:14 }}>📊</span>
                 <span style={{ fontSize:13, fontWeight:500 }}>Contabilidad Interna</span>
               </Link>
+              {contabOpen && CI_TABS.map(t => (
+                <Link key={t.id} href={`/dashboard/contabilidad?tab=${t.id}`}
+                  style={{ display:'flex', alignItems:'center', gap:9, padding:'7px 10px 7px 20px', borderRadius:9, textDecoration:'none', color:'#71717a', marginBottom:2, border:'1px solid transparent' }}
+                  onMouseEnter={e=>(e.currentTarget.style.color='#a1a1aa')}
+                  onMouseLeave={e=>(e.currentTarget.style.color='#71717a')}>
+                  <span style={{ fontSize:13 }}>{t.icon}</span>
+                  <span style={{ fontSize:13 }}>{t.label}</span>
+                </Link>
+              ))}
             </div>
           </nav>
           <div style={{ padding:'12px 16px', borderTop:'1px solid rgba(255,255,255,0.05)' }}>

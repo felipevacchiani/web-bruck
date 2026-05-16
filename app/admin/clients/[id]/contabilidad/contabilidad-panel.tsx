@@ -11,6 +11,7 @@ interface Props {
   apiBase?: string
   backHref?: string
   backLabel?: string
+  defaultTab?: string
 }
 
 type Tab = 'dashboard' | 'movimientos' | 'bancos' | 'cuentas' | 'contables' | 'rubros'
@@ -119,10 +120,10 @@ const LBL: React.CSSProperties = { color: '#a1a1aa', fontSize: 11, fontWeight: 6
 const BTN_P: React.CSSProperties = { background: 'linear-gradient(135deg,#31AE79,#27a06d)', color: 'white', fontWeight: 600, fontSize: 13, padding: '9px 16px', borderRadius: 9, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
 const BTN_S: React.CSSProperties = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#71717a', fontSize: 12, padding: '7px 13px', borderRadius: 8, cursor: 'pointer' }
 
-export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBaseProp, backHref, backLabel }: Props) {
+export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBaseProp, backHref, backLabel, defaultTab }: Props) {
   const base = apiBaseProp ?? `/api/admin/ci/${clientId}`
 
-  const [tab, setTab] = useState<Tab>('dashboard')
+  const [tab, setTab] = useState<Tab>((defaultTab as Tab) || 'dashboard')
   const [dashboard, setDash] = useState<any>(null)
   const [movs, setMovs] = useState<any[]>([])
   const [movCount, setMovCount] = useState(0)
