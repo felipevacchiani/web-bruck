@@ -551,10 +551,10 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
           {tab === 'dashboard' && (
             <div>
               {/* Selector de cuenta + mes/año */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
-                {/* Tabs de cuentas */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                {/* Tabs de cuentas — usa `cuentas` state (cargado al montar) */}
                 <div style={{ display: 'flex', flex: 1, overflowX: 'auto' }}>
-                  {[{ id: '', nombre: 'Todas' }, ...(dashboard?.cuentas || cuentas)].map((c: any) => (
+                  {[{ id: '', nombre: 'Todas' }, ...cuentas].map((c: any) => (
                     <button key={c.id} onClick={() => setDashCuenta(c.id)}
                       style={{ background: 'none', border: 'none', borderBottom: dashCuenta === c.id ? '2px solid #31AE79' : '2px solid transparent', color: dashCuenta === c.id ? '#31AE79' : '#71717a', fontSize: 13, fontWeight: dashCuenta === c.id ? 600 : 400, padding: '10px 14px', cursor: 'pointer', whiteSpace: 'nowrap', marginBottom: -1 }}>
                       {c.nombre}
@@ -576,22 +576,21 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                 <div style={{ color: '#52525b', fontSize: 13, textAlign: 'center', padding: 48 }}>Cargando...</div>
               ) : (
                 <>
-                  {/* KPIs */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 12, marginBottom: 24 }}>
+                  {/* KPIs — una sola fila con 8 cards compactas */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8,1fr)', gap: 8, marginBottom: 20 }}>
                     {[
-                      { label: 'Ingresos del período', value: fmt(dashboard.ingresosMes || 0), color: '#34d399', sub: null },
-                      { label: 'Egresos del período', value: fmt(dashboard.egresosMes || 0), color: '#f87171', sub: null },
-                      { label: 'Saldo del período', value: fmt(dashboard.saldoMes || 0), color: (dashboard.saldoMes||0) >= 0 ? '#34d399' : '#f87171', sub: null },
-                      { label: 'Movimientos', value: dashboard.totalMovs || 0, color: 'white', sub: null },
-                      { label: 'Conciliados', value: dashboard.conciliados || 0, color: '#34d399', sub: null },
-                      { label: 'Pendientes', value: dashboard.pendientes || 0, color: '#facc15', sub: null },
-                      { label: 'Sin Factura', value: dashboard.sinFactura || 0, color: '#fb923c', sub: null },
-                      { label: 'Saldo acumulado', value: fmt(dashboard.saldoActual || 0), color: (dashboard.saldoActual||0) >= 0 ? '#60a5fa' : '#f87171', sub: 'histórico' },
+                      { label: 'Ingresos', value: fmt(dashboard.ingresosMes || 0), color: '#34d399' },
+                      { label: 'Egresos', value: fmt(dashboard.egresosMes || 0), color: '#f87171' },
+                      { label: 'Saldo período', value: fmt(dashboard.saldoMes || 0), color: (dashboard.saldoMes||0) >= 0 ? '#34d399' : '#f87171' },
+                      { label: 'Movimientos', value: String(dashboard.totalMovs || 0), color: 'white' },
+                      { label: 'Conciliados', value: String(dashboard.conciliados || 0), color: '#34d399' },
+                      { label: 'Pendientes', value: String(dashboard.pendientes || 0), color: '#facc15' },
+                      { label: 'Sin Factura', value: String(dashboard.sinFactura || 0), color: '#fb923c' },
+                      { label: 'Saldo total', value: fmt(dashboard.saldoActual || 0), color: (dashboard.saldoActual||0) >= 0 ? '#60a5fa' : '#f87171' },
                     ].map(s => (
-                      <div key={s.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px' }}>
-                        <div style={{ color: '#71717a', fontSize: 10, marginBottom: 5, letterSpacing: '0.04em' }}>{s.label}</div>
-                        <div style={{ color: s.color, fontSize: 18, fontWeight: 700 }}>{s.value}</div>
-                        {s.sub && <div style={{ color: '#3f3f46', fontSize: 10, marginTop: 3 }}>{s.sub}</div>}
+                      <div key={s.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '10px 12px' }}>
+                        <div style={{ color: '#52525b', fontSize: 9, marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</div>
+                        <div style={{ color: s.color, fontSize: 14, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.value}</div>
                       </div>
                     ))}
                   </div>
