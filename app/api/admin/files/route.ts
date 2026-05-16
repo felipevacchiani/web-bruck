@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logAudit } from '@/lib/supabase/audit'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
@@ -61,6 +62,15 @@ export async function POST(req: NextRequest) {
     await admin.storage.from('client-files').remove([storagePath])
     return NextResponse.json({ error: dbError.message }, { status: 500 })
   }
+
+  await logAudit({
+    userId:     user.id,
+    userEmail:  user.email,
+    action:     'file_upload',
+    entityType: 'file',
+    entityId:   fileRecord.id,
+    details:    { name, category, client_id: clientId, file_size: file.size },
+  })
 
   return NextResponse.json({ file: fileRecord })
 }

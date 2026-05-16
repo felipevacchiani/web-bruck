@@ -65,11 +65,42 @@ export interface FileRecord {
   created_at: string
 }
 
+export type AuditAction =
+  | 'file_upload'
+  | 'file_delete'
+  | 'file_status_change'
+  | 'file_update'
+  | 'client_create'
+  | 'client_update'
+  | 'client_delete'
+
+export interface AuditLog {
+  id: string
+  user_id: string | null
+  user_email: string | null
+  action: AuditAction
+  entity_type: string
+  entity_id: string | null
+  details: Record<string, unknown>
+  created_at: string
+}
+
+export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
+  file_upload:        'Subida de archivo',
+  file_delete:        'Eliminación de archivo',
+  file_status_change: 'Cambio de estado',
+  file_update:        'Edición de archivo',
+  client_create:      'Creación de cliente',
+  client_update:      'Edición de cliente',
+  client_delete:      'Eliminación de cliente',
+}
+
 export type Database = {
   public: {
     Tables: {
-      profiles: { Row: Profile; Insert: Partial<Profile>; Update: Partial<Profile> }
-      files:    { Row: FileRecord; Insert: Partial<FileRecord>; Update: Partial<FileRecord> }
+      profiles:   { Row: Profile;    Insert: Partial<Profile>;    Update: Partial<Profile>    }
+      files:      { Row: FileRecord; Insert: Partial<FileRecord>; Update: Partial<FileRecord> }
+      audit_logs: { Row: AuditLog;   Insert: Partial<AuditLog>;  Update: Partial<AuditLog>  }
     }
   }
 }

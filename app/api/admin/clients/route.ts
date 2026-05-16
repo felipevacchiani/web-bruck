@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logAudit } from '@/lib/supabase/audit'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
@@ -30,6 +31,15 @@ export async function POST(req: NextRequest) {
   }).eq('id', newUser.user.id)
 
   if (profileError) return NextResponse.json({ error: profileError.message }, { status: 500 })
+
+  await logAudit({
+    userId:     user.id,
+    userEmail:  user.email,
+    action:     'client_create',
+    entityType: 'client',
+    entityId:   newUser.user.id,
+    details:    { email, full_name, company },
+  })
 
   return NextResponse.json({ ok: true, id: newUser.user.id })
 }
