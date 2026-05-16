@@ -12,6 +12,7 @@ interface Props {
   backHref?: string
   backLabel?: string
   defaultTab?: string
+  onBack?: () => void
 }
 
 type Tab = 'dashboard' | 'movimientos' | 'bancos' | 'cuentas' | 'contables' | 'rubros'
@@ -120,7 +121,7 @@ const LBL: React.CSSProperties = { color: '#a1a1aa', fontSize: 11, fontWeight: 6
 const BTN_P: React.CSSProperties = { background: 'linear-gradient(135deg,#31AE79,#27a06d)', color: 'white', fontWeight: 600, fontSize: 13, padding: '9px 16px', borderRadius: 9, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
 const BTN_S: React.CSSProperties = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#71717a', fontSize: 12, padding: '7px 13px', borderRadius: 8, cursor: 'pointer' }
 
-export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBaseProp, backHref, backLabel, defaultTab }: Props) {
+export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBaseProp, backHref, backLabel, defaultTab, onBack }: Props) {
   const base = apiBaseProp ?? `/api/admin/ci/${clientId}`
 
   const [tab, setTab] = useState<Tab>((defaultTab as Tab) || 'dashboard')
@@ -440,7 +441,10 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                 <span style={{ color: '#31AE79', fontWeight: 900, fontSize: 12 }}>B</span>
               </div>
             </Link>
-            <Link href={backHref ?? `/admin/clients/${clientId}`} style={{ color: '#52525b', fontSize: 12, textDecoration: 'none' }}>← {backLabel ?? clientName}</Link>
+            {onBack
+              ? <button onClick={onBack} style={{ color: '#52525b', fontSize: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>← {backLabel ?? clientName}</button>
+              : <Link href={backHref ?? `/admin/clients/${clientId}`} style={{ color: '#52525b', fontSize: 12, textDecoration: 'none' }}>← {backLabel ?? clientName}</Link>
+            }
             <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.1)' }} />
             <span style={{ color: '#31AE79', fontSize: 12, fontWeight: 600 }}>Contabilidad Interna</span>
           </div>

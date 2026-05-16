@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile, FileRecord, FileCategory } from '@/lib/supabase/types'
 import { FILE_CATEGORIES, TAX_SUBCATEGORIES } from '@/lib/supabase/types'
+import ContabilidadPanel from '@/app/admin/clients/[id]/contabilidad/contabilidad-panel'
 
 interface Props { profile: Profile; files: FileRecord[] }
 
@@ -27,7 +27,7 @@ export default function ClientDashboard({ profile, files }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [informesOpen, setInformesOpen] = useState(true)
-  const [contabOpen, setContabOpen] = useState(false)
+  const [contabTab, setContabTab] = useState<string | null>(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   const CI_TABS = [
@@ -120,11 +120,11 @@ export default function ClientDashboard({ profile, files }: Props) {
               {value:'todos' as const,label:'Todos',icon:'📋',count:files.length},
               ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
             ].map(cat=>(
-              <button key={cat.value} onClick={()=>{setActiveCategory(cat.value as any);setSidebarOpen(false)}}
-                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px 8px 20px', borderRadius:9, border:activeCategory===cat.value?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value?'#31AE79':'#71717a', marginBottom:2, textAlign:'left' }}>
+              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setSidebarOpen(false) }}
+                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px 8px 20px', borderRadius:9, border:activeCategory===cat.value&&!contabTab?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#71717a', marginBottom:2, textAlign:'left' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:9 }}>
                   <span style={{ fontSize:14 }}>{cat.icon}</span>
-                  <span style={{ fontSize:13, fontWeight:activeCategory===cat.value?500:400 }}>{cat.label}</span>
+                  <span style={{ fontSize:13, fontWeight:activeCategory===cat.value&&!contabTab?500:400 }}>{cat.label}</span>
                 </div>
                 {cat.count>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(255,255,255,0.06)', color:'#71717a' }}>{cat.count}</span>}
               </button>
@@ -132,21 +132,13 @@ export default function ClientDashboard({ profile, files }: Props) {
 
             {/* CONTABILIDAD INTERNA */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
-              <button onClick={()=>setContabOpen(o=>!o)} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px', borderRadius:9, border:'none', background:'none', cursor:'pointer', marginBottom:4 }}>
-                <span style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' }}>Contabilidad</span>
-                <span style={{ color:'#52525b', fontSize:12 }}>{contabOpen ? '▾' : '▸'}</span>
-              </button>
-              <Link href="/dashboard/contabilidad" onClick={()=>setSidebarOpen(false)}
-                style={{ display:'flex', alignItems:'center', gap:9, padding:'9px 10px', borderRadius:9, border:'1px solid rgba(49,174,121,0.2)', background:'rgba(49,174,121,0.07)', textDecoration:'none', color:'#31AE79', marginBottom: contabOpen ? 6 : 0 }}>
-                <span style={{ fontSize:14 }}>📊</span>
-                <span style={{ fontSize:13, fontWeight:500 }}>Contabilidad Interna</span>
-              </Link>
-              {contabOpen && CI_TABS.map(t => (
-                <Link key={t.id} href={`/dashboard/contabilidad?tab=${t.id}`} onClick={()=>setSidebarOpen(false)}
-                  style={{ display:'flex', alignItems:'center', gap:9, padding:'8px 10px 8px 20px', borderRadius:9, textDecoration:'none', color:'#71717a', marginBottom:2, border:'1px solid transparent' }}>
-                  <span style={{ fontSize:13 }}>{t.icon}</span>
+              <div style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 10px', marginBottom:6 }}>Contabilidad</div>
+              {CI_TABS.map(t => (
+                <button key={t.id} onClick={()=>{ setContabTab(t.id); setSidebarOpen(false) }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:contabTab===t.id?'rgba(49,174,121,0.1)':'none', border:contabTab===t.id?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:contabTab===t.id?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
+                  <span style={{ fontSize:14 }}>{t.icon}</span>
                   <span style={{ fontSize:13 }}>{t.label}</span>
-                </Link>
+                </button>
               ))}
             </div>
           </div>
@@ -168,35 +160,25 @@ export default function ClientDashboard({ profile, files }: Props) {
               {value:'todos' as const,label:'Todos',icon:'📋',count:files.length},
               ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
             ].map(cat=>(
-              <button key={cat.value} onClick={()=>setActiveCategory(cat.value as any)}
-                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px 7px 20px', borderRadius:9, border:activeCategory===cat.value?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value?'#31AE79':'#71717a', marginBottom:2, textAlign:'left' }}>
+              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null) }}
+                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px 7px 20px', borderRadius:9, border:activeCategory===cat.value&&!contabTab?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#71717a', marginBottom:2, textAlign:'left' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:9 }}>
                   <span style={{ fontSize:14 }}>{cat.icon}</span>
-                  <span style={{ fontSize:13, fontWeight:activeCategory===cat.value?500:400 }}>{cat.label}</span>
+                  <span style={{ fontSize:13, fontWeight:activeCategory===cat.value&&!contabTab?500:400 }}>{cat.label}</span>
                 </div>
-                {cat.count>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:activeCategory===cat.value?'rgba(49,174,121,0.2)':'rgba(255,255,255,0.05)', color:activeCategory===cat.value?'#31AE79':'#52525b' }}>{cat.count}</span>}
+                {cat.count>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.2)':'rgba(255,255,255,0.05)', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#52525b' }}>{cat.count}</span>}
               </button>
             ))}
 
             {/* CONTABILIDAD INTERNA */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
-              <button onClick={()=>setContabOpen(o=>!o)} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 10px', borderRadius:9, border:'none', background:'none', cursor:'pointer', marginBottom:4 }}>
-                <span style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' }}>Contabilidad</span>
-                <span style={{ color:'#52525b', fontSize:11 }}>{contabOpen ? '▾' : '▸'}</span>
-              </button>
-              <Link href="/dashboard/contabilidad"
-                style={{ display:'flex', alignItems:'center', gap:9, padding:'7px 10px', borderRadius:9, border:'1px solid rgba(49,174,121,0.2)', background:'rgba(49,174,121,0.07)', textDecoration:'none', color:'#31AE79', marginBottom: contabOpen ? 6 : 0 }}>
-                <span style={{ fontSize:14 }}>📊</span>
-                <span style={{ fontSize:13, fontWeight:500 }}>Contabilidad Interna</span>
-              </Link>
-              {contabOpen && CI_TABS.map(t => (
-                <Link key={t.id} href={`/dashboard/contabilidad?tab=${t.id}`}
-                  style={{ display:'flex', alignItems:'center', gap:9, padding:'7px 10px 7px 20px', borderRadius:9, textDecoration:'none', color:'#71717a', marginBottom:2, border:'1px solid transparent' }}
-                  onMouseEnter={e=>(e.currentTarget.style.color='#a1a1aa')}
-                  onMouseLeave={e=>(e.currentTarget.style.color='#71717a')}>
-                  <span style={{ fontSize:13 }}>{t.icon}</span>
+              <div style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 10px', marginBottom:6 }}>Contabilidad</div>
+              {CI_TABS.map(t => (
+                <button key={t.id} onClick={()=>setContabTab(t.id)}
+                  style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'7px 10px', borderRadius:9, background:contabTab===t.id?'rgba(49,174,121,0.1)':'none', border:contabTab===t.id?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:contabTab===t.id?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
+                  <span style={{ fontSize:14 }}>{t.icon}</span>
                   <span style={{ fontSize:13 }}>{t.label}</span>
-                </Link>
+                </button>
               ))}
             </div>
           </nav>
@@ -208,6 +190,17 @@ export default function ClientDashboard({ profile, files }: Props) {
 
         {/* Main */}
         <main style={{ flex:1, overflowY:'auto' }}>
+          {contabTab !== null ? (
+            <ContabilidadPanel
+              key={contabTab}
+              clientName={profile.full_name || profile.company || profile.email}
+              apiBase="/api/client/ci"
+              backHref="#"
+              backLabel="Mi portal"
+              defaultTab={contabTab}
+              onBack={() => setContabTab(null)}
+            />
+          ) : (
           <div className="db-main-pad">
             <div style={{ maxWidth:820, margin:'0 auto' }}>
               <div style={{ marginBottom:20 }}>
@@ -295,6 +288,7 @@ export default function ClientDashboard({ profile, files }: Props) {
               )}
             </div>
           </div>
+          )}
         </main>
       </div>
     </div>
