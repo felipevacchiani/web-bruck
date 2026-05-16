@@ -505,36 +505,34 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                        {['Fecha', 'Descripción', 'Cuenta', 'Débito', 'Crédito', 'Estado', 'Rubro / C.Contable', ''].map(h => (
-                          <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '9px 12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                        {['Fecha', 'Descripción', 'Cuenta', 'Débito', 'Crédito', 'Estado', 'C.Contable', ''].map(h => (
+                          <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '7px 10px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {movs.map((m: any, i: number) => (
                         <tr key={m.id} style={{ borderTop: i ? '1px solid rgba(255,255,255,0.04)' : undefined }}>
-                          <td style={{ padding: '10px 12px', color: '#a1a1aa', fontSize: 12, whiteSpace: 'nowrap' }}>{fmtDate(m.fecha)}</td>
-                          <td style={{ padding: '10px 12px', maxWidth: 240 }}>
+                          <td style={{ padding: '7px 10px', color: '#a1a1aa', fontSize: 11, whiteSpace: 'nowrap' }}>{fmtDate(m.fecha)}</td>
+                          <td style={{ padding: '7px 10px', maxWidth: 220 }}>
                             <div style={{ color: 'white', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descripcion}</div>
-                            {m.comentario && <div style={{ color: '#52525b', fontSize: 10, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.comentario}</div>}
+                            {m.comentario && <div style={{ color: '#52525b', fontSize: 10, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.comentario}</div>}
                           </td>
-                          <td style={{ padding: '10px 12px', color: '#71717a', fontSize: 12, whiteSpace: 'nowrap' }}>{m.cuenta_bancaria?.nombre || '—'}</td>
-                          <td style={{ padding: '10px 12px', color: '#f87171', fontSize: 12, whiteSpace: 'nowrap' }}>{m.debito > 0 ? fmt(m.debito) : '—'}</td>
-                          <td style={{ padding: '10px 12px', color: '#34d399', fontSize: 12, whiteSpace: 'nowrap' }}>{m.credito > 0 ? fmt(m.credito) : '—'}</td>
-                          <td style={{ padding: '10px 12px' }}>
-                            <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, ...statusStyle(m.estado) }}>
+                          <td style={{ padding: '7px 10px', color: '#71717a', fontSize: 11, whiteSpace: 'nowrap' }}>{m.cuenta_bancaria?.nombre || '—'}</td>
+                          <td style={{ padding: '7px 10px', color: '#f87171', fontSize: 11, whiteSpace: 'nowrap' }}>{m.debito > 0 ? fmt(m.debito) : '—'}</td>
+                          <td style={{ padding: '7px 10px', color: '#34d399', fontSize: 11, whiteSpace: 'nowrap' }}>{m.credito > 0 ? fmt(m.credito) : '—'}</td>
+                          <td style={{ padding: '7px 10px' }}>
+                            <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 5, ...statusStyle(m.estado) }}>
                               {CI_MOV_ESTADOS.find(e => e.value === m.estado)?.label || m.estado}
                             </span>
                           </td>
-                          <td style={{ padding: '10px 12px', color: '#52525b', fontSize: 11, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {m.rubro?.nombre && <span style={{ color: '#71717a' }}>{m.rubro.nombre}</span>}
-                            {m.cuenta_contable?.nombre && <span style={{ color: '#52525b' }}>{m.rubro?.nombre ? ' / ' : ''}{m.cuenta_contable.nombre}</span>}
-                            {!m.rubro?.nombre && !m.cuenta_contable?.nombre && '—'}
+                          <td style={{ padding: '7px 10px', color: '#52525b', fontSize: 11, maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {m.cuenta_contable?.nombre || '—'}
                           </td>
-                          <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
-                            <div style={{ display: 'flex', gap: 5 }}>
-                              <button onClick={() => openModal('clasificar', m)} style={{ ...BTN_S, fontSize: 11, padding: '4px 9px', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.2)' }}>Clasificar</button>
-                              <button onClick={() => apiDelete('movimientos', m.id)} style={{ ...BTN_S, fontSize: 11, padding: '4px 9px', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)' }}>✕</button>
+                          <td style={{ padding: '7px 10px', whiteSpace: 'nowrap' }}>
+                            <div style={{ display: 'flex', gap: 4 }}>
+                              <button onClick={() => openModal('clasificar', m)} style={{ ...BTN_S, fontSize: 10, padding: '3px 8px', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.2)' }}>Clasificar</button>
+                              <button onClick={() => apiDelete('movimientos', m.id)} style={{ ...BTN_S, fontSize: 10, padding: '3px 7px', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)' }}>✕</button>
                             </div>
                           </td>
                         </tr>
