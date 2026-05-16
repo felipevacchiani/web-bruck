@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   if (!body.nombre) return NextResponse.json({ error: 'nombre requerido' }, { status: 400 })
   const { data, error } = await (auth.admin.from('bruck_rubros') as any)
-    .insert({ client_id: auth.userId, nombre: body.nombre, categoria: body.categoria || 'egreso' }).select().single()
+    .insert({ client_id: auth.userId, nombre: body.nombre, categoria: 'egreso' }).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ data })
 }

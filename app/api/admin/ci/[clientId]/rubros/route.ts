@@ -30,11 +30,11 @@ export async function POST(req: NextRequest, { params }: P) {
   if (!admin) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const body = await req.json()
-  const { nombre, categoria } = body
+  const { nombre } = body
   if (!nombre) return NextResponse.json({ error: 'nombre requerido' }, { status: 400 })
 
   const { data, error } = await (admin.from('bruck_rubros') as any)
-    .insert({ client_id: clientId, nombre, categoria: categoria || 'egreso' }).select().single()
+    .insert({ client_id: clientId, nombre, categoria: 'egreso' }).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ data })
 }

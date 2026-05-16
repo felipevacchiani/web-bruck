@@ -36,6 +36,7 @@ export async function POST(req: NextRequest, { params }: P) {
     client_id: clientId, nombre: body.nombre, banco: body.banco || null,
     numero_cuenta: body.numero_cuenta || null, tipo: body.tipo || 'corriente',
     saldo_inicial: parseFloat(body.saldo_inicial) || 0,
+    disponible: parseFloat(body.disponible) || 0,
   }).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ data })
