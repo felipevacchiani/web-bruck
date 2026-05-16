@@ -154,10 +154,13 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
   // Filtros movimientos
   const [fCuenta, setFCuenta] = useState('')
-  const [fMes, setFMes] = useState('')
-  const [fAnio, setFAnio] = useState('')
   const [fEstado, setFEstado] = useState('')
   const [fQ, setFQ] = useState('')
+  const [fDesde, setFDesde] = useState('')
+  const [fHasta, setFHasta] = useState('')
+  const [fOrigen, setFOrigen] = useState('')
+  const [fRubro, setFRubro] = useState('')
+  const [fContable, setFContable] = useState('')
 
   // Modal
   const [modal, setModal] = useState<{ type: string; item?: any } | null>(null)
@@ -247,15 +250,51 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
   const loadMovs = useCallback(async (page = 1) => {
     const p = new URLSearchParams({ page: String(page) })
-    if (fCuenta) p.set('cuenta', fCuenta)
-    if (fMes) p.set('mes', fMes)
-    if (fAnio) p.set('anio', fAnio)
-    if (fEstado) p.set('estado', fEstado)
-    if (fQ) p.set('q', fQ)
+    if (fCuenta)  p.set('cuenta', fCuenta)
+    if (fEstado)  p.set('estado', fEstado)
+    if (fQ)       p.set('q', fQ)
+    if (fDesde)   p.set('desde', fDesde)
+    if (fHasta)   p.set('hasta', fHasta)
+    if (fOrigen)  p.set('origen', fOrigen)
+    if (fRubro)   p.set('rubro', fRubro)
+    if (fContable) p.set('contable', fContable)
     const r = await fetch(`${base}/movimientos?${p}`)
     const d = await r.json()
     setMovs(d.data || []); setMovCount(d.count || 0); setMovPage(d.page || 1); setMovPages(d.pages || 1)
-  }, [base, fCuenta, fMes, fAnio, fEstado, fQ])
+  }, [base, fCuenta, fEstado, fQ, fDesde, fHasta, fOrigen, fRubro, fContable])
+
+  const exportMovs = async () => {
+    const p = new URLSearchParams({ page: '1', limit: '9999' })
+    if (fCuenta)  p.set('cuenta', fCuenta)
+    if (fEstado)  p.set('estado', fEstado)
+    if (fQ)       p.set('q', fQ)
+    if (fDesde)   p.set('desde', fDesde)
+    if (fHasta)   p.set('hasta', fHasta)
+    if (fOrigen)  p.set('origen', fOrigen)
+    if (fRubro)   p.set('rubro', fRubro)
+    if (fContable) p.set('contable', fContable)
+    const r = await fetch(`${base}/movimientos?${p}`)
+    const d = await r.json()
+    const rows: any[] = d.data || []
+    const headers = ['Fecha', 'Descripción', 'Débito', 'Crédito', 'Cuenta Bancaria', 'Cuenta Contable', 'Rubro', 'Estado', 'Factura', 'Comentario']
+    const lines = [
+      headers.join(';'),
+      ...rows.map(m => [
+        m.fecha, `"${(m.descripcion||'').replace(/"/g,'""')}"`,
+        m.debito || 0, m.credito || 0,
+        m.cuenta_bancaria?.nombre || '',
+        m.cuenta_contable?.nombre || '',
+        m.rubro?.nombre || '',
+        m.estado || '', m.factura ? 'Sí' : 'No',
+        `"${(m.comentario||'').replace(/"/g,'""')}"`
+      ].join(';'))
+    ]
+    const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url
+    a.download = `movimientos_${new Date().toISOString().slice(0,10)}.csv`
+    a.click(); URL.revokeObjectURL(url)
+  }
 
   const loadBankMovs = useCallback(async (page = 1) => {
     if (!bCuenta) { setBMovs([]); setBMovCount(0); return }
@@ -556,29 +595,72 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
           {/* ── MOVIMIENTOS ── */}
           {tab === 'movimientos' && (
             <div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16, alignItems: 'flex-end' }}>
-                <input placeholder="Buscar..." value={fQ} onChange={e => setFQ(e.target.value)} style={{ ...INP, width: 180 }} />
-                <select value={fCuenta} onChange={e => setFCuenta(e.target.value)} style={{ ...SEL, width: 160 }}>
-                  <option value="">Todas las cuentas</option>
-                  {cuentas.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                </select>
-                <select value={fMes} onChange={e => setFMes(e.target.value)} style={{ ...SEL, width: 110 }}>
-                  <option value="">Mes</option>
-                  {MONTHS.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
-                </select>
-                <select value={fAnio} onChange={e => setFAnio(e.target.value)} style={{ ...SEL, width: 90 }}>
-                  <option value="">Año</option>
-                  {[2026, 2025, 2024, 2023].map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
-                <select value={fEstado} onChange={e => setFEstado(e.target.value)} style={{ ...SEL, width: 120 }}>
-                  <option value="">Estado</option>
-                  {CI_MOV_ESTADOS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                </select>
-                <button onClick={() => loadMovs(1)} style={BTN_S}>Filtrar</button>
-                <div style={{ flex: 1 }} />
+              {/* Filtros */}
+              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '12px 14px', marginBottom: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr 2fr', gap: 8, marginBottom: 8 }}>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Desde</div>
+                    <input type="date" value={fDesde} onChange={e => setFDesde(e.target.value)} style={{ ...INP, fontSize: 12, padding: '7px 10px', colorScheme: 'dark' }} />
+                  </div>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Hasta</div>
+                    <input type="date" value={fHasta} onChange={e => setFHasta(e.target.value)} style={{ ...INP, fontSize: 12, padding: '7px 10px', colorScheme: 'dark' }} />
+                  </div>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Origen</div>
+                    <select value={fOrigen} onChange={e => setFOrigen(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
+                      <option value="">Todos</option>
+                      <option value="banco">Banco</option>
+                      <option value="caja">Caja</option>
+                    </select>
+                  </div>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Estado</div>
+                    <select value={fEstado} onChange={e => setFEstado(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
+                      <option value="">Todos</option>
+                      {CI_MOV_ESTADOS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Rubro</div>
+                    <select value={fRubro} onChange={e => setFRubro(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
+                      <option value="">Todos</option>
+                      {rubros.map((r: any) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Cta. Contable</div>
+                    <select value={fContable} onChange={e => setFContable(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
+                      <option value="">Todas</option>
+                      {contables.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Buscar</div>
+                    <input placeholder="Descripción..." value={fQ} onChange={e => setFQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && loadMovs(1)} style={{ ...INP, fontSize: 12, padding: '7px 10px' }} />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Cuenta Bancaria</div>
+                    <select value={fCuenta} onChange={e => setFCuenta(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px', minWidth: 200 }}>
+                      <option value="">Todas las cuentas</option>
+                      {cuentas.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}{c.banco ? ` — ${c.banco}` : ''}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ flex: 1 }} />
+                  {(fDesde || fHasta || fOrigen || fEstado || fRubro || fContable || fQ || fCuenta) && (
+                    <button onClick={() => { setFDesde(''); setFHasta(''); setFOrigen(''); setFEstado(''); setFRubro(''); setFContable(''); setFQ(''); setFCuenta('') }} style={{ ...BTN_S, fontSize: 11, color: '#52525b' }}>✕ Limpiar</button>
+                  )}
+                  <button onClick={() => exportMovs()} style={{ ...BTN_S, color: '#34d399', border: '1px solid rgba(52,211,153,0.3)', fontSize: 12 }}>↓ Exportar</button>
+                  <button onClick={() => loadMovs(1)} style={{ ...BTN_P, fontSize: 12, padding: '7px 16px' }}>Aplicar</button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <div style={{ color: '#52525b', fontSize: 12 }}>{movCount} movimiento{movCount !== 1 ? 's' : ''}</div>
                 <button onClick={() => openModal('mov')} style={BTN_P}><span>+</span> Nuevo movimiento</button>
               </div>
-              <div style={{ color: '#52525b', fontSize: 12, marginBottom: 10 }}>{movCount} movimiento{movCount !== 1 ? 's' : ''}</div>
               {!movs.length ? (
                 <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
                   <div style={{ color: '#52525b', fontSize: 13 }}>No hay movimientos registrados.</div>

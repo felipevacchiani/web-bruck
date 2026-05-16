@@ -7,17 +7,29 @@ export async function GET(req: NextRequest) {
   if (!auth) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const sp = req.nextUrl.searchParams
-  const cuenta  = sp.get('cuenta')  || ''
-  const mes     = sp.get('mes')     || ''
-  const anio    = sp.get('anio')    || ''
-  const estado  = sp.get('estado')  || ''
-  const q       = sp.get('q')       || ''
-  const rubro   = sp.get('rubro')   || ''
-  const tipo    = sp.get('tipo')    || ''
-  const factura = sp.get('factura') || ''
-  const page    = Math.max(1, parseInt(sp.get('page') || '1'))
-  const limit   = 50
-  const offset  = (page - 1) * limit
+  const cuenta   = sp.get('cuenta')   || ''
+  const mes      = sp.get('mes')      || ''
+  const anio     = sp.get('anio')     || ''
+  const estado   = sp.get('estado')   || ''
+  const q        = sp.get('q')        || ''
+  const rubro    = sp.get('rubro')    || ''
+  const tipo     = sp.get('tipo')     || ''
+  const factura  = sp.get('factura')  || ''
+  const desde    = sp.get('desde')    || ''
+  const hasta    = sp.get('hasta')    || ''
+  const origen   = sp.get('origen')   || ''
+  const contable = sp.get('contable') || ''
+  const page     = Math.max(1, parseInt(sp.get('page') || '1'))
+  const limit    = Math.min(9999, parseInt(sp.get('limit') || '50'))
+  const offset   = (page - 1) * limit
+
+  // Resolver IDs de cuentas bancarias por origen (banco/caja)
+  let cuentaIdsForOrigen: string[] | null = null
+  if (origen) {
+    const { data: cuentasOrigen } = await (auth.admin.from('bruck_cuentas_bancarias') as any)
+      .select('id').eq('client_id', auth.userId).eq('tipo', origen)
+    cuentaIdsForOrigen = (cuentasOrigen || []).map((c: any) => c.id)
+  }
 
   let query = (auth.admin.from('bruck_movimientos') as any)
     .select(`id, client_id, fecha, descripcion, debito, credito, tipo_movimiento, estado, clasificacion_origen, comentario, factura, cuenta_bancaria_id, cuenta_contable_id, rubro_id, mes, anio, created_at, updated_at, cuenta_bancaria:bruck_cuentas_bancarias(nombre), cuenta_contable:bruck_cuentas_contables(nombre), rubro:bruck_rubros(nombre, categoria)`, { count: 'exact' })
@@ -25,14 +37,21 @@ export async function GET(req: NextRequest) {
     .order('fecha', { ascending: false })
     .range(offset, offset + limit - 1)
 
-  if (cuenta)  query = query.eq('cuenta_bancaria_id', cuenta)
-  if (mes)     query = query.eq('mes', parseInt(mes))
-  if (anio)    query = query.eq('anio', parseInt(anio))
-  if (estado)  query = query.eq('estado', estado)
-  if (q)       query = query.ilike('descripcion', `%${q}%`)
-  if (rubro)   query = query.eq('rubro_id', rubro)
-  if (tipo)    query = query.eq('tipo_movimiento', tipo)
-  if (factura) query = query.eq('factura', factura === 'true')
+  if (cuenta)   query = query.eq('cuenta_bancaria_id', cuenta)
+  if (mes)      query = query.eq('mes', parseInt(mes))
+  if (anio)     query = query.eq('anio', parseInt(anio))
+  if (estado)   query = query.eq('estado', estado)
+  if (q)        query = query.ilike('descripcion', `%${q}%`)
+  if (rubro)    query = query.eq('rubro_id', rubro)
+  if (tipo)     query = query.eq('tipo_movimiento', tipo)
+  if (factura)  query = query.eq('factura', factura === 'true')
+  if (desde)    query = query.gte('fecha', desde)
+  if (hasta)    query = query.lte('fecha', hasta)
+  if (contable) query = query.eq('cuenta_contable_id', contable)
+  if (cuentaIdsForOrigen !== null) {
+    if (cuentaIdsForOrigen.length === 0) query = query.eq('id', 'none')
+    else query = query.in('cuenta_bancaria_id', cuentaIdsForOrigen)
+  }
 
   const { data, count, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
