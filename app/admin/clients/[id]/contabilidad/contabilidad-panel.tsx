@@ -410,7 +410,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const TABS: { id: Tab; label: string }[] = [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'movimientos', label: 'Movimientos' },
-    { id: 'bancos', label: '🏦 Bancos' },
+    { id: 'bancos', label: 'Bancos' },
     { id: 'cuentas', label: 'Ctas Banc. y Caja' },
     { id: 'contables', label: 'Cuentas Contables' },
     { id: 'rubros', label: 'Rubros' },
@@ -553,7 +553,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                        {['Fecha', 'Descripción', 'Cuenta', 'Monto', 'Tipo', 'Cta. Contable', 'Fac.', 'Comentario', 'Est.', ''].map(h => (
+                        {['Fecha', 'Descripción', 'Cuenta', 'Monto', 'Cta. Contable', 'Fac.', 'Comentario', 'Est.', ''].map(h => (
                           <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '7px 8px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                       </tr>
@@ -571,21 +571,6 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                               ? <span style={{ color: '#f87171', fontSize: 11, fontWeight: 600 }}>{fmt(m.debito)} <span style={{ color: '#52525b', fontWeight: 400, fontSize: 10 }}>Déb</span></span>
                               : <span style={{ color: '#34d399', fontSize: 11, fontWeight: 600 }}>{fmt(m.credito)} <span style={{ color: '#52525b', fontWeight: 400, fontSize: 10 }}>Créd</span></span>
                             }
-                          </td>
-                          <td style={{ padding: '6px 8px' }}>
-                            <select
-                              value={(rowEdits[m.id]?.tipo_movimiento ?? m.tipo_movimiento) as string}
-                              onChange={e => {
-                                const v = e.target.value
-                                setRowEdits(s => ({ ...s, [m.id]: { ...s[m.id], tipo_movimiento: v } }))
-                                inlineSave(m.id, { tipo_movimiento: v })
-                              }}
-                              style={{ ...SEL, fontSize: 11, padding: '2px 4px', width: 90 }}
-                            >
-                              <option value="ingreso">Ingreso</option>
-                              <option value="gasto">Gasto</option>
-                              <option value="transferencia">Transf.</option>
-                            </select>
                           </td>
                           <td style={{ padding: '6px 8px' }}>
                             <select
