@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import * as XLSX from 'xlsx'
 import { MONTHS, CI_MOV_ESTADOS } from '@/lib/supabase/types'
 
 interface Props {
@@ -319,13 +320,27 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const handleCSVFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = ev => {
-      const text = ev.target?.result as string
-      setBPasteText(text)
-      setBParsedRows(parseCSV(text))
+    const isExcel = /\.(xlsx|xls)$/i.test(file.name)
+    if (isExcel) {
+      const reader = new FileReader()
+      reader.onload = ev => {
+        const data = new Uint8Array(ev.target?.result as ArrayBuffer)
+        const wb = XLSX.read(data, { type: 'array' })
+        const ws = wb.Sheets[wb.SheetNames[0]]
+        const text = XLSX.utils.sheet_to_csv(ws)
+        setBPasteText(text)
+        setBParsedRows(parseCSV(text))
+      }
+      reader.readAsArrayBuffer(file)
+    } else {
+      const reader = new FileReader()
+      reader.onload = ev => {
+        const text = ev.target?.result as string
+        setBPasteText(text)
+        setBParsedRows(parseCSV(text))
+      }
+      reader.readAsText(file, 'UTF-8')
     }
-    reader.readAsText(file, 'UTF-8')
     e.target.value = ''
   }
 
@@ -538,7 +553,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
           {/* ── BANCOS ── */}
           {tab === 'bancos' && (
             <div>
-              <input ref={csvRef} type="file" accept=".csv,.txt,.tsv" style={{ display: 'none' }} onChange={handleCSVFile} />
+              <input ref={csvRef} type="file" accept=".csv,.txt,.tsv,.xlsx,.xls" style={{ display: 'none' }} onChange={handleCSVFile} />
 
               {/* Filtros */}
               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '16px 18px', marginBottom: 20 }}>
@@ -610,7 +625,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                       setModal({ type: 'mov' })
                     }} style={BTN_P}><span>+</span> Movimiento manual</button>
                     <button onClick={() => { setBBulkModal(true); setBPasteText(''); setBParsedRows([]); setBBulkResult(null) }} style={{ ...BTN_S, color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)' }}>⇓ Carga masiva</button>
-                    <button onClick={() => csvRef.current?.click()} style={{ ...BTN_S, color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)' }}>📂 Importar CSV</button>
+                    <button onClick={() => csvRef.current?.click()} style={{ ...BTN_S, color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)' }}>📂 Importar archivo</button>
                     <div style={{ flex: 1 }} />
                     {bMovs.some(m => m.estado !== 'conciliado') && (
                       <button onClick={conciliarAll} style={{ ...BTN_S, color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }}>✓ Conciliar todo</button>
@@ -969,7 +984,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
               </div>
 
               <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-                <button onClick={() => csvRef.current?.click()} style={{ ...BTN_S, color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)', fontSize: 12 }}>📂 Importar desde archivo CSV</button>
+                <button onClick={() => csvRef.current?.click()} style={{ ...BTN_S, color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)', fontSize: 12 }}>📂 Importar desde archivo (CSV / Excel)</button>
               </div>
 
               <textarea
