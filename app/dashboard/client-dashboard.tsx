@@ -98,7 +98,7 @@ export default function ClientDashboard({ profile, files }: Props) {
         {/* Sidebar mobile (slide-in) */}
         <div className={`db-sidebar-mobile${sidebarOpen?' open':''}`}>
           <div style={{ padding:'16px 10px', flex:1, overflowY:'auto' }}>
-            <div style={{ color:'#3f3f46', fontSize:10, fontWeight:600, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 6px', marginBottom:8 }}>Categorías</div>
+            <div style={{ color:'#3f3f46', fontSize:10, fontWeight:600, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 6px', marginBottom:8 }}>Informes</div>
             {[{value:'todos' as const,label:'Todos',icon:'📋',count:files.length},...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))].map(cat=>(
               <button key={cat.value} onClick={()=>{setActiveCategory(cat.value as any);setSidebarOpen(false)}}
                 style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'9px 10px', borderRadius:9, border:activeCategory===cat.value?(cat.value==='todos'?'1px solid rgba(255,255,255,0.12)':'1px solid rgba(49,174,121,0.25)'):'1px solid transparent', background:activeCategory===cat.value?(cat.value==='todos'?'rgba(255,255,255,0.07)':'rgba(49,174,121,0.1)'):'none', cursor:'pointer', color:activeCategory===cat.value?(cat.value==='todos'?'white':'#31AE79'):'#71717a', marginBottom:2, textAlign:'left' }}>
@@ -113,7 +113,7 @@ export default function ClientDashboard({ profile, files }: Props) {
           <div style={{ padding:'12px 10px', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
             <Link href="/dashboard/contabilidad" onClick={()=>setSidebarOpen(false)} style={{ display:'flex', alignItems:'center', gap:9, padding:'9px 10px', borderRadius:9, border:'1px solid rgba(49,174,121,0.2)', background:'rgba(49,174,121,0.07)', textDecoration:'none', color:'#31AE79' }}>
               <span style={{ fontSize:15 }}>📊</span>
-              <span style={{ fontSize:13, fontWeight:500 }}>Contabilidad</span>
+              <span style={{ fontSize:13, fontWeight:500 }}>Contabilidad Interna</span>
             </Link>
           </div>
           <div style={{ padding:'12px 16px', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
@@ -125,7 +125,7 @@ export default function ClientDashboard({ profile, files }: Props) {
         {/* Sidebar desktop */}
         <aside className="db-sidebar">
           <nav style={{ padding:'16px 10px', flex:1, overflowY:'auto' }}>
-            <div style={{ color:'#3f3f46', fontSize:10, fontWeight:600, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 6px', marginBottom:8 }}>Categorías</div>
+            <div style={{ color:'#3f3f46', fontSize:10, fontWeight:600, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 6px', marginBottom:8 }}>Informes</div>
             {[{value:'todos' as const,label:'Todos',icon:'📋',count:files.length},...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))].map(cat=>(
               <button key={cat.value} onClick={()=>setActiveCategory(cat.value as any)}
                 style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px', borderRadius:9, border:activeCategory===cat.value?(cat.value==='todos'?'1px solid rgba(255,255,255,0.12)':'1px solid rgba(49,174,121,0.25)'):'1px solid transparent', background:activeCategory===cat.value?(cat.value==='todos'?'rgba(255,255,255,0.07)':'rgba(49,174,121,0.1)'):'none', cursor:'pointer', color:activeCategory===cat.value?(cat.value==='todos'?'white':'#31AE79'):'#71717a', marginBottom:2, textAlign:'left' }}>
@@ -140,7 +140,7 @@ export default function ClientDashboard({ profile, files }: Props) {
           <div style={{ padding:'10px 10px', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
             <Link href="/dashboard/contabilidad" style={{ display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, border:'1px solid rgba(49,174,121,0.2)', background:'rgba(49,174,121,0.07)', textDecoration:'none', color:'#31AE79' }}>
               <span style={{ fontSize:14 }}>📊</span>
-              <span style={{ fontSize:13, fontWeight:500 }}>Contabilidad</span>
+              <span style={{ fontSize:13, fontWeight:500 }}>Contabilidad Interna</span>
             </Link>
           </div>
           <div style={{ padding:'12px 16px', borderTop:'1px solid rgba(255,255,255,0.05)' }}>
