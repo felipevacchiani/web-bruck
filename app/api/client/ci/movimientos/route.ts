@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   const offset  = (page - 1) * limit
 
   let query = (auth.admin.from('bruck_movimientos') as any)
-    .select(`id, client_id, fecha, descripcion, debito, credito, tipo_movimiento, estado, clasificacion_origen, comentario, cuenta_bancaria_id, cuenta_contable_id, rubro_id, mes, anio, created_at, updated_at, cuenta_bancaria:bruck_cuentas_bancarias(nombre), cuenta_contable:bruck_cuentas_contables(nombre), rubro:bruck_rubros(nombre, categoria)`, { count: 'exact' })
+    .select(`id, client_id, fecha, descripcion, debito, credito, tipo_movimiento, estado, clasificacion_origen, comentario, factura, cuenta_bancaria_id, cuenta_contable_id, rubro_id, mes, anio, created_at, updated_at, cuenta_bancaria:bruck_cuentas_bancarias(nombre), cuenta_contable:bruck_cuentas_contables(nombre), rubro:bruck_rubros(nombre, categoria)`, { count: 'exact' })
     .eq('client_id', auth.userId)
     .order('fecha', { ascending: false })
     .range(offset, offset + limit - 1)

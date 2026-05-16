@@ -145,8 +145,8 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const [saveError, setSaveError] = useState('')
 
   // Forms
-  const [movForm, setMovForm] = useState({ fecha: '', descripcion: '', monto: '', cuenta_bancaria_id: '', cuenta_contable_id: '', tipo_movimiento: 'gasto' })
-  const [cuentaForm, setCuentaForm] = useState({ nombre: '', banco: '', numero_cuenta: '', tipo: 'corriente', saldo_inicial: '', disponible: '' })
+  const [movForm, setMovForm] = useState({ fecha: '', descripcion: '', monto: '', cuenta_bancaria_id: '', cuenta_contable_id: '', tipo_movimiento: 'gasto', factura: false, comentario: '' })
+  const [cuentaForm, setCuentaForm] = useState({ nombre: '', banco: '', numero_cuenta: '', tipo: 'caja', saldo_inicial: '', disponible: '' })
   const [rubroForm, setRubroForm] = useState({ nombre: '' })
   const [contForm, setContForm] = useState({ nombre: '', tipo: 'gasto', rubro_id: '', keywords: '' })
   const [clasificarForm, setClasificarForm] = useState({ cuenta_contable_id: '', estado: 'conciliado', comentario: '' })
@@ -162,6 +162,12 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const [bMes, setBMes] = useState('')
   const [bAnio, setBAnio] = useState('')
   const [bEstado, setBEstado] = useState('')
+  const [bTipo, setBTipo] = useState('')
+  const [bFactura, setBFactura] = useState('')
+
+  // Inline row edits (movimientos)
+  const [rowEdits, setRowEdits] = useState<Record<string, Record<string, unknown>>>({})
+  const [rowSaving, setRowSaving] = useState<Record<string, boolean>>({})
   const [bMovs, setBMovs] = useState<any[]>([])
   const [bMovCount, setBMovCount] = useState(0)
   const [bMovPage, setBMovPage] = useState(1)
@@ -203,10 +209,19 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
     if (bMes) p.set('mes', bMes)
     if (bAnio) p.set('anio', bAnio)
     if (bEstado) p.set('estado', bEstado)
+    if (bTipo) p.set('tipo', bTipo)
+    if (bFactura) p.set('factura', bFactura)
     const r = await fetch(`${base}/movimientos?${p}`)
     const d = await r.json()
     setBMovs(d.data || []); setBMovCount(d.count || 0); setBMovPage(d.page || 1); setBMovPages(d.pages || 1)
-  }, [base, bCuenta, bMes, bAnio, bEstado])
+  }, [base, bCuenta, bMes, bAnio, bEstado, bTipo, bFactura])
+
+  const inlineSave = useCallback(async (id: string, fields: Record<string, unknown>) => {
+    setRowSaving(s => ({ ...s, [id]: true }))
+    await fetch(`${base}/movimientos/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...fields, clasificacion_origen: 'manual' }) })
+    setRowSaving(s => ({ ...s, [id]: false }))
+    loadMovs(1)
+  }, [base, loadMovs])
 
   useEffect(() => { loadDash(); loadCuentas(); loadRubros(); loadContab() }, [loadDash, loadCuentas, loadRubros, loadContab])
   useEffect(() => { if (tab === 'movimientos') loadMovs(1) }, [tab, loadMovs])
@@ -265,7 +280,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
         const tipoFinal = selectedContable
           ? (selectedContable.tipo === 'ingreso' ? 'ingreso' : selectedContable.tipo === 'gasto' ? 'gasto' : movForm.tipo_movimiento)
           : movForm.tipo_movimiento
-        body = { fecha: movForm.fecha, descripcion: movForm.descripcion, debito, credito, cuenta_bancaria_id: movForm.cuenta_bancaria_id || null, cuenta_contable_id: movForm.cuenta_contable_id || null, tipo_movimiento: tipoFinal }
+        body = { fecha: movForm.fecha, descripcion: movForm.descripcion, debito, credito, cuenta_bancaria_id: movForm.cuenta_bancaria_id || null, cuenta_contable_id: movForm.cuenta_contable_id || null, tipo_movimiento: tipoFinal, factura: movForm.factura, comentario: movForm.comentario || null }
         if (!movForm.fecha || !movForm.descripcion) { setSaveError('Fecha y descripción requeridos'); return }
       }
       if (type === 'cuenta') { endpoint = 'cuentas-bancarias'; body = { ...cuentaForm, saldo_inicial: parseFloat(cuentaForm.saldo_inicial) || 0, disponible: parseFloat(cuentaForm.disponible) || 0 } }
@@ -363,7 +378,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'movimientos', label: 'Movimientos' },
     { id: 'bancos', label: '🏦 Bancos' },
-    { id: 'cuentas', label: 'Cuentas Bancarias' },
+    { id: 'cuentas', label: 'Ctas Banc. y Caja' },
     { id: 'contables', label: 'Cuentas Contables' },
     { id: 'rubros', label: 'Rubros' },
   ]
@@ -505,33 +520,82 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                        {['Fecha', 'Descripción', 'Cuenta', 'Débito', 'Crédito', 'Estado', 'C.Contable', ''].map(h => (
-                          <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '7px 10px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                        {['Fecha', 'Descripción', 'Cuenta', 'Monto', 'Tipo', 'Cta. Contable', 'Fac.', 'Comentario', 'Est.', ''].map(h => (
+                          <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '7px 8px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {movs.map((m: any, i: number) => (
                         <tr key={m.id} style={{ borderTop: i ? '1px solid rgba(255,255,255,0.04)' : undefined }}>
-                          <td style={{ padding: '7px 10px', color: '#a1a1aa', fontSize: 11, whiteSpace: 'nowrap' }}>{fmtDate(m.fecha)}</td>
-                          <td style={{ padding: '7px 10px', maxWidth: 220 }}>
+                          <td style={{ padding: '6px 8px', color: '#a1a1aa', fontSize: 11, whiteSpace: 'nowrap' }}>{fmtDate(m.fecha)}</td>
+                          <td style={{ padding: '6px 8px', maxWidth: 180 }}>
                             <div style={{ color: 'white', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descripcion}</div>
-                            {m.comentario && <div style={{ color: '#52525b', fontSize: 10, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.comentario}</div>}
+                            {m.cuenta_bancaria?.nombre && <div style={{ color: '#3f3f46', fontSize: 10, marginTop: 1 }}>{m.cuenta_bancaria.nombre}</div>}
                           </td>
-                          <td style={{ padding: '7px 10px', color: '#71717a', fontSize: 11, whiteSpace: 'nowrap' }}>{m.cuenta_bancaria?.nombre || '—'}</td>
-                          <td style={{ padding: '7px 10px', color: '#f87171', fontSize: 11, whiteSpace: 'nowrap' }}>{m.debito > 0 ? fmt(m.debito) : '—'}</td>
-                          <td style={{ padding: '7px 10px', color: '#34d399', fontSize: 11, whiteSpace: 'nowrap' }}>{m.credito > 0 ? fmt(m.credito) : '—'}</td>
-                          <td style={{ padding: '7px 10px' }}>
-                            <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 5, ...statusStyle(m.estado) }}>
-                              {CI_MOV_ESTADOS.find(e => e.value === m.estado)?.label || m.estado}
-                            </span>
+                          <td style={{ padding: '6px 8px', whiteSpace: 'nowrap' }}>
+                            {m.debito > 0
+                              ? <span style={{ color: '#f87171', fontSize: 11, fontWeight: 600 }}>{fmt(m.debito)} <span style={{ color: '#52525b', fontWeight: 400, fontSize: 10 }}>Déb</span></span>
+                              : <span style={{ color: '#34d399', fontSize: 11, fontWeight: 600 }}>{fmt(m.credito)} <span style={{ color: '#52525b', fontWeight: 400, fontSize: 10 }}>Créd</span></span>
+                            }
                           </td>
-                          <td style={{ padding: '7px 10px', color: '#52525b', fontSize: 11, maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {m.cuenta_contable?.nombre || '—'}
+                          <td style={{ padding: '6px 8px' }}>
+                            <select
+                              value={(rowEdits[m.id]?.tipo_movimiento ?? m.tipo_movimiento) as string}
+                              onChange={e => {
+                                const v = e.target.value
+                                setRowEdits(s => ({ ...s, [m.id]: { ...s[m.id], tipo_movimiento: v } }))
+                                inlineSave(m.id, { tipo_movimiento: v })
+                              }}
+                              style={{ ...SEL, fontSize: 11, padding: '2px 4px', width: 90 }}
+                            >
+                              <option value="ingreso">Ingreso</option>
+                              <option value="gasto">Gasto</option>
+                              <option value="transferencia">Transf.</option>
+                            </select>
                           </td>
-                          <td style={{ padding: '7px 10px', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '6px 8px' }}>
+                            <select
+                              value={(rowEdits[m.id]?.cuenta_contable_id ?? m.cuenta_contable_id ?? '') as string}
+                              onChange={e => {
+                                const v = e.target.value
+                                setRowEdits(s => ({ ...s, [m.id]: { ...s[m.id], cuenta_contable_id: v } }))
+                                inlineSave(m.id, { cuenta_contable_id: v || null })
+                              }}
+                              style={{ ...SEL, fontSize: 11, padding: '2px 4px', width: 120 }}
+                            >
+                              <option value="">—</option>
+                              {contables.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                            </select>
+                          </td>
+                          <td style={{ padding: '6px 8px', textAlign: 'center' }}>
+                            <input
+                              type="checkbox"
+                              checked={!!((rowEdits[m.id]?.factura ?? m.factura))}
+                              onChange={e => {
+                                const v = e.target.checked
+                                setRowEdits(s => ({ ...s, [m.id]: { ...s[m.id], factura: v } }))
+                                inlineSave(m.id, { factura: v })
+                              }}
+                              style={{ accentColor: '#31AE79', width: 14, height: 14, cursor: 'pointer' }}
+                            />
+                          </td>
+                          <td style={{ padding: '6px 8px', minWidth: 130 }}>
+                            <input
+                              value={((rowEdits[m.id]?.comentario ?? m.comentario) as string) || ''}
+                              onChange={e => setRowEdits(s => ({ ...s, [m.id]: { ...s[m.id], comentario: e.target.value } }))}
+                              onBlur={e => inlineSave(m.id, { comentario: e.target.value })}
+                              placeholder="Agregar comentario"
+                              style={{ ...INP, fontSize: 11, padding: '3px 6px', background: 'transparent', border: '1px solid transparent', color: '#a1a1aa' }}
+                              onFocus={e => { e.target.style.borderColor = 'rgba(255,255,255,0.15)'; e.target.style.background = 'rgba(255,255,255,0.04)' }}
+                            />
+                          </td>
+                          <td style={{ padding: '6px 8px', textAlign: 'center' }}>
+                            <span title={CI_MOV_ESTADOS.find(e => e.value === m.estado)?.label || m.estado} style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: m.estado === 'conciliado' ? '#34d399' : m.estado === 'pendiente' ? '#fbbf24' : '#f87171', cursor: 'default' }} />
+                          </td>
+                          <td style={{ padding: '6px 8px', whiteSpace: 'nowrap' }}>
                             <div style={{ display: 'flex', gap: 4 }}>
-                              <button onClick={() => openModal('clasificar', m)} style={{ ...BTN_S, fontSize: 10, padding: '3px 8px', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.2)' }}>Clasificar</button>
+                              <button onClick={() => openModal('clasificar', m)} style={{ ...BTN_S, fontSize: 10, padding: '3px 8px', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.2)' }}>Clas.</button>
                               <button onClick={() => apiDelete('movimientos', m.id)} style={{ ...BTN_S, fontSize: 10, padding: '3px 7px', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)' }}>✕</button>
                             </div>
                           </td>
@@ -585,6 +649,23 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                     <select value={bEstado} onChange={e => setBEstado(e.target.value)} style={SEL}>
                       <option value="">Todos</option>
                       {CI_MOV_ESTADOS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ flex: '0 1 110px' }}>
+                    <label style={LBL}>Tipo</label>
+                    <select value={bTipo} onChange={e => setBTipo(e.target.value)} style={SEL}>
+                      <option value="">Todos</option>
+                      <option value="ingreso">Ingreso</option>
+                      <option value="gasto">Gasto</option>
+                      <option value="transferencia">Transferencia</option>
+                    </select>
+                  </div>
+                  <div style={{ flex: '0 1 100px' }}>
+                    <label style={LBL}>Factura</label>
+                    <select value={bFactura} onChange={e => setBFactura(e.target.value)} style={SEL}>
+                      <option value="">Todos</option>
+                      <option value="true">Con factura</option>
+                      <option value="false">Sin factura</option>
                     </select>
                   </div>
                   <button onClick={() => loadBankMovs(1)} style={BTN_S}>Filtrar</button>
@@ -879,6 +960,14 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                       </select>
                     </div>
                   )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <input type="checkbox" id="movFac" checked={movForm.factura} onChange={e => setMovForm(f => ({ ...f, factura: e.target.checked }))} style={{ accentColor: '#31AE79', width: 16, height: 16 }} />
+                    <label htmlFor="movFac" style={{ ...LBL, marginBottom: 0, cursor: 'pointer' }}>Tiene factura</label>
+                  </div>
+                  <div>
+                    <label style={LBL}>Comentario</label>
+                    <input value={movForm.comentario} onChange={e => setMovForm(f => ({ ...f, comentario: e.target.value }))} style={INP} placeholder="Opcional..." />
+                  </div>
                 </div>
                 {saveError && <div style={{ color: '#f87171', fontSize: 13, marginTop: 16, padding: '8px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: 8 }}>{saveError}</div>}
                 <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 28 }}>
@@ -1092,6 +1181,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                   </div>
                   <div><label style={LBL}>Tipo</label>
                     <select value={cuentaForm.tipo} onChange={e => setCuentaForm(f => ({ ...f, tipo: e.target.value }))} style={SEL}>
+                      <option value="caja">Caja</option>
                       <option value="corriente">Corriente</option>
                       <option value="ahorro">Ahorro</option>
                       <option value="caja_ahorro">Caja de ahorro</option>

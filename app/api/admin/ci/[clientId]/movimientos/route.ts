@@ -32,7 +32,7 @@ export async function GET(req: NextRequest, { params }: P) {
   let query = (admin.from('bruck_movimientos') as any)
     .select(`
       id, client_id, fecha, descripcion, debito, credito, tipo_movimiento,
-      estado, clasificacion_origen, comentario,
+      estado, clasificacion_origen, comentario, factura,
       cuenta_bancaria_id, cuenta_contable_id, rubro_id,
       mes, anio, created_at, updated_at,
       cuenta_bancaria:bruck_cuentas_bancarias(nombre),
@@ -76,6 +76,9 @@ export async function POST(req: NextRequest, { params }: P) {
     credito: parseFloat(credito) || 0,
     mes, anio, hash_dedup,
     tipo_movimiento: body.tipo_movimiento || 'gasto',
+    cuenta_contable_id: body.cuenta_contable_id || null,
+    factura: body.factura || false,
+    comentario: body.comentario || null,
     estado: 'pendiente',
   }).select(`
     *,
