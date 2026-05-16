@@ -275,6 +275,9 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                   </div>
                 </div>
                 <div className="cd-actions">
+                  <Link href={`/admin/clients/${client.id}/contabilidad`} style={{ background:'linear-gradient(135deg,rgba(49,174,121,0.15),rgba(49,174,121,0.06))', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'7px 14px', borderRadius:8, cursor:'pointer', textDecoration:'none', display:'flex', alignItems:'center', gap:5, whiteSpace:'nowrap' }}>
+                    📊 Contabilidad
+                  </Link>
                   <button onClick={()=>setEditing(!editing)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:12, padding:'7px 14px', borderRadius:8, cursor:'pointer' }}>Editar</button>
                   <button onClick={deleteClient} style={{ background:'none', border:'1px solid rgba(239,68,68,0.2)', color:'#f87171', fontSize:12, padding:'7px 14px', borderRadius:8, cursor:'pointer' }}>Eliminar</button>
                 </div>

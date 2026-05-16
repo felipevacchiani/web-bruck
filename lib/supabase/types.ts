@@ -65,6 +65,56 @@ export interface FileRecord {
   created_at: string
 }
 
+// ── Contabilidad Interna (CI) ─────────────────────────────────────────────
+
+export type CICategoria = 'ingreso' | 'egreso' | 'neutro'
+export type CITipo      = 'ingreso' | 'gasto'  | 'neutro'
+export type CICuentaTipo = 'corriente' | 'ahorro' | 'caja_ahorro' | 'otro'
+export type CIMovEstado  = 'pendiente' | 'conciliado' | 'revisado'
+export type CIMovTipo    = 'ingreso' | 'gasto' | 'transferencia'
+
+export interface CIRubro {
+  id: string; client_id: string; nombre: string
+  categoria: CICategoria; estado: string; created_at: string; updated_at: string
+}
+export interface CICuentaBancaria {
+  id: string; client_id: string; nombre: string; banco: string | null
+  numero_cuenta: string | null; tipo: CICuentaTipo
+  saldo_inicial: number; estado: string; created_at: string; updated_at: string
+}
+export interface CICuentaContable {
+  id: string; client_id: string; nombre: string; tipo: CITipo
+  rubro_id: string | null; keywords: string; estado: string
+  created_at: string; updated_at: string
+}
+export interface CIMovimiento {
+  id: string; client_id: string; cuenta_bancaria_id: string | null
+  fecha: string; descripcion: string; debito: number; credito: number
+  mes: number | null; anio: number | null; estado: CIMovEstado
+  tipo_movimiento: CIMovTipo; cuenta_contable_id: string | null
+  rubro_id: string | null; clasificacion_origen: string
+  hash_dedup: string | null; created_at: string; updated_at: string
+}
+export interface CIConciliacion {
+  id: string; client_id: string; cuenta_bancaria_id: string | null
+  mes: number; anio: number; saldo_apertura: number; saldo_cierre: number
+  estado: string; fecha_cierre: string | null; observaciones: string | null
+  created_at: string; updated_at: string
+}
+
+export const CI_CATEGORIAS: { value: CICategoria; label: string; color: string }[] = [
+  { value: 'ingreso', label: 'Ingreso', color: '#34d399' },
+  { value: 'egreso',  label: 'Egreso',  color: '#f87171' },
+  { value: 'neutro',  label: 'Neutro',  color: '#71717a' },
+]
+export const CI_MOV_ESTADOS: { value: CIMovEstado; label: string; color: string; bg: string; border: string }[] = [
+  { value: 'pendiente',   label: 'Pendiente',   color: '#facc15', bg: 'rgba(250,204,21,0.08)',  border: 'rgba(250,204,21,0.2)'  },
+  { value: 'conciliado',  label: 'Conciliado',  color: '#34d399', bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.2)'  },
+  { value: 'revisado',    label: 'Revisado',    color: '#60a5fa', bg: 'rgba(96,165,250,0.08)',  border: 'rgba(96,165,250,0.2)'  },
+]
+
+// ── Auditoría ─────────────────────────────────────────────────────────────
+
 export type AuditAction =
   | 'file_upload'
   | 'file_delete'
