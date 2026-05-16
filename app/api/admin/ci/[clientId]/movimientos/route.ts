@@ -25,6 +25,9 @@ export async function GET(req: NextRequest, { params }: P) {
   const anio    = sp.get('anio')    || ''
   const estado  = sp.get('estado')  || ''
   const q       = sp.get('q')       || ''
+  const rubro   = sp.get('rubro')   || ''
+  const tipo    = sp.get('tipo')    || ''
+  const factura = sp.get('factura') || ''
   const page    = Math.max(1, parseInt(sp.get('page') || '1'))
   const limit   = 50
   const offset  = (page - 1) * limit
@@ -48,6 +51,9 @@ export async function GET(req: NextRequest, { params }: P) {
   if (anio)    query = query.eq('anio', parseInt(anio))
   if (estado)  query = query.eq('estado', estado)
   if (q)       query = query.ilike('descripcion', `%${q}%`)
+  if (rubro)   query = query.eq('rubro_id', rubro)
+  if (tipo)    query = query.eq('tipo_movimiento', tipo)
+  if (factura) query = query.eq('factura', factura === 'true')
 
   const { data, count, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -79,7 +85,8 @@ export async function POST(req: NextRequest, { params }: P) {
     cuenta_contable_id: body.cuenta_contable_id || null,
     factura: body.factura || false,
     comentario: body.comentario || null,
-    estado: 'pendiente',
+    estado: body.estado || 'pendiente',
+    clasificacion_origen: body.clasificacion_origen || null,
   }).select(`
     *,
     cuenta_bancaria:bruck_cuentas_bancarias(nombre),

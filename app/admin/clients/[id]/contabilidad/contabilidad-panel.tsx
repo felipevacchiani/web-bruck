@@ -88,6 +88,9 @@ interface CSVRow {
   descripcion: string
   debito: number
   credito: number
+  cuenta_contable_id?: string
+  cuenta_contable_nombre?: string
+  autoClassified?: boolean
   error?: string
 }
 
@@ -112,6 +115,21 @@ function parseCSV(text: string): CSVRow[] {
     }
     const error = !fecha ? 'Fecha inválida' : !descripcion ? 'Descripción requerida' : undefined
     return { fecha, descripcion, debito, credito, error }
+  })
+}
+
+function autoClassifyRows(rows: CSVRow[], contables: any[]): CSVRow[] {
+  return rows.map(row => {
+    if (row.error) return row
+    const desc = row.descripcion.toLowerCase()
+    for (const c of contables) {
+      let kw: string[] = []
+      try { kw = JSON.parse(c.keywords || '[]') } catch {}
+      if (kw.some(k => k.trim() && desc.includes(k.trim().toLowerCase()))) {
+        return { ...row, cuenta_contable_id: c.id, cuenta_contable_nombre: c.nombre, autoClassified: true }
+      }
+    }
+    return row
   })
 }
 
@@ -199,6 +217,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const [bEstado, setBEstado] = useState('')
   const [bTipo, setBTipo] = useState('')
   const [bFactura, setBFactura] = useState('')
+  const [bRubro, setBRubro] = useState('')
 
   // Inline row edits (movimientos)
   const [rowEdits, setRowEdits] = useState<Record<string, Record<string, unknown>>>({})
@@ -246,10 +265,11 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
     if (bEstado) p.set('estado', bEstado)
     if (bTipo) p.set('tipo', bTipo)
     if (bFactura) p.set('factura', bFactura)
+    if (bRubro) p.set('rubro', bRubro)
     const r = await fetch(`${base}/movimientos?${p}`)
     const d = await r.json()
     setBMovs(d.data || []); setBMovCount(d.count || 0); setBMovPage(d.page || 1); setBMovPages(d.pages || 1)
-  }, [base, bCuenta, bMes, bAnio, bEstado, bTipo, bFactura])
+  }, [base, bCuenta, bMes, bAnio, bEstado, bTipo, bFactura, bRubro])
 
   const inlineSave = useCallback(async (id: string, fields: Record<string, unknown>) => {
     setRowSaving(s => ({ ...s, [id]: true }))
@@ -359,7 +379,13 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
     setSaving(true); setBBulkResult(null)
     let saved = 0, errors = 0
     for (const row of valid) {
-      const body = { fecha: row.fecha, descripcion: row.descripcion, debito: row.debito, credito: row.credito, cuenta_bancaria_id: bCuenta, tipo_movimiento: row.credito > 0 ? 'ingreso' : 'gasto' }
+      const body = {
+        fecha: row.fecha, descripcion: row.descripcion, debito: row.debito, credito: row.credito,
+        cuenta_bancaria_id: bCuenta, tipo_movimiento: row.credito > 0 ? 'ingreso' : 'gasto',
+        cuenta_contable_id: row.cuenta_contable_id || null,
+        estado: row.autoClassified ? 'conciliado' : 'pendiente',
+        clasificacion_origen: row.autoClassified ? 'auto' : null,
+      }
       const res = await fetch(`${base}/movimientos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       res.ok ? saved++ : errors++
     }
@@ -378,16 +404,20 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
         const wb = XLSX.read(data, { type: 'array' })
         const ws = wb.Sheets[wb.SheetNames[0]]
         const text = XLSX.utils.sheet_to_csv(ws)
+        const rows = autoClassifyRows(parseCSV(text), contables)
         setBPasteText(text)
-        setBParsedRows(parseCSV(text))
+        setBParsedRows(rows)
+        setBBulkModal(true); setBBulkResult(null)
       }
       reader.readAsArrayBuffer(file)
     } else {
       const reader = new FileReader()
       reader.onload = ev => {
         const text = ev.target?.result as string
+        const rows = autoClassifyRows(parseCSV(text), contables)
         setBPasteText(text)
-        setBParsedRows(parseCSV(text))
+        setBParsedRows(rows)
+        setBBulkModal(true); setBBulkResult(null)
       }
       reader.readAsText(file, 'UTF-8')
     }
@@ -630,54 +660,61 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
               <input ref={csvRef} type="file" accept=".csv,.txt,.tsv,.xlsx,.xls" style={{ display: 'none' }} onChange={handleCSVFile} />
 
               {/* Filtros */}
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '16px 18px', marginBottom: 20 }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'flex-end' }}>
-                  <div style={{ flex: '1 1 200px', minWidth: 200 }}>
-                    <label style={LBL}>Cuenta bancaria</label>
-                    <select value={bCuenta} onChange={e => setBCuenta(e.target.value)} style={SEL}>
-                      <option value="">Seleccionar cuenta...</option>
+              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '12px 14px', marginBottom: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr auto', gap: 8, alignItems: 'end' }}>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Cuenta</div>
+                    <select value={bCuenta} onChange={e => setBCuenta(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
+                      <option value="">Todas...</option>
                       {cuentas.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}{c.banco ? ` — ${c.banco}` : ''}</option>)}
                     </select>
                   </div>
-                  <div style={{ flex: '0 1 110px' }}>
-                    <label style={LBL}>Mes</label>
-                    <select value={bMes} onChange={e => setBMes(e.target.value)} style={SEL}>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Mes</div>
+                    <select value={bMes} onChange={e => setBMes(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
                       {MONTHS.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
                     </select>
                   </div>
-                  <div style={{ flex: '0 1 90px' }}>
-                    <label style={LBL}>Año</label>
-                    <select value={bAnio} onChange={e => setBAnio(e.target.value)} style={SEL}>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Año</div>
+                    <select value={bAnio} onChange={e => setBAnio(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
                       {[2026, 2025, 2024, 2023].map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
                   </div>
-                  <div style={{ flex: '0 1 120px' }}>
-                    <label style={LBL}>Estado</label>
-                    <select value={bEstado} onChange={e => setBEstado(e.target.value)} style={SEL}>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Estado</div>
+                    <select value={bEstado} onChange={e => setBEstado(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
                       {CI_MOV_ESTADOS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                     </select>
                   </div>
-                  <div style={{ flex: '0 1 110px' }}>
-                    <label style={LBL}>Tipo</label>
-                    <select value={bTipo} onChange={e => setBTipo(e.target.value)} style={SEL}>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Tipo</div>
+                    <select value={bTipo} onChange={e => setBTipo(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
                       <option value="ingreso">Ingreso</option>
                       <option value="gasto">Gasto</option>
-                      <option value="transferencia">Transferencia</option>
+                      <option value="transferencia">Transfer.</option>
                     </select>
                   </div>
-                  <div style={{ flex: '0 1 100px' }}>
-                    <label style={LBL}>Factura</label>
-                    <select value={bFactura} onChange={e => setBFactura(e.target.value)} style={SEL}>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Factura</div>
+                    <select value={bFactura} onChange={e => setBFactura(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
-                      <option value="true">Con factura</option>
-                      <option value="false">Sin factura</option>
+                      <option value="true">Con</option>
+                      <option value="false">Sin</option>
                     </select>
                   </div>
-                  <button onClick={() => loadBankMovs(1)} style={BTN_S}>Filtrar</button>
+                  <div>
+                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Rubro</div>
+                    <select value={bRubro} onChange={e => setBRubro(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
+                      <option value="">Todos</option>
+                      {rubros.map((r: any) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+                    </select>
+                  </div>
+                  <button onClick={() => loadBankMovs(1)} style={{ ...BTN_S, fontSize: 12, padding: '7px 14px', whiteSpace: 'nowrap' }}>Filtrar</button>
                 </div>
               </div>
 
@@ -715,7 +752,6 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                       setMovForm(f => ({ ...f, cuenta_bancaria_id: bCuenta, fecha: '', descripcion: '', monto: '', cuenta_contable_id: '' }))
                       setModal({ type: 'mov' })
                     }} style={BTN_P}><span>+</span> Movimiento manual</button>
-                    <button onClick={() => { setBBulkModal(true); setBPasteText(''); setBParsedRows([]); setBBulkResult(null) }} style={{ ...BTN_S, color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)' }}>⇓ Carga masiva</button>
                     <button onClick={() => csvRef.current?.click()} style={{ ...BTN_S, color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)' }}>📂 Importar archivo</button>
                     <div style={{ flex: 1 }} />
                     {bMovs.some(m => m.estado !== 'conciliado') && (
@@ -1120,16 +1156,17 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
               {bParsedRows.length > 0 && (
                 <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
                     <span style={{ color: '#a1a1aa', fontSize: 13, fontWeight: 600 }}>Vista previa</span>
                     <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 6, background: 'rgba(52,211,153,0.1)', color: '#34d399' }}>{bParsedRows.filter(r => !r.error).length} válidos</span>
+                    {bParsedRows.filter(r => r.autoClassified).length > 0 && <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 6, background: 'rgba(96,165,250,0.1)', color: '#60a5fa' }}>✓ {bParsedRows.filter(r => r.autoClassified).length} clasificados automáticamente</span>}
                     {bParsedRows.filter(r => r.error).length > 0 && <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 6, background: 'rgba(239,68,68,0.1)', color: '#f87171' }}>{bParsedRows.filter(r => r.error).length} con error</span>}
                   </div>
                   <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, overflow: 'auto', marginBottom: 20, maxHeight: 380 }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 500 }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
                       <thead>
                         <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
-                          {['#', 'Fecha', 'Descripción', 'Débito', 'Crédito', 'Estado'].map(h => (
+                          {['#', 'Fecha', 'Descripción', 'Débito', 'Crédito', 'C.Contable', 'Estado'].map(h => (
                             <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '8px 12px', fontWeight: 500 }}>{h}</th>
                           ))}
                         </tr>
@@ -1138,12 +1175,15 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                         {bParsedRows.map((r, i) => (
                           <tr key={i} style={{ borderTop: '1px solid rgba(255,255,255,0.04)', background: r.error ? 'rgba(239,68,68,0.04)' : undefined }}>
                             <td style={{ padding: '8px 12px', color: '#3f3f46', fontSize: 11 }}>{i + 1}</td>
-                            <td style={{ padding: '8px 12px', color: '#a1a1aa', fontSize: 12 }}>{r.fecha || '—'}</td>
-                            <td style={{ padding: '8px 12px', color: 'white', fontSize: 12, maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.descripcion || '—'}</td>
-                            <td style={{ padding: '8px 12px', color: '#f87171', fontSize: 12 }}>{r.debito > 0 ? fmt(r.debito) : '—'}</td>
-                            <td style={{ padding: '8px 12px', color: '#34d399', fontSize: 12 }}>{r.credito > 0 ? fmt(r.credito) : '—'}</td>
+                            <td style={{ padding: '8px 12px', color: '#a1a1aa', fontSize: 12, whiteSpace: 'nowrap' }}>{r.fecha || '—'}</td>
+                            <td style={{ padding: '8px 12px', color: 'white', fontSize: 12, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.descripcion || '—'}</td>
+                            <td style={{ padding: '8px 12px', color: '#f87171', fontSize: 12, whiteSpace: 'nowrap' }}>{r.debito > 0 ? fmt(r.debito) : '—'}</td>
+                            <td style={{ padding: '8px 12px', color: '#34d399', fontSize: 12, whiteSpace: 'nowrap' }}>{r.credito > 0 ? fmt(r.credito) : '—'}</td>
                             <td style={{ padding: '8px 12px', fontSize: 11 }}>
-                              {r.error ? <span style={{ color: '#f87171' }}>⚠ {r.error}</span> : <span style={{ color: '#34d399' }}>✓ OK</span>}
+                              {r.autoClassified ? <span style={{ color: '#60a5fa' }}>✓ {r.cuenta_contable_nombre}</span> : <span style={{ color: '#3f3f46' }}>—</span>}
+                            </td>
+                            <td style={{ padding: '8px 12px', fontSize: 11 }}>
+                              {r.error ? <span style={{ color: '#f87171' }}>⚠ {r.error}</span> : r.autoClassified ? <span style={{ color: '#34d399' }}>Conciliado</span> : <span style={{ color: '#facc15' }}>Pendiente</span>}
                             </td>
                           </tr>
                         ))}
