@@ -152,6 +152,12 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const [rubros, setRubros] = useState<any[]>([])
   const [contables, setContables] = useState<any[]>([])
 
+  // Dashboard filtros
+  const [dashCuenta, setDashCuenta] = useState('')
+  const nowD = new Date()
+  const [dashMes, setDashMes] = useState(nowD.getMonth() + 1)
+  const [dashAnio, setDashAnio] = useState(nowD.getFullYear())
+
   // Filtros movimientos
   const [fCuenta, setFCuenta] = useState('')
   const [fEstado, setFEstado] = useState('')
@@ -235,9 +241,11 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const [bBulkResult, setBBulkResult] = useState<{ saved: number; errors: number } | null>(null)
   const csvRef = useRef<HTMLInputElement>(null)
 
-  const loadDash = useCallback(async () => {
-    const r = await fetch(`${base}/dashboard`); const d = await r.json(); setDash(d)
-  }, [base])
+  const loadDash = useCallback(async (cuenta = dashCuenta, mes = dashMes, anio = dashAnio) => {
+    const p = new URLSearchParams({ mes: String(mes), anio: String(anio) })
+    if (cuenta) p.set('cuenta', cuenta)
+    const r = await fetch(`${base}/dashboard?${p}`); const d = await r.json(); setDash(d)
+  }, [base, dashCuenta, dashMes, dashAnio])
   const loadCuentas = useCallback(async () => {
     const r = await fetch(`${base}/cuentas-bancarias`); const d = await r.json(); setCuentas(d.data || [])
   }, [base])
@@ -318,6 +326,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   }, [base, loadMovs])
 
   useEffect(() => { loadDash(); loadCuentas(); loadRubros(); loadContab() }, [loadDash, loadCuentas, loadRubros, loadContab])
+  useEffect(() => { if (tab === 'dashboard') loadDash() }, [tab, dashCuenta, dashMes, dashAnio]) // eslint-disable-line
   useEffect(() => { if (tab === 'movimientos') loadMovs(1) }, [tab, loadMovs])
   useEffect(() => { if (tab === 'bancos' && bCuenta) loadBankMovs(1) }, [tab, bCuenta, loadBankMovs])
 
@@ -501,38 +510,39 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
         textarea { resize: vertical; }
       `}</style>
 
-      {/* Header */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,10,10,0.97)', backdropFilter: 'blur(12px)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-            <Link href="/admin" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,rgba(49,174,121,0.2),rgba(49,174,121,0.08))', border: '1px solid rgba(49,174,121,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ color: '#31AE79', fontWeight: 900, fontSize: 12 }}>B</span>
-              </div>
-            </Link>
-            {onBack
-              ? <button onClick={onBack} style={{ color: '#52525b', fontSize: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>← {backLabel ?? clientName}</button>
-              : <Link href={backHref ?? `/admin/clients/${clientId}`} style={{ color: '#52525b', fontSize: 12, textDecoration: 'none' }}>← {backLabel ?? clientName}</Link>
-            }
-            <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.1)' }} />
-            <span style={{ color: '#31AE79', fontSize: 12, fontWeight: 600 }}>Contabilidad Interna</span>
+      {/* Header — solo cuando NO está embebido en el portal */}
+      {!onBack && (
+        <header style={{ position: 'sticky', top: 0, zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,10,10,0.97)', backdropFilter: 'blur(12px)' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+              <Link href="/admin" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,rgba(49,174,121,0.2),rgba(49,174,121,0.08))', border: '1px solid rgba(49,174,121,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ color: '#31AE79', fontWeight: 900, fontSize: 12 }}>B</span>
+                </div>
+              </Link>
+              <Link href={backHref ?? `/admin/clients/${clientId}`} style={{ color: '#52525b', fontSize: 12, textDecoration: 'none' }}>← {backLabel ?? clientName}</Link>
+              <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.1)' }} />
+              <span style={{ color: '#31AE79', fontSize: 12, fontWeight: 600 }}>Contabilidad Interna</span>
+            </div>
+            <form action="/api/auth/logout" method="POST">
+              <button style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#71717a', fontSize: 12, padding: '5px 11px', borderRadius: 8, cursor: 'pointer' }}>Salir</button>
+            </form>
           </div>
-          <form action="/api/auth/logout" method="POST">
-            <button style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#71717a', fontSize: 12, padding: '5px 11px', borderRadius: 8, cursor: 'pointer' }}>Salir</button>
-          </form>
-        </div>
-      </header>
+        </header>
+      )}
 
-      {/* Tabs */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,10,10,0.7)' }}>
-        <div className="tab-cont" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', gap: 0 }}>
-          {TABS.map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)} style={{ background: 'none', border: 'none', borderBottom: tab === t.id ? '2px solid #31AE79' : '2px solid transparent', color: tab === t.id ? '#31AE79' : '#71717a', fontSize: 13, fontWeight: tab === t.id ? 600 : 400, padding: '12px 16px', cursor: 'pointer', whiteSpace: 'nowrap', marginBottom: -1 }}>
-              {t.label}
-            </button>
-          ))}
+      {/* Tabs horizontales — solo cuando NO está embebido */}
+      {!onBack && (
+        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,10,10,0.7)' }}>
+          <div className="tab-cont" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', gap: 0 }}>
+            {TABS.map(t => (
+              <button key={t.id} onClick={() => setTab(t.id)} style={{ background: 'none', border: 'none', borderBottom: tab === t.id ? '2px solid #31AE79' : '2px solid transparent', color: tab === t.id ? '#31AE79' : '#71717a', fontSize: 13, fontWeight: tab === t.id ? 600 : 400, padding: '12px 16px', cursor: 'pointer', whiteSpace: 'nowrap', marginBottom: -1 }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <main style={{ maxWidth: 1200, margin: '0 auto' }}>
         <div className="page-pad">
@@ -540,25 +550,53 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
           {/* ── DASHBOARD ── */}
           {tab === 'dashboard' && (
             <div>
+              {/* Selector de cuenta + mes/año */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
+                {/* Tabs de cuentas */}
+                <div style={{ display: 'flex', flex: 1, overflowX: 'auto' }}>
+                  {[{ id: '', nombre: 'Todas' }, ...(dashboard?.cuentas || cuentas)].map((c: any) => (
+                    <button key={c.id} onClick={() => setDashCuenta(c.id)}
+                      style={{ background: 'none', border: 'none', borderBottom: dashCuenta === c.id ? '2px solid #31AE79' : '2px solid transparent', color: dashCuenta === c.id ? '#31AE79' : '#71717a', fontSize: 13, fontWeight: dashCuenta === c.id ? 600 : 400, padding: '10px 14px', cursor: 'pointer', whiteSpace: 'nowrap', marginBottom: -1 }}>
+                      {c.nombre}
+                    </button>
+                  ))}
+                </div>
+                {/* Mes/Año */}
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', padding: '6px 0 6px 12px', flexShrink: 0 }}>
+                  <select value={dashMes} onChange={e => setDashMes(parseInt(e.target.value))} style={{ ...SEL, fontSize: 12, padding: '5px 10px', width: 'auto' }}>
+                    {['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'].map((m,i) => <option key={i+1} value={i+1}>{m}</option>)}
+                  </select>
+                  <select value={dashAnio} onChange={e => setDashAnio(parseInt(e.target.value))} style={{ ...SEL, fontSize: 12, padding: '5px 10px', width: 'auto' }}>
+                    {[2026,2025,2024,2023].map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+              </div>
+
               {!dashboard ? (
                 <div style={{ color: '#52525b', fontSize: 13, textAlign: 'center', padding: 48 }}>Cargando...</div>
               ) : (
                 <>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 14, marginBottom: 24 }}>
+                  {/* KPIs */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 12, marginBottom: 24 }}>
                     {[
-                      { label: 'Saldo estimado', value: fmt(dashboard.saldoActual || 0), color: dashboard.saldoActual >= 0 ? '#34d399' : '#f87171' },
-                      { label: 'Ingresos este mes', value: fmt(dashboard.ingresosMes || 0), color: '#34d399' },
-                      { label: 'Egresos este mes', value: fmt(dashboard.egresosMes || 0), color: '#f87171' },
-                      { label: 'Movimientos', value: dashboard.totalMovs || 0, color: 'white' },
-                      { label: 'Pendientes', value: dashboard.pendientes || 0, color: '#facc15' },
-                      { label: 'Conciliados', value: dashboard.conciliados || 0, color: '#34d399' },
+                      { label: 'Ingresos del período', value: fmt(dashboard.ingresosMes || 0), color: '#34d399', sub: null },
+                      { label: 'Egresos del período', value: fmt(dashboard.egresosMes || 0), color: '#f87171', sub: null },
+                      { label: 'Saldo del período', value: fmt(dashboard.saldoMes || 0), color: (dashboard.saldoMes||0) >= 0 ? '#34d399' : '#f87171', sub: null },
+                      { label: 'Movimientos', value: dashboard.totalMovs || 0, color: 'white', sub: null },
+                      { label: 'Conciliados', value: dashboard.conciliados || 0, color: '#34d399', sub: null },
+                      { label: 'Pendientes', value: dashboard.pendientes || 0, color: '#facc15', sub: null },
+                      { label: 'Sin Factura', value: dashboard.sinFactura || 0, color: '#fb923c', sub: null },
+                      { label: 'Saldo acumulado', value: fmt(dashboard.saldoActual || 0), color: (dashboard.saldoActual||0) >= 0 ? '#60a5fa' : '#f87171', sub: 'histórico' },
                     ].map(s => (
-                      <div key={s.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '16px 18px' }}>
-                        <div style={{ color: '#71717a', fontSize: 11, marginBottom: 6 }}>{s.label}</div>
-                        <div style={{ color: s.color, fontSize: 20, fontWeight: 700 }}>{s.value}</div>
+                      <div key={s.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px' }}>
+                        <div style={{ color: '#71717a', fontSize: 10, marginBottom: 5, letterSpacing: '0.04em' }}>{s.label}</div>
+                        <div style={{ color: s.color, fontSize: 18, fontWeight: 700 }}>{s.value}</div>
+                        {s.sub && <div style={{ color: '#3f3f46', fontSize: 10, marginTop: 3 }}>{s.sub}</div>}
                       </div>
                     ))}
                   </div>
+
+                  {/* Resumen por Rubro */}
                   {dashboard.resumenRubros?.length > 0 ? (
                     <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }}>
                       <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', color: '#a1a1aa', fontSize: 13, fontWeight: 600 }}>Resumen por Rubro</div>
@@ -584,7 +622,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                     </div>
                   ) : (
                     <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '40px', textAlign: 'center' }}>
-                      <div style={{ color: '#52525b', fontSize: 13 }}>Sin movimientos clasificados por rubro todavía.</div>
+                      <div style={{ color: '#52525b', fontSize: 13 }}>Sin movimientos clasificados por rubro en este período.</div>
                     </div>
                   )}
                 </>
