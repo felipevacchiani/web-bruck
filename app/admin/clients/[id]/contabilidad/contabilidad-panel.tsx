@@ -553,7 +553,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                        {['Fecha', 'Descripción', 'Cuenta', 'Monto', 'Cta. Contable', 'Fac.', 'Comentario', 'Est.', ''].map(h => (
+                        {['Fecha', 'Descripción', 'Monto', 'Cuenta', 'Factura', 'Comentario', 'Est.', ''].map(h => (
                           <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '7px 8px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                       </tr>
@@ -562,9 +562,8 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                       {movs.map((m: any, i: number) => (
                         <tr key={m.id} style={{ borderTop: i ? '1px solid rgba(255,255,255,0.04)' : undefined }}>
                           <td style={{ padding: '6px 8px', color: '#a1a1aa', fontSize: 11, whiteSpace: 'nowrap' }}>{fmtDate(m.fecha)}</td>
-                          <td style={{ padding: '6px 8px', maxWidth: 180 }}>
+                          <td style={{ padding: '6px 8px', maxWidth: 200 }}>
                             <div style={{ color: 'white', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descripcion}</div>
-                            {m.cuenta_bancaria?.nombre && <div style={{ color: '#3f3f46', fontSize: 10, marginTop: 1 }}>{m.cuenta_bancaria.nombre}</div>}
                           </td>
                           <td style={{ padding: '6px 8px', whiteSpace: 'nowrap' }}>
                             {m.debito > 0
@@ -572,20 +571,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                               : <span style={{ color: '#34d399', fontSize: 11, fontWeight: 600 }}>{fmt(m.credito)} <span style={{ color: '#52525b', fontWeight: 400, fontSize: 10 }}>Créd</span></span>
                             }
                           </td>
-                          <td style={{ padding: '6px 8px' }}>
-                            <select
-                              value={(rowEdits[m.id]?.cuenta_contable_id ?? m.cuenta_contable_id ?? '') as string}
-                              onChange={e => {
-                                const v = e.target.value
-                                setRowEdits(s => ({ ...s, [m.id]: { ...s[m.id], cuenta_contable_id: v } }))
-                                inlineSave(m.id, { cuenta_contable_id: v || null })
-                              }}
-                              style={{ ...SEL, fontSize: 11, padding: '2px 4px', width: 120 }}
-                            >
-                              <option value="">—</option>
-                              {contables.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                            </select>
-                          </td>
+                          <td style={{ padding: '6px 8px', color: '#71717a', fontSize: 11, whiteSpace: 'nowrap' }}>{m.cuenta_bancaria?.nombre || '—'}</td>
                           <td style={{ padding: '6px 8px', textAlign: 'center' }}>
                             <input
                               type="checkbox"
