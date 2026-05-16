@@ -157,6 +157,39 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([])
   const [bulkResult, setBulkResult] = useState<{ saved: number; errors: number } | null>(null)
 
+  // Grid de filas para carga rápida
+  interface GridRow { fecha: string; monto: string; cuenta_contable_id: string; factura: boolean; descripcion: string }
+  const newGridRow = (): GridRow => ({ fecha: '', monto: '', cuenta_contable_id: '', factura: false, descripcion: '' })
+  const [gridRows, setGridRows] = useState<GridRow[]>([newGridRow()])
+  const [gridCuenta, setGridCuenta] = useState('')
+  const [gridSaving, setGridSaving] = useState(false)
+  const [gridResult, setGridResult] = useState<{ saved: number; errors: number } | null>(null)
+
+  const updateGridRow = (i: number, field: keyof GridRow, val: unknown) =>
+    setGridRows(rows => rows.map((r, idx) => idx === i ? { ...r, [field]: val } : r))
+
+  const saveGridRows = async () => {
+    const valid = gridRows.filter(r => r.fecha && r.descripcion && r.monto)
+    if (!valid.length) return
+    setGridSaving(true); setGridResult(null)
+    let saved = 0; let errors = 0
+    for (const r of valid) {
+      const contable = contables.find((c: any) => c.id === r.cuenta_contable_id)
+      const monto = parseFloat(r.monto) || 0
+      const { debito, credito } = calcDebitCredit(monto, contable, 'gasto')
+      const tipo = contable ? (contable.tipo === 'ingreso' ? 'ingreso' : contable.tipo === 'gasto' ? 'gasto' : 'transferencia') : 'gasto'
+      const res = await fetch(`${base}/movimientos`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fecha: r.fecha, descripcion: r.descripcion, debito, credito, tipo_movimiento: tipo, cuenta_bancaria_id: gridCuenta || null, cuenta_contable_id: r.cuenta_contable_id || null, factura: r.factura, comentario: null })
+      })
+      if (res.ok) saved++; else errors++
+    }
+    setGridResult({ saved, errors })
+    setGridSaving(false)
+    if (saved) { loadMovs(1); loadDash() }
+    if (!errors) { setGridRows([newGridRow()]); setGridResult(null); closeModal() }
+  }
+
   // Bancos tab
   const [bCuenta, setBCuenta] = useState('')
   const [bMes, setBMes] = useState('')
@@ -915,64 +948,89 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
           {/* Contenido */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '32px 24px' }}>
             {movModalMode === 'manual' && (
-              <div style={{ maxWidth: 560, margin: '0 auto' }}>
-                <div style={{ display: 'grid', gap: 18 }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div>
-                      <label style={LBL}>Fecha *</label>
-                      <input type="date" value={movForm.fecha} onChange={e => setMovForm(f => ({ ...f, fecha: e.target.value }))} style={INP} />
-                    </div>
-                    <div>
-                      <label style={LBL}>Monto *</label>
-                      <input type="number" step="0.01" value={movForm.monto} onChange={e => setMovForm(f => ({ ...f, monto: e.target.value }))} style={INP} placeholder="0.00" />
-                    </div>
-                  </div>
-                  <div>
-                    <label style={LBL}>Descripción *</label>
-                    <input value={movForm.descripcion} onChange={e => setMovForm(f => ({ ...f, descripcion: e.target.value }))} style={INP} placeholder="Concepto del movimiento" />
-                  </div>
-                  <div>
-                    <label style={LBL}>Cuenta Contable</label>
-                    <select value={movForm.cuenta_contable_id} onChange={e => setMovForm(f => ({ ...f, cuenta_contable_id: e.target.value }))} style={SEL}>
-                      <option value="">Sin cuenta contable</option>
-                      {contables.map((c: any) => <option key={c.id} value={c.id}>{c.nombre} ({c.tipo})</option>)}
-                    </select>
-                    {selectedContable && (
-                      <div style={{ color: selectedContable.tipo === 'ingreso' ? '#34d399' : selectedContable.tipo === 'gasto' ? '#f87171' : '#71717a', fontSize: 11, marginTop: 5, paddingLeft: 2 }}>
-                        → El monto se registra como {selectedContable.tipo === 'ingreso' ? 'crédito (ingreso)' : selectedContable.tipo === 'gasto' ? 'débito (egreso)' : 'neutro (según signo)'}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label style={LBL}>Cuenta bancaria</label>
-                    <select value={movForm.cuenta_bancaria_id} onChange={e => setMovForm(f => ({ ...f, cuenta_bancaria_id: e.target.value }))} style={SEL}>
-                      <option value="">Sin cuenta</option>
-                      {cuentas.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                    </select>
-                  </div>
-                  {!selectedContable && (
-                    <div>
-                      <label style={LBL}>Tipo</label>
-                      <select value={movForm.tipo_movimiento} onChange={e => setMovForm(f => ({ ...f, tipo_movimiento: e.target.value }))} style={SEL}>
-                        <option value="ingreso">Ingreso (crédito)</option>
-                        <option value="gasto">Gasto (débito)</option>
-                        <option value="transferencia">Transferencia</option>
-                      </select>
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <input type="checkbox" id="movFac" checked={movForm.factura} onChange={e => setMovForm(f => ({ ...f, factura: e.target.checked }))} style={{ accentColor: '#31AE79', width: 16, height: 16 }} />
-                    <label htmlFor="movFac" style={{ ...LBL, marginBottom: 0, cursor: 'pointer' }}>Tiene factura</label>
-                  </div>
-                  <div>
-                    <label style={LBL}>Comentario</label>
-                    <input value={movForm.comentario} onChange={e => setMovForm(f => ({ ...f, comentario: e.target.value }))} style={INP} placeholder="Opcional..." />
-                  </div>
+              <div style={{ maxWidth: 900, margin: '0 auto' }}>
+                {/* Cuenta bancaria global */}
+                <div style={{ marginBottom: 18, display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <label style={{ ...LBL, marginBottom: 0, whiteSpace: 'nowrap' }}>Cuenta bancaria</label>
+                  <select value={gridCuenta} onChange={e => setGridCuenta(e.target.value)} style={{ ...SEL, maxWidth: 260 }}>
+                    <option value="">Sin cuenta</option>
+                    {cuentas.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                  </select>
                 </div>
-                {saveError && <div style={{ color: '#f87171', fontSize: 13, marginTop: 16, padding: '8px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: 8 }}>{saveError}</div>}
-                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 28 }}>
+
+                {/* Grilla */}
+                <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, overflow: 'hidden', marginBottom: 16 }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                        {['#', 'Fecha', 'Importe', 'Cta. Contable', 'Fac.', 'Descripción', ''].map(h => (
+                          <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '9px 10px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {gridRows.map((row, i) => {
+                        const ctb = contables.find((c: any) => c.id === row.cuenta_contable_id)
+                        const ingLabel = ctb ? (ctb.tipo === 'ingreso' ? 'Ing' : ctb.tipo === 'gasto' ? 'Eg' : '~') : null
+                        const ingColor = ctb ? (ctb.tipo === 'ingreso' ? '#34d399' : ctb.tipo === 'gasto' ? '#f87171' : '#71717a') : null
+                        return (
+                          <tr key={i} style={{ borderTop: i ? '1px solid rgba(255,255,255,0.05)' : undefined }}>
+                            <td style={{ padding: '7px 10px', color: '#52525b', fontSize: 12, width: 28 }}>{i + 1}</td>
+                            <td style={{ padding: '5px 6px', width: 140 }}>
+                              <input type="date" value={row.fecha} onChange={e => updateGridRow(i, 'fecha', e.target.value)}
+                                style={{ ...INP, padding: '5px 8px', fontSize: 12 }} />
+                            </td>
+                            <td style={{ padding: '5px 6px', width: 120 }}>
+                              <input type="number" step="0.01" value={row.monto} onChange={e => updateGridRow(i, 'monto', e.target.value)}
+                                placeholder="0.00" style={{ ...INP, padding: '5px 8px', fontSize: 12 }} />
+                            </td>
+                            <td style={{ padding: '5px 6px', width: 200 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <select value={row.cuenta_contable_id} onChange={e => updateGridRow(i, 'cuenta_contable_id', e.target.value)}
+                                  style={{ ...SEL, padding: '5px 8px', fontSize: 12, flex: 1 }}>
+                                  <option value="">Sin cuenta</option>
+                                  {contables.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                                </select>
+                                {ingLabel && <span style={{ fontSize: 11, fontWeight: 700, color: ingColor!, flexShrink: 0 }}>{ingLabel}</span>}
+                              </div>
+                            </td>
+                            <td style={{ padding: '5px 6px', textAlign: 'center', width: 40 }}>
+                              <input type="checkbox" checked={row.factura} onChange={e => updateGridRow(i, 'factura', e.target.checked)}
+                                style={{ accentColor: '#31AE79', width: 15, height: 15, cursor: 'pointer' }} />
+                            </td>
+                            <td style={{ padding: '5px 6px' }}>
+                              <input value={row.descripcion} onChange={e => updateGridRow(i, 'descripcion', e.target.value)}
+                                placeholder="Descripción" style={{ ...INP, padding: '5px 8px', fontSize: 12 }} />
+                            </td>
+                            <td style={{ padding: '5px 6px', width: 32 }}>
+                              {gridRows.length > 1 && (
+                                <button onClick={() => setGridRows(rows => rows.filter((_, idx) => idx !== i))}
+                                  style={{ ...BTN_S, padding: '3px 7px', color: '#f87171', border: 'none', fontSize: 13 }}>✕</button>
+                              )}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <button onClick={() => setGridRows(rows => [...rows, newGridRow()])}
+                  style={{ ...BTN_S, fontSize: 12, color: '#31AE79', border: '1px solid rgba(49,174,121,0.3)', marginBottom: 24 }}>
+                  + Agregar fila
+                </button>
+
+                {gridResult && (
+                  <div style={{ marginBottom: 16, padding: '8px 14px', borderRadius: 8, background: gridResult.errors ? 'rgba(239,68,68,0.08)' : 'rgba(52,211,153,0.08)', color: gridResult.errors ? '#f87171' : '#34d399', fontSize: 13 }}>
+                    {gridResult.saved} guardado{gridResult.saved !== 1 ? 's' : ''}{gridResult.errors ? ` · ${gridResult.errors} con error` : ''}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                   <button onClick={closeModal} style={BTN_S}>Cancelar</button>
-                  <button onClick={saveModal} disabled={saving} style={{ ...BTN_P, opacity: saving ? 0.6 : 1 }}>{saving ? 'Guardando...' : 'Guardar'}</button>
+                  <button onClick={saveGridRows} disabled={gridSaving} style={{ ...BTN_P, opacity: gridSaving ? 0.6 : 1 }}>
+                    {gridSaving ? 'Guardando...' : `Guardar ${gridRows.filter(r => r.fecha && r.descripcion && r.monto).length} movimiento${gridRows.filter(r => r.fecha && r.descripcion && r.monto).length !== 1 ? 's' : ''}`}
+                  </button>
                 </div>
               </div>
             )}
