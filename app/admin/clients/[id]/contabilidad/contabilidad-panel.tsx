@@ -149,7 +149,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const [cuentaForm, setCuentaForm] = useState({ nombre: '', banco: '', numero_cuenta: '', tipo: 'corriente', saldo_inicial: '', disponible: '' })
   const [rubroForm, setRubroForm] = useState({ nombre: '' })
   const [contForm, setContForm] = useState({ nombre: '', tipo: 'gasto', rubro_id: '', keywords: '' })
-  const [clasificarForm, setClasificarForm] = useState({ cuenta_contable_id: '', rubro_id: '', estado: 'conciliado' })
+  const [clasificarForm, setClasificarForm] = useState({ cuenta_contable_id: '', estado: 'conciliado', comentario: '' })
 
   // Movimientos modal mode
   const [movModalMode, setMovModalMode] = useState<'manual' | 'masiva'>('manual')
@@ -238,7 +238,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
     if (type === 'cuenta') setCuentaForm({ nombre: item?.nombre || '', banco: item?.banco || '', numero_cuenta: item?.numero_cuenta || '', tipo: item?.tipo || 'corriente', saldo_inicial: String(item?.saldo_inicial || ''), disponible: String(item?.disponible || '') })
     if (type === 'rubro') setRubroForm({ nombre: item?.nombre || '' })
     if (type === 'contable') setContForm({ nombre: item?.nombre || '', tipo: item?.tipo || 'gasto', rubro_id: item?.rubro_id || '', keywords: item?.keywords ? (typeof item.keywords === 'string' ? JSON.parse(item.keywords).join(', ') : item.keywords.join(', ')) : '' })
-    if (type === 'clasificar') setClasificarForm({ cuenta_contable_id: item?.cuenta_contable_id || '', rubro_id: item?.rubro_id || '', estado: 'conciliado' })
+    if (type === 'clasificar') setClasificarForm({ cuenta_contable_id: item?.cuenta_contable_id || '', estado: 'conciliado', comentario: item?.comentario || '' })
     setModal({ type, item })
   }
   const closeModal = () => setModal(null)
@@ -514,7 +514,10 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                       {movs.map((m: any, i: number) => (
                         <tr key={m.id} style={{ borderTop: i ? '1px solid rgba(255,255,255,0.04)' : undefined }}>
                           <td style={{ padding: '10px 12px', color: '#a1a1aa', fontSize: 12, whiteSpace: 'nowrap' }}>{fmtDate(m.fecha)}</td>
-                          <td style={{ padding: '10px 12px', color: 'white', fontSize: 12, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descripcion}</td>
+                          <td style={{ padding: '10px 12px', maxWidth: 240 }}>
+                            <div style={{ color: 'white', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descripcion}</div>
+                            {m.comentario && <div style={{ color: '#52525b', fontSize: 10, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.comentario}</div>}
+                          </td>
                           <td style={{ padding: '10px 12px', color: '#71717a', fontSize: 12, whiteSpace: 'nowrap' }}>{m.cuenta_bancaria?.nombre || '—'}</td>
                           <td style={{ padding: '10px 12px', color: '#f87171', fontSize: 12, whiteSpace: 'nowrap' }}>{m.debito > 0 ? fmt(m.debito) : '—'}</td>
                           <td style={{ padding: '10px 12px', color: '#34d399', fontSize: 12, whiteSpace: 'nowrap' }}>{m.credito > 0 ? fmt(m.credito) : '—'}</td>
@@ -1062,16 +1065,19 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                       {contables.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                     </select>
                   </div>
-                  <div><label style={LBL}>Rubro</label>
-                    <select value={clasificarForm.rubro_id} onChange={e => setClasificarForm(f => ({ ...f, rubro_id: e.target.value }))} style={SEL}>
-                      <option value="">Sin rubro</option>
-                      {rubros.map((r: any) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
-                    </select>
-                  </div>
                   <div><label style={LBL}>Estado</label>
                     <select value={clasificarForm.estado} onChange={e => setClasificarForm(f => ({ ...f, estado: e.target.value }))} style={SEL}>
                       {CI_MOV_ESTADOS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                     </select>
+                  </div>
+                  <div><label style={LBL}>Comentario</label>
+                    <textarea
+                      value={clasificarForm.comentario}
+                      onChange={e => setClasificarForm(f => ({ ...f, comentario: e.target.value }))}
+                      placeholder="Opcional..."
+                      rows={3}
+                      style={{ ...INP, resize: 'vertical', height: 'auto' }}
+                    />
                   </div>
                 </div>
               </>

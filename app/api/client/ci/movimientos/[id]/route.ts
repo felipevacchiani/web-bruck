@@ -9,7 +9,7 @@ export async function PUT(req: NextRequest, { params }: P) {
   if (!auth) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const body = await req.json()
-  const allowed = ['estado', 'cuenta_contable_id', 'rubro_id', 'tipo_movimiento', 'descripcion', 'clasificacion_origen']
+  const allowed = ['estado', 'cuenta_contable_id', 'rubro_id', 'tipo_movimiento', 'descripcion', 'clasificacion_origen', 'comentario']
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
   for (const k of allowed) { if (k in body) update[k] = body[k] }
 
