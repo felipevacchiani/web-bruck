@@ -159,7 +159,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
   // Grid de filas para carga rápida
   interface GridRow { fecha: string; monto: string; cuenta_contable_id: string; factura: boolean; descripcion: string }
-  const newGridRow = (): GridRow => ({ fecha: '', monto: '', cuenta_contable_id: '', factura: false, descripcion: '' })
+  const newGridRow = (): GridRow => ({ fecha: new Date().toISOString().split('T')[0], monto: '', cuenta_contable_id: '', factura: false, descripcion: '' })
   const [gridRows, setGridRows] = useState<GridRow[]>([newGridRow()])
   const [gridCuenta, setGridCuenta] = useState('')
   const [gridSaving, setGridSaving] = useState(false)
