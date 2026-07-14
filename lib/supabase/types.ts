@@ -34,6 +34,28 @@ export interface Membership {
   updated_at: string
 }
 
+// ── Permisos granulares (Fase 1, Paso 4 — catálogo, aún no aplicado) ──────
+
+export type PermissionModule = 'archivos' | 'contabilidad'
+export type PermissionAction = 'ver' | 'crear' | 'editar' | 'eliminar'
+
+export interface PermissionTemplate {
+  id: string
+  organization_id: string
+  name: string
+  description: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PermissionTemplateAction {
+  id: string
+  template_id: string
+  module: PermissionModule
+  action: PermissionAction
+  created_at: string
+}
+
 export interface Profile {
   id: string
   email: string
@@ -187,6 +209,8 @@ export type Database = {
       organizations: { Row: Organization; Insert: Partial<Organization>; Update: Partial<Organization> }
       companies: { Row: Company; Insert: Partial<Company>; Update: Partial<Company> }
       memberships: { Row: Membership; Insert: Partial<Membership>; Update: Partial<Membership> }
+      permission_templates: { Row: PermissionTemplate; Insert: Partial<PermissionTemplate>; Update: Partial<PermissionTemplate> }
+      permission_template_actions: { Row: PermissionTemplateAction; Insert: Partial<PermissionTemplateAction>; Update: Partial<PermissionTemplateAction> }
       profiles:   { Row: Profile;    Insert: Partial<Profile>;    Update: Partial<Profile>    }
       files:      { Row: FileRecord; Insert: Partial<FileRecord>; Update: Partial<FileRecord> }
       audit_logs: { Row: AuditLog;   Insert: Partial<AuditLog>;  Update: Partial<AuditLog>  }

@@ -15,7 +15,10 @@ Entidad "empresa" real, vinculada a `organizations`. Backfill automático: una `
 ### `memberships` (v9)
 Relación usuario↔empresa↔rol (`'cliente' | 'auditor'`), con `UNIQUE(user_id, company_id)` — permite que un mismo usuario pertenezca a varias empresas sin cerrar sesión. Backfill: una membership `'cliente'` por cada `profile` con `role = 'client'`. Los **admin no reciben membership por empresa**: siguen accediendo a todas las empresas de la organización vía `profiles.role = 'admin'` + `is_admin()`, que ya cubre ese caso — evita sobre-diseñar un nivel de membership a nivel organización que hoy no se necesita. RLS: admin todo, usuario lee solo sus propias memberships.
 
-Próximo paso de esta fase (ver [ROADMAP.md](./ROADMAP.md)): `permissions`/plantillas de rol. `profiles.role` se mantiene como fallback durante toda la transición — no se rompe nada de lo existente hasta que el middleware migre a chequear `memberships`. El código de la app (API routes, middleware) sigue usando `client_id` sin cambios hasta el Paso 5.
+### `permission_templates` / `permission_template_actions` (v10)
+Catálogo de permisos granulares por módulo (`'archivos' | 'contabilidad'`) y acción (`'ver' | 'crear' | 'editar' | 'eliminar'`), agrupados en plantillas reutilizables por organización. Sembrado con dos plantillas equivalentes al comportamiento actual: **"Cliente Estándar"** (las 4 acciones en ambos módulos, igual que el rol `client` hoy) y **"Auditor"** (solo `ver`, según el rol de solo lectura que describe el documento funcional). **Aún no se aplica en ningún lado** — ninguna membership tiene una plantilla asignada todavía; es solo el catálogo. RLS: solo admin lee/escribe.
+
+Próximo y último paso de esta fase (ver [ROADMAP.md](./ROADMAP.md)): migrar `middleware.ts` y las API routes para que empiecen a chequear `memberships` + plantilla asignada en vez de `profiles.role` binario. `profiles.role` se mantiene como fallback durante toda la transición — no se rompe nada de lo existente hasta ese paso.
 
 ## Tablas núcleo del portal
 
