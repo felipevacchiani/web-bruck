@@ -1,5 +1,14 @@
 # Changelog — BRUCK APP
 
+## 2026-07-14 — Fase 1, Paso 5b: enforcement real de permisos (cierre de Fase 1)
+
+- feat: `lib/supabase/permissions.ts` — `hasPermission(admin, userId, module, action)`, fail-open si el usuario no tiene membership/plantilla (no rompe cuentas previas al modelo).
+- feat: `verifyClientAuth(action)` ahora chequea el permiso vía `hasPermission` antes de autorizar (admin siempre pasa).
+- feat: las 9 rutas de `/api/client/ci/*` (rubros, cuentas-bancarias, cuentas-contables, movimientos, dashboard) pasan la acción correspondiente a su método HTTP (GET→ver, POST→crear, PUT→editar, DELETE→eliminar).
+- No se tocó `middleware.ts` — decisión documentada en [DECISIONES.md](./DECISIONES.md).
+- Build y typecheck verificados (67 errores preexistentes sin cambios).
+- **Fase 1 (bases de multi-tenant y permisos) queda cerrada.**
+
 ## 2026-07-14 — Fase 1, Paso 5a: UI admin para asignar plantilla de permisos
 
 - feat: migración `bruck-migration-v11.sql` agrega `permission_template_id` a `memberships`, backfillado a "Cliente Estándar" (sin cambio de comportamiento).

@@ -2,7 +2,7 @@ import { verifyClientAuth } from '@/lib/supabase/ci-client-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET() {
-  const auth = await verifyClientAuth()
+  const auth = await verifyClientAuth('ver')
   if (!auth) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   const { data, error } = await (auth.admin.from('bruck_cuentas_contables') as any)
     .select('*, rubro:bruck_rubros(nombre, categoria)')
@@ -12,7 +12,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await verifyClientAuth()
+  const auth = await verifyClientAuth('crear')
   if (!auth) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   const body = await req.json()
   if (!body.nombre) return NextResponse.json({ error: 'nombre requerido' }, { status: 400 })

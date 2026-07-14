@@ -2,7 +2,7 @@ import { verifyClientAuth } from '@/lib/supabase/ci-client-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
-  const auth = await verifyClientAuth()
+  const auth = await verifyClientAuth('ver')
   if (!auth) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const sp = req.nextUrl.searchParams

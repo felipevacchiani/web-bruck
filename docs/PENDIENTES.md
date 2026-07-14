@@ -23,14 +23,13 @@ _Última actualización: 2026-07-14_
 - Centro de Clientes tipo CRM.
 - Cualquier funcionalidad de IA (explícitamente fuera de alcance hasta nueva indicación).
 
-## Fase 1 — Enforcement de permisos (pendiente, a propósito)
+## Fase 1 — Enforcement de permisos (parcial)
 
-La plantilla "Auditor" ya se puede asignar desde la ficha de cliente del admin, pero **hoy no bloquea nada**: ninguna API route ni el middleware leen `memberships.permission_template_id`. Falta:
-- [ ] `middleware.ts`: bloquear escritura (POST/PATCH/DELETE) para memberships con plantilla que no incluya la acción `crear`/`editar`/`eliminar` sobre el módulo correspondiente.
-- [ ] API routes de `files` y `bruck_*`: mismo chequeo a nivel de servidor (no solo UI), tanto para admin operando en nombre de un cliente como para el propio cliente.
-- [ ] UI del cliente: ocultar botones de acción (subir, editar, eliminar) cuando su plantilla no lo permite, para no mostrar controles que el backend rechazaría.
+Implementado (2026-07-14, Paso 5b): las 9 rutas de `/api/client/ci/*` (rubros, cuentas bancarias, cuentas contables, movimientos, dashboard) ahora chequean `memberships.permission_template_id` vía `verifyClientAuth(action)` (`lib/supabase/ci-client-auth.ts` + `lib/supabase/permissions.ts`) antes de ejecutar la acción. Un cliente con plantilla "Auditor" recibe 401 en POST/PUT/DELETE.
 
-No se implementa todavía porque no hay un caso de uso real (ningún cliente pidió un auditor de solo lectura); se retoma cuando surja la necesidad concreta, para no construir enforcement que nadie prueba end-to-end.
+No implementado (módulo `archivos`): no existe ninguna ruta donde el **cliente** pueda crear/editar/eliminar archivos — solo el admin sube/gestiona archivos por cliente. El módulo `archivos` del catálogo de permisos queda sin uso real hasta que exista una acción de escritura del lado del cliente para archivos.
+- [ ] UI del cliente: ocultar botones de acción (crear/editar/eliminar en Contabilidad Interna) cuando su plantilla no lo permite, para no mostrar controles que el backend ahora rechaza con 401.
+- [ ] Middleware no fue tocado a propósito: nunca hizo autorización granular por acción (solo redirect admin/dashboard), y ese chequeo ya vive correctamente a nivel de cada API route vía `verifyClientAuth`. Ver [DECISIONES.md](./DECISIONES.md).
 
 ## Decisión pendiente del usuario
 

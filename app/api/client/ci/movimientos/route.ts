@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
 export async function GET(req: NextRequest) {
-  const auth = await verifyClientAuth()
+  const auth = await verifyClientAuth('ver')
   if (!auth) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const sp = req.nextUrl.searchParams
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await verifyClientAuth()
+  const auth = await verifyClientAuth('crear')
   if (!auth) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const body = await req.json()
