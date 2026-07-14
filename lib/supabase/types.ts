@@ -29,6 +29,7 @@ export interface Membership {
   user_id: string
   company_id: string
   role: MembershipRole
+  permission_template_id: string | null
   active: boolean
   created_at: string
   updated_at: string

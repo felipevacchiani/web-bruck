@@ -23,6 +23,15 @@ _Última actualización: 2026-07-14_
 - Centro de Clientes tipo CRM.
 - Cualquier funcionalidad de IA (explícitamente fuera de alcance hasta nueva indicación).
 
+## Fase 1 — Enforcement de permisos (pendiente, a propósito)
+
+La plantilla "Auditor" ya se puede asignar desde la ficha de cliente del admin, pero **hoy no bloquea nada**: ninguna API route ni el middleware leen `memberships.permission_template_id`. Falta:
+- [ ] `middleware.ts`: bloquear escritura (POST/PATCH/DELETE) para memberships con plantilla que no incluya la acción `crear`/`editar`/`eliminar` sobre el módulo correspondiente.
+- [ ] API routes de `files` y `bruck_*`: mismo chequeo a nivel de servidor (no solo UI), tanto para admin operando en nombre de un cliente como para el propio cliente.
+- [ ] UI del cliente: ocultar botones de acción (subir, editar, eliminar) cuando su plantilla no lo permite, para no mostrar controles que el backend rechazaría.
+
+No se implementa todavía porque no hay un caso de uso real (ningún cliente pidió un auditor de solo lectura); se retoma cuando surja la necesidad concreta, para no construir enforcement que nadie prueba end-to-end.
+
 ## Decisión pendiente del usuario
 
 Definir foco de la Fase 1 de desarrollo funcional: profundizar Contabilidad Interna, sentar bases de multi-tenant/permisos, o construir el Centro de Operaciones del cliente. Ver [ROADMAP.md](./ROADMAP.md).

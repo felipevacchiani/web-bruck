@@ -18,7 +18,8 @@ Relación usuario↔empresa↔rol (`'cliente' | 'auditor'`), con `UNIQUE(user_id
 ### `permission_templates` / `permission_template_actions` (v10)
 Catálogo de permisos granulares por módulo (`'archivos' | 'contabilidad'`) y acción (`'ver' | 'crear' | 'editar' | 'eliminar'`), agrupados en plantillas reutilizables por organización. Sembrado con dos plantillas equivalentes al comportamiento actual: **"Cliente Estándar"** (las 4 acciones en ambos módulos, igual que el rol `client` hoy) y **"Auditor"** (solo `ver`, según el rol de solo lectura que describe el documento funcional). **Aún no se aplica en ningún lado** — ninguna membership tiene una plantilla asignada todavía; es solo el catálogo. RLS: solo admin lee/escribe.
 
-Próximo y último paso de esta fase (ver [ROADMAP.md](./ROADMAP.md)): migrar `middleware.ts` y las API routes para que empiecen a chequear `memberships` + plantilla asignada en vez de `profiles.role` binario. `profiles.role` se mantiene como fallback durante toda la transición — no se rompe nada de lo existente hasta ese paso.
+### `memberships.permission_template_id` (v11)
+Columna nullable agregada a `memberships`, backfillada a "Cliente Estándar" para todas las memberships existentes (cero cambio de comportamiento). Editable desde la ficha de cliente del admin (`GET/PUT /api/admin/clients/[id]/permission-template`). **Todavía no se lee en ningún punto de enforcement** (middleware, API routes) — asignar "Auditor" hoy es cosmético hasta que se implemente el Paso 5b (ver [PENDIENTES.md](./PENDIENTES.md) y [ROADMAP.md](./ROADMAP.md)).
 
 ## Tablas núcleo del portal
 

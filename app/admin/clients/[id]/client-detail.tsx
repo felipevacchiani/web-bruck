@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Profile, FileRecord, FileCategory, TaxSubcategory, DocStatus } from '@/lib/supabase/types'
@@ -88,7 +88,29 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [deletingId, setDeletingId] = useState<string|null>(null)
   const [clientForm, setClientForm] = useState({ full_name: client.full_name||'', company: client.company||'', active: client.active })
+  const [permTemplates, setPermTemplates] = useState<{id:string; name:string; description:string|null}[]>([])
+  const [currentTemplateId, setCurrentTemplateId] = useState<string|null>(null)
+  const [savingPerm, setSavingPerm] = useState(false)
   const fileRefs = useRef<(HTMLInputElement|null)[]>([])
+
+  useEffect(() => {
+    fetch(`/api/admin/clients/${client.id}/permission-template`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return
+        setPermTemplates(data.templates || [])
+        setCurrentTemplateId(data.currentTemplateId)
+      })
+  }, [client.id])
+
+  const changeTemplate = async (templateId: string) => {
+    setSavingPerm(true)
+    const res = await fetch(`/api/admin/clients/${client.id}/permission-template`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ permission_template_id: templateId })
+    })
+    if (res.ok) setCurrentTemplateId(templateId)
+    setSavingPerm(false)
+  }
 
   const availableYears = [...new Set(files.map(f => f.fiscal_year).filter(Boolean) as number[])].sort((a,b)=>b-a)
 
@@ -272,6 +294,20 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     </div>
                     {client.company && <div style={{ color:'#71717a', fontSize:13, marginTop:2 }}>{client.company}</div>}
                     <div style={{ color:'#52525b', fontSize:12, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{client.email}</div>
+                    {permTemplates.length > 0 && (
+                      <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:8 }}>
+                        <span style={{ color:'#52525b', fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em' }}>Permisos</span>
+                        <select
+                          value={currentTemplateId ?? ''}
+                          disabled={savingPerm}
+                          onChange={e => changeTemplate(e.target.value)}
+                          style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', outline:'none', color:'white', fontSize:12, borderRadius:7, padding:'4px 8px' }}
+                          title={permTemplates.find(t => t.id === currentTemplateId)?.description ?? ''}
+                        >
+                          {permTemplates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="cd-actions">
