@@ -63,8 +63,8 @@ Storage: bucket `client-files` (privado), ampliado en `migration.sql` para acept
 ### `bruck_movimientos`
 `client_id`, `cuenta_bancaria_id` → `bruck_cuentas_bancarias`, `fecha`, `descripcion`, `debito`, `credito`, `mes`, `anio`, `estado`: `'pendiente' | 'conciliado' | 'revisado'`, `tipo_movimiento`: `'ingreso' | 'gasto' | 'transferencia'`, `cuenta_contable_id` → `bruck_cuentas_contables`, `rubro_id` → `bruck_rubros`, `clasificacion_origen`: `'manual' | 'automatico'`, `hash_dedup` (deduplicación de importaciones, v5), `comentario` (v5), `factura` boolean (v6).
 
-### `bruck_conciliaciones`
-`client_id`, `cuenta_bancaria_id`, `mes`, `anio`, `saldo_apertura`, `saldo_cierre`, `estado`, `fecha_cierre`, `observaciones`. Definida en el esquema pero sin UI/API completa de conciliación más allá del campo `estado` en movimientos.
+### `bruck_conciliaciones` (v12: agrega `UNIQUE(cuenta_bancaria_id, mes, anio)`)
+`client_id`, `cuenta_bancaria_id`, `mes`, `anio`, `saldo_apertura`, `saldo_cierre`, `estado` (`'abierto'|'cerrado'`), `fecha_cierre`, `observaciones`. Desde 2026-07-14 tiene backend y UI completos (tab "Conciliaciones" en `ContabilidadPanel`, rutas `/api/{admin/ci/[clientId]|client/ci}/conciliaciones`): cierra formalmente un mes por cuenta, encadenando `saldo_apertura` con el `saldo_cierre` del período anterior y sugiriendo el cierre a partir de los movimientos reales. Distinto del flag `estado` por movimiento (`bruck_movimientos.estado`), que sigue existiendo igual que antes.
 
 ## RLS en tablas `bruck_*` (corrección 2026-07-14)
 

@@ -1,5 +1,14 @@
 # Changelog — BRUCK APP
 
+## 2026-07-14 — Fase 2: conciliaciones bancarias formales
+
+- feat: migración `bruck-migration-v12.sql` agrega `UNIQUE(cuenta_bancaria_id, mes, anio)` a `bruck_conciliaciones` (tabla existía desde v3 sin uso).
+- feat: rutas `GET/POST /api/client/ci/conciliaciones` y `PUT/DELETE /api/client/ci/conciliaciones/[id]` (+ equivalentes admin en `/api/admin/ci/[clientId]/conciliaciones`). El GET con `cuenta+mes+anio` calcula `saldo_apertura` encadenado del período anterior y `saldo_cierre` sugerido a partir de los movimientos reales.
+- feat: tab "Conciliaciones" en `ContabilidadPanel` (compartido admin/cliente) — cerrar/reabrir período, historial por cuenta. Agregado también al sidebar embebido del cliente (`client-dashboard.tsx`).
+- feat: tipo `CIConciliacionEstado` y constante `CI_CONCILIACION_ESTADOS` en `lib/supabase/types.ts`.
+- Usa las acciones de permisos ya existentes del módulo `contabilidad` (ver/crear/editar/eliminar) — sin cambios al catálogo de permisos.
+- Build y typecheck verificados (67 errores preexistentes sin cambios).
+
 ## 2026-07-14 — Fase 1, Paso 5b: enforcement real de permisos (cierre de Fase 1)
 
 - feat: `lib/supabase/permissions.ts` — `hasPermission(admin, userId, module, action)`, fail-open si el usuario no tiene membership/plantilla (no rompe cuentas previas al modelo).

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import * as XLSX from 'xlsx'
-import { MONTHS, CI_MOV_ESTADOS } from '@/lib/supabase/types'
+import { MONTHS, FISCAL_YEARS, CI_MOV_ESTADOS, CI_CONCILIACION_ESTADOS } from '@/lib/supabase/types'
 
 interface Props {
   clientId?: string
@@ -15,7 +15,7 @@ interface Props {
   onBack?: () => void
 }
 
-type Tab = 'dashboard' | 'movimientos' | 'bancos' | 'cuentas' | 'contables' | 'rubros'
+type Tab = 'dashboard' | 'movimientos' | 'bancos' | 'cuentas' | 'contables' | 'rubros' | 'conciliaciones'
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -168,6 +168,17 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const [fRubro, setFRubro] = useState('')
   const [fContable, setFContable] = useState('')
 
+  // Conciliaciones
+  const [cCuenta, setCCuenta] = useState('')
+  const [cMes, setCMes] = useState(nowD.getMonth() + 1)
+  const [cAnio, setCAnio] = useState(nowD.getFullYear())
+  const [cPeriodo, setCPeriodo] = useState<{ existing: any; sugerido: any } | null>(null)
+  const [cHistorial, setCHistorial] = useState<any[]>([])
+  const [cSaldoCierre, setCSaldoCierre] = useState('')
+  const [cObservaciones, setCObservaciones] = useState('')
+  const [cSaving, setCSaving] = useState(false)
+  const [cError, setCError] = useState('')
+
   // Modal
   const [modal, setModal] = useState<{ type: string; item?: any } | null>(null)
   const [saving, setSaving] = useState(false)
@@ -317,6 +328,49 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
     const d = await r.json()
     setBMovs(d.data || []); setBMovCount(d.count || 0); setBMovPage(d.page || 1); setBMovPages(d.pages || 1)
   }, [base, bCuenta, bMes, bAnio, bEstado, bTipo, bFactura, bRubro])
+
+  const loadPeriodo = useCallback(async () => {
+    if (!cCuenta) { setCPeriodo(null); return }
+    const r = await fetch(`${base}/conciliaciones?cuenta=${cCuenta}&mes=${cMes}&anio=${cAnio}`)
+    if (!r.ok) { setCPeriodo(null); return }
+    const d = await r.json()
+    setCPeriodo(d)
+    setCSaldoCierre(String(d.existing ? d.existing.saldo_cierre : (d.sugerido?.saldo_cierre ?? '')))
+    setCObservaciones(d.existing?.observaciones || '')
+  }, [base, cCuenta, cMes, cAnio])
+
+  const loadHistorial = useCallback(async () => {
+    if (!cCuenta) { setCHistorial([]); return }
+    const r = await fetch(`${base}/conciliaciones?cuenta=${cCuenta}`)
+    const d = await r.json()
+    setCHistorial(d.data || [])
+  }, [base, cCuenta])
+
+  useEffect(() => { if (tab === 'conciliaciones') { loadPeriodo(); loadHistorial() } }, [tab, loadPeriodo, loadHistorial])
+
+  const cerrarPeriodo = async () => {
+    if (!cCuenta || !cPeriodo?.sugerido) return
+    setCSaving(true); setCError('')
+    const res = await fetch(`${base}/conciliaciones`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cuenta_bancaria_id: cCuenta, mes: cMes, anio: cAnio,
+        saldo_apertura: cPeriodo.sugerido.saldo_apertura,
+        saldo_cierre: parseFloat(cSaldoCierre) || 0,
+        observaciones: cObservaciones || null,
+      }),
+    })
+    const d = await res.json()
+    if (!res.ok) { setCError(d.error || 'Error al cerrar el período'); setCSaving(false); return }
+    setCSaving(false)
+    loadPeriodo(); loadHistorial()
+  }
+
+  const reabrirPeriodo = async (id: string) => {
+    if (!confirm('¿Reabrir esta conciliación? Vas a poder volver a cerrarla con otros valores.')) return
+    await fetch(`${base}/conciliaciones/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: 'abierto' }) })
+    loadPeriodo(); loadHistorial()
+  }
 
   const inlineSave = useCallback(async (id: string, fields: Record<string, unknown>) => {
     setRowSaving(s => ({ ...s, [id]: true }))
@@ -494,6 +548,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
     { id: 'cuentas', label: 'Ctas Banc. y Caja' },
     { id: 'contables', label: 'Cuentas Contables' },
     { id: 'rubros', label: 'Rubros' },
+    { id: 'conciliaciones', label: 'Conciliaciones' },
   ]
 
   const bCuentaObj = cuentas.find(c => c.id === bCuenta)
@@ -1049,6 +1104,115 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── CONCILIACIONES ── */}
+          {tab === 'conciliaciones' && (
+            <div>
+              <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                <div style={{ minWidth: 220 }}>
+                  <label style={LBL}>Cuenta bancaria</label>
+                  <select value={cCuenta} onChange={e => setCCuenta(e.target.value)} style={SEL}>
+                    <option value="">Seleccionar cuenta…</option>
+                    {cuentas.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                  </select>
+                </div>
+                <div style={{ width: 140 }}>
+                  <label style={LBL}>Mes</label>
+                  <select value={cMes} onChange={e => setCMes(parseInt(e.target.value))} style={SEL}>
+                    {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+                  </select>
+                </div>
+                <div style={{ width: 110 }}>
+                  <label style={LBL}>Año</label>
+                  <select value={cAnio} onChange={e => setCAnio(parseInt(e.target.value))} style={SEL}>
+                    {FISCAL_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {!cCuenta ? (
+                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
+                  <div style={{ color: '#52525b', fontSize: 13 }}>Elegí una cuenta bancaria para ver o cerrar su conciliación.</div>
+                </div>
+              ) : cPeriodo && (
+                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: 20, marginBottom: 24 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <span style={{ color: 'white', fontSize: 14, fontWeight: 600 }}>{MONTHS[cMes - 1]} {cAnio}</span>
+                    {cPeriodo.existing ? (
+                      <span style={{ fontSize: 11, fontWeight: 500, padding: '3px 10px', borderRadius: 20, ...(() => { const s = CI_CONCILIACION_ESTADOS.find(e => e.value === cPeriodo.existing.estado); return s ? { background: s.bg, border: `1px solid ${s.border}`, color: s.color } : {} })() }}>
+                        {CI_CONCILIACION_ESTADOS.find(e => e.value === cPeriodo.existing.estado)?.label}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: 11, color: '#52525b' }}>Sin cerrar</span>
+                    )}
+                  </div>
+
+                  <div className="cd-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 16 }}>
+                    <div>
+                      <label style={LBL}>Saldo apertura</label>
+                      <div style={{ color: '#a1a1aa', fontSize: 15, fontWeight: 600, padding: '9px 0' }}>{fmt(cPeriodo.sugerido?.saldo_apertura ?? 0)}</div>
+                    </div>
+                    <div>
+                      <label style={LBL}>Saldo cierre {cPeriodo.existing ? '' : '(sugerido, editable)'}</label>
+                      {cPeriodo.existing ? (
+                        <div style={{ color: 'white', fontSize: 15, fontWeight: 600, padding: '9px 0' }}>{fmt(cPeriodo.existing.saldo_cierre)}</div>
+                      ) : (
+                        <input type="number" step="0.01" value={cSaldoCierre} onChange={e => setCSaldoCierre(e.target.value)} style={INP} />
+                      )}
+                    </div>
+                    <div>
+                      <label style={LBL}>Movimientos del período</label>
+                      <div style={{ color: '#a1a1aa', fontSize: 15, fontWeight: 600, padding: '9px 0' }}>
+                        {cPeriodo.sugerido?.movimientos_count ?? 0}
+                        {(cPeriodo.sugerido?.movimientos_pendientes ?? 0) > 0 && (
+                          <span style={{ color: '#facc15', fontSize: 12, fontWeight: 500, marginLeft: 8 }}>({cPeriodo.sugerido.movimientos_pendientes} pendientes)</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={LBL}>Observaciones</label>
+                    {cPeriodo.existing ? (
+                      <div style={{ color: '#a1a1aa', fontSize: 13 }}>{cPeriodo.existing.observaciones || '—'}</div>
+                    ) : (
+                      <textarea value={cObservaciones} onChange={e => setCObservaciones(e.target.value)} rows={2} style={{ ...INP, resize: 'vertical' }} placeholder="Notas sobre esta conciliación (opcional)" />
+                    )}
+                  </div>
+
+                  {cError && <div style={{ marginBottom: 12, color: '#f87171', fontSize: 13 }}>{cError}</div>}
+
+                  {cPeriodo.existing ? (
+                    cPeriodo.existing.estado === 'cerrado' && (
+                      <button onClick={() => reabrirPeriodo(cPeriodo.existing.id)} style={BTN_S}>Reabrir período</button>
+                    )
+                  ) : (
+                    <button onClick={cerrarPeriodo} disabled={cSaving} style={{ ...BTN_P, opacity: cSaving ? 0.6 : 1 }}>
+                      {cSaving ? 'Cerrando…' : 'Cerrar período'}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {cCuenta && cHistorial.length > 0 && (
+                <div>
+                  <div style={{ color: '#52525b', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Historial</div>
+                  <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'hidden' }}>
+                    {cHistorial.map((c: any, i: number) => {
+                      const s = CI_CONCILIACION_ESTADOS.find(e => e.value === c.estado)
+                      return (
+                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderTop: i ? '1px solid rgba(255,255,255,0.05)' : undefined }}>
+                          <span style={{ color: '#d4d4d8', fontSize: 13 }}>{MONTHS[c.mes - 1]} {c.anio}</span>
+                          <span style={{ color: '#71717a', fontSize: 12 }}>{fmt(c.saldo_apertura)} → {fmt(c.saldo_cierre)}</span>
+                          <span style={{ fontSize: 11, fontWeight: 500, padding: '2px 9px', borderRadius: 20, background: s?.bg, border: `1px solid ${s?.border}`, color: s?.color }}>{s?.label}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
             </div>

@@ -25,3 +25,9 @@ Plan por pasos pequeños y desplegables (cada uno commiteado por separado, siste
 5b. **Enforcement real** (hecho 2026-07-14) — las 9 rutas de `/api/client/ci/*` chequean la plantilla vía `verifyClientAuth(action)` antes de ejecutar. Un cliente "Auditor" ya no puede crear/editar/eliminar en Contabilidad Interna (recibe 401). No se tocó `middleware.ts` (nunca hizo autorización granular; el chequeo vive en cada API route). El módulo `archivos` queda sin enforcement porque hoy no existe ninguna acción de escritura del lado del cliente sobre archivos — nada que bloquear todavía.
 
 Con esto, la Fase 1 (bases de multi-tenant y permisos) queda funcionalmente cerrada: esquema completo, UI de gestión, y enforcement real en el único módulo donde aplicaba. Datos de este entorno son ficticios (cliente Vacchiani de prueba).
+
+## Fase 2 — Profundizar Contabilidad Interna (en progreso)
+
+1. **Conciliaciones bancarias formales** (v12, hecho 2026-07-14) — tab "Conciliaciones" en `ContabilidadPanel` (admin y cliente), rutas `/api/{admin/ci/[clientId]|client/ci}/conciliaciones[/[id]]`. Cierra formalmente un mes por cuenta con saldo apertura/cierre encadenado entre períodos, distinto del flag suelto por movimiento.
+2. **Presupuestos** (pendiente) — no existe nada hoy, a diseñar desde cero.
+3. **Flujo de fondos** (pendiente) — depende conceptualmente de Presupuestos para ser útil como proyección.

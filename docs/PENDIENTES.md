@@ -23,6 +23,11 @@ _Última actualización: 2026-07-14_
 - Centro de Clientes tipo CRM.
 - Cualquier funcionalidad de IA (explícitamente fuera de alcance hasta nueva indicación).
 
+## Fase 2 — Contabilidad Interna (pendiente)
+
+- [ ] Presupuestos: definir modelo de datos (por rubro/mes/año) y comparación contra lo ejecutado real.
+- [ ] Flujo de fondos: proyección de ingresos/egresos futuros, probablemente dependiente de Presupuestos.
+
 ## Fase 1 — Enforcement de permisos (parcial)
 
 Implementado (2026-07-14, Paso 5b): las 9 rutas de `/api/client/ci/*` (rubros, cuentas bancarias, cuentas contables, movimientos, dashboard) ahora chequean `memberships.permission_template_id` vía `verifyClientAuth(action)` (`lib/supabase/ci-client-auth.ts` + `lib/supabase/permissions.ts`) antes de ejecutar la acción. Un cliente con plantilla "Auditor" recibe 401 en POST/PUT/DELETE.

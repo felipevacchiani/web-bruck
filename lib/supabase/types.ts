@@ -166,6 +166,13 @@ export const CI_CATEGORIAS: { value: CICategoria; label: string; color: string }
   { value: 'egreso',  label: 'Egreso',  color: '#f87171' },
   { value: 'neutro',  label: 'Neutro',  color: '#71717a' },
 ]
+export type CIConciliacionEstado = 'abierto' | 'cerrado'
+
+export const CI_CONCILIACION_ESTADOS: { value: CIConciliacionEstado; label: string; color: string; bg: string; border: string }[] = [
+  { value: 'abierto', label: 'Abierto', color: '#facc15', bg: 'rgba(250,204,21,0.08)',  border: 'rgba(250,204,21,0.2)'  },
+  { value: 'cerrado', label: 'Cerrado', color: '#34d399', bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.2)'  },
+]
+
 export const CI_MOV_ESTADOS: { value: CIMovEstado; label: string; color: string; bg: string; border: string }[] = [
   { value: 'pendiente',   label: 'Pendiente',   color: '#facc15', bg: 'rgba(250,204,21,0.08)',  border: 'rgba(250,204,21,0.2)'  },
   { value: 'conciliado',  label: 'Conciliado',  color: '#34d399', bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.2)'  },

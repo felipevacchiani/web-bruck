@@ -37,6 +37,7 @@ export default function ClientDashboard({ profile, files }: Props) {
     { id: 'cuentas', label: 'Ctas Banc. y Caja', icon: '💳' },
     { id: 'contables', label: 'Cuentas Contables', icon: '📒' },
     { id: 'rubros', label: 'Rubros', icon: '🏷' },
+    { id: 'conciliaciones', label: 'Conciliaciones', icon: '🧮' },
   ]
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push('/login'); router.refresh() }
