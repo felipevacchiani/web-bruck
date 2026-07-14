@@ -5,7 +5,7 @@ _Última actualización: 2026-07-14_
 ## Deuda técnica (saneamiento, no funcional)
 
 - [ ] Unificar `app/api/admin/ci/[clientId]/...` y `app/api/client/ci/...` en un solo set de handlers parametrizado por rol, para eliminar duplicación.
-- [ ] Habilitar RLS en las tablas `bruck_*` (Contabilidad Interna) como defensa en profundidad además de la validación de aplicación en `ci-client-auth.ts`.
+- [ ] Agregar políticas RLS de INSERT/UPDATE/DELETE para clientes en `bruck_*` (hoy solo tienen SELECT vía RLS; la escritura depende únicamente de `ci-client-auth.ts` a nivel de aplicación).
 - [ ] Formalizar migraciones: mover a `supabase/migrations` con Supabase CLI (o al menos convención estricta con changelog), en vez de scripts SQL sueltos numerados a mano.
 - [ ] Descomponer `contabilidad-panel.tsx` (~1400 líneas) en componentes más chicos si el módulo sigue creciendo.
 - [ ] Configurar `darkMode` en `tailwind.config.js` y aplicar dark mode real en la UI (pedido por las instrucciones maestras del proyecto, no implementado aún).

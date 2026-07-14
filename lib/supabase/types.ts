@@ -13,11 +13,21 @@ export interface Organization {
   updated_at: string
 }
 
+export interface Company {
+  id: string
+  organization_id: string
+  name: string
+  active: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface Profile {
   id: string
   email: string
   full_name: string | null
   company: string | null
+  company_id: string | null
   role: UserRole
   active: boolean
   created_at: string
@@ -61,6 +71,7 @@ export const FISCAL_YEARS: number[] = (() => {
 export interface FileRecord {
   id: string
   client_id: string
+  company_id: string | null
   name: string
   description: string | null
   category: FileCategory
@@ -87,21 +98,21 @@ export type CIMovEstado  = 'pendiente' | 'conciliado' | 'revisado'
 export type CIMovTipo    = 'ingreso' | 'gasto' | 'transferencia'
 
 export interface CIRubro {
-  id: string; client_id: string; nombre: string
+  id: string; client_id: string; company_id: string | null; nombre: string
   categoria: CICategoria; estado: string; created_at: string; updated_at: string
 }
 export interface CICuentaBancaria {
-  id: string; client_id: string; nombre: string; banco: string | null
+  id: string; client_id: string; company_id: string | null; nombre: string; banco: string | null
   numero_cuenta: string | null; tipo: CICuentaTipo
   saldo_inicial: number; estado: string; created_at: string; updated_at: string
 }
 export interface CICuentaContable {
-  id: string; client_id: string; nombre: string; tipo: CITipo
+  id: string; client_id: string; company_id: string | null; nombre: string; tipo: CITipo
   rubro_id: string | null; keywords: string; estado: string
   created_at: string; updated_at: string
 }
 export interface CIMovimiento {
-  id: string; client_id: string; cuenta_bancaria_id: string | null
+  id: string; client_id: string; company_id: string | null; cuenta_bancaria_id: string | null
   fecha: string; descripcion: string; debito: number; credito: number
   mes: number | null; anio: number | null; estado: CIMovEstado
   tipo_movimiento: CIMovTipo; cuenta_contable_id: string | null
@@ -109,7 +120,7 @@ export interface CIMovimiento {
   hash_dedup: string | null; created_at: string; updated_at: string
 }
 export interface CIConciliacion {
-  id: string; client_id: string; cuenta_bancaria_id: string | null
+  id: string; client_id: string; company_id: string | null; cuenta_bancaria_id: string | null
   mes: number; anio: number; saldo_apertura: number; saldo_cierre: number
   estado: string; fecha_cierre: string | null; observaciones: string | null
   created_at: string; updated_at: string
@@ -162,6 +173,7 @@ export type Database = {
   public: {
     Tables: {
       organizations: { Row: Organization; Insert: Partial<Organization>; Update: Partial<Organization> }
+      companies: { Row: Company; Insert: Partial<Company>; Update: Partial<Company> }
       profiles:   { Row: Profile;    Insert: Partial<Profile>;    Update: Partial<Profile>    }
       files:      { Row: FileRecord; Insert: Partial<FileRecord>; Update: Partial<FileRecord> }
       audit_logs: { Row: AuditLog;   Insert: Partial<AuditLog>;  Update: Partial<AuditLog>  }

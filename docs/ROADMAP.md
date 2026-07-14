@@ -18,7 +18,7 @@ Foco elegido: sentar el modelo de organizaciones/consultores y permisos granular
 Plan por pasos pequeños y desplegables (cada uno commiteado por separado, sistema funcional en todo momento):
 
 1. **`organizations`** (v7, hecho 2026-07-14) — tabla creada + seed "BRUCK". No modifica nada existente.
-2. **`companies`** — reemplaza `profiles.company` (texto) por entidad real vinculada a `organizations`; backfill de `files`/`bruck_*` con `company_id`.
+2. **`companies`** (v8, hecho 2026-07-14) — entidad real vinculada a `organizations`; backfill de `profiles`/`files`/`bruck_*` con `company_id` (nullable). `profiles.company` (texto) queda deprecado pero funcional, sin tocar código de la app.
 3. **`memberships`** — relación usuario↔empresa↔rol; backfill desde `profiles.role` actual.
 4. **`permissions`/plantillas de rol** — catálogo de acciones por módulo, sin aplicar aún en el middleware.
 5. **Migración de `middleware.ts` y API routes** a validar por `memberships`+`permissions` en vez de `profiles.role` binario — recién acá cambia el comportamiento real.

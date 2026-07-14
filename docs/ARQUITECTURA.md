@@ -41,6 +41,6 @@ El documento funcional (`Documento Funcional BRUCK APP - Revisado.docx`) describ
 ## Deuda técnica conocida
 
 - **Duplicación de API**: `app/api/admin/ci/[clientId]/...` y `app/api/client/ci/...` implementan los mismos recursos (cuentas bancarias, cuentas contables, movimientos, rubros) por separado para cada rol. Candidato a unificar en un solo handler parametrizado por rol/permiso.
-- **RLS incompleta**: las tablas `bruck_*` (Contabilidad Interna) no tienen Row Level Security habilitado en los `.sql` de migración; la protección depende de `ci-client-auth.ts` a nivel de aplicación usando `service_role`. `profiles`, `files` y `audit_logs` sí tienen RLS.
+- **RLS parcial en `bruck_*`**: tienen RLS habilitado (admin acceso total, cliente solo SELECT de su propio `client_id`), pero sin políticas de INSERT/UPDATE/DELETE para clientes — esas escrituras dependen de `ci-client-auth.ts` a nivel de aplicación usando `service_role`. Ver [BASE_DATOS.md](./BASE_DATOS.md).
 - **Migraciones informales**: scripts SQL sueltos numerados a mano (`bruck-migration-v2.sql` … `v6.sql`, `migration.sql`), aplicados manualmente en el SQL Editor de Supabase, sin Supabase CLI ni carpeta `supabase/migrations`, sin rollback.
 - **`contabilidad-panel.tsx`** (`app/admin/clients/[id]/contabilidad/`) concentra ~1400 líneas — candidato a descomponer en componentes más chicos si se sigue ampliando ese módulo.

@@ -9,7 +9,10 @@ No existe un esquema único consolidado: se reconstruye leyendo las migraciones 
 ### `organizations` (v7)
 Un registro por consultor/tenant. Hoy solo existe una fila (`slug = 'bruck'`), sembrada por la migración. RLS: cualquier usuario autenticado puede leer, solo admin puede escribir.
 
-Próximos pasos de esta fase (ver [ROADMAP.md](./ROADMAP.md)): `companies` (reemplaza `profiles.company` texto libre), `memberships` (usuario↔empresa↔rol), `permissions`/plantillas de rol. `profiles.role` se mantiene como fallback durante toda la transición — no se rompe nada de lo existente hasta que el middleware migre a chequear `memberships`.
+### `companies` (v8)
+Entidad "empresa" real, vinculada a `organizations`. Backfill automático: una `company` por cada `profile` con `role = 'client'` (usando `profiles.company` como nombre, o `full_name`/`email` si está vacío). `profiles.company_id`, `files.company_id` y `bruck_*.company_id` se agregaron **nullable** y se backfillearon desde el `client_id` existente. `profiles.company` (texto) queda deprecado pero funcional — no se tocó ni se eliminó. RLS: admin acceso total, cliente lee solo su propia empresa.
+
+Próximos pasos de esta fase (ver [ROADMAP.md](./ROADMAP.md)): `memberships` (usuario↔empresa↔rol), `permissions`/plantillas de rol. `profiles.role` se mantiene como fallback durante toda la transición — no se rompe nada de lo existente hasta que el middleware migre a chequear `memberships`. El código de la app (API routes, middleware) sigue usando `client_id` sin cambios hasta el Paso 5.
 
 ## Tablas núcleo del portal
 
@@ -56,9 +59,9 @@ Storage: bucket `client-files` (privado), ampliado en `migration.sql` para acept
 ### `bruck_conciliaciones`
 `client_id`, `cuenta_bancaria_id`, `mes`, `anio`, `saldo_apertura`, `saldo_cierre`, `estado`, `fecha_cierre`, `observaciones`. Definida en el esquema pero sin UI/API completa de conciliación más allá del campo `estado` en movimientos.
 
-## Brechas de seguridad conocidas
+## RLS en tablas `bruck_*` (corrección 2026-07-14)
 
-Las tablas `bruck_*` **no tienen RLS habilitado**. La protección de estos datos depende enteramente de `lib/supabase/ci-client-auth.ts`, que valida `client_id` a nivel de aplicación usando el cliente `service_role`. Si algún endpoint tiene un bug de scoping, no hay red de seguridad a nivel de base de datos. Ver [DECISIONES.md](./DECISIONES.md) para el registro de esta decisión pendiente.
+**Corrección de un dato erróneo del informe inicial**: las tablas `bruck_*` sí tienen RLS habilitado (`bruck-migration-v3.sql`, sección 7-8): admin tiene acceso total vía `EXISTS (... role = 'admin')`, y cada cliente tiene una política de **solo SELECT** con `client_id = auth.uid()`. No hay políticas de INSERT/UPDATE/DELETE para clientes a nivel de RLS — esas operaciones dependen de `lib/supabase/ci-client-auth.ts` vía `service_role` a nivel de aplicación. Es decir: la lectura tiene defensa en profundidad (RLS + app), la escritura depende solo de la validación de aplicación.
 
 ## Multi-tenant
 
