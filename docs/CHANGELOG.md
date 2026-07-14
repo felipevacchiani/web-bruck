@@ -1,5 +1,11 @@
 # Changelog — BRUCK APP
 
+## 2026-07-14 — Fase 1, Paso 1: tabla organizations
+
+- feat: migración `bruck-migration-v7.sql` crea `public.organizations` (id, name, slug, active) con RLS (lectura para cualquier autenticado, escritura solo admin), sembrada con la organización "BRUCK".
+- feat: agregado tipo `Organization` y entrada en `Database.Tables` en `lib/supabase/types.ts`.
+- No se modificó `profiles`, `files` ni `bruck_*` — sin impacto en funcionalidad existente.
+
 ## 2026-07-14 — Fase 0: Saneamiento
 
 - fix: restaurado `bruck-migration-v3.sql` (sobreescrito accidentalmente en el working tree).

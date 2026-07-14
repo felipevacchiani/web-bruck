@@ -11,13 +11,16 @@ _Última actualización: 2026-07-14_
 - Actualizado `README.md` (versión real de Next.js, estructura actualizada con Contabilidad Interna).
 - Creada carpeta `/docs` con documentación base (este archivo y los demás).
 
-## Fase 1 — a definir
+## Fase 1 — Bases de multi-tenant y permisos (en progreso)
 
-Pendiente de decisión del usuario sobre el foco (ver [PENDIENTES.md](./PENDIENTES.md)). Opciones evaluadas:
+Foco elegido: sentar el modelo de organizaciones/consultores y permisos granulares, por ser la base estructural de la que depende el resto del documento funcional.
 
-1. **Consolidar lo existente**: unificar API admin/client duplicada, habilitar RLS en `bruck_*`, formalizar migraciones.
-2. **Profundizar Contabilidad Interna**: conciliaciones completas, presupuestos, flujo de fondos.
-3. **Bases de multi-tenant/permisos**: tabla de organizaciones/consultores, permisos granulares por acción.
-4. **Centro de Operaciones del cliente**: workspace tipo Notion con widgets, tareas, notificaciones.
+Plan por pasos pequeños y desplegables (cada uno commiteado por separado, sistema funcional en todo momento):
 
-No se avanza en desarrollo funcional de Fase 1 hasta acordar el foco.
+1. **`organizations`** (v7, hecho 2026-07-14) — tabla creada + seed "BRUCK". No modifica nada existente.
+2. **`companies`** — reemplaza `profiles.company` (texto) por entidad real vinculada a `organizations`; backfill de `files`/`bruck_*` con `company_id`.
+3. **`memberships`** — relación usuario↔empresa↔rol; backfill desde `profiles.role` actual.
+4. **`permissions`/plantillas de rol** — catálogo de acciones por módulo, sin aplicar aún en el middleware.
+5. **Migración de `middleware.ts` y API routes** a validar por `memberships`+`permissions` en vez de `profiles.role` binario — recién acá cambia el comportamiento real.
+
+Datos de este entorno son ficticios (cliente Vacchiani de prueba), por lo que no hay restricción de "producción real" en esta fase.

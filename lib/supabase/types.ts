@@ -1,5 +1,18 @@
 export type UserRole = 'admin' | 'client'
 
+// ── Multi-tenant (Fase 1, Paso 1) ─────────────────────────────────────────
+// Por ahora solo existe una organización ('bruck'). companies, memberships
+// y permissions se agregan en los siguientes pasos de la migración.
+
+export interface Organization {
+  id: string
+  name: string
+  slug: string
+  active: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface Profile {
   id: string
   email: string
@@ -148,6 +161,7 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
 export type Database = {
   public: {
     Tables: {
+      organizations: { Row: Organization; Insert: Partial<Organization>; Update: Partial<Organization> }
       profiles:   { Row: Profile;    Insert: Partial<Profile>;    Update: Partial<Profile>    }
       files:      { Row: FileRecord; Insert: Partial<FileRecord>; Update: Partial<FileRecord> }
       audit_logs: { Row: AuditLog;   Insert: Partial<AuditLog>;  Update: Partial<AuditLog>  }

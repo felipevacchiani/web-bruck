@@ -4,6 +4,13 @@ _Última actualización: 2026-07-14_
 
 No existe un esquema único consolidado: se reconstruye leyendo las migraciones incrementales aplicadas en orden (`migration.sql`, `bruck-migration-v2.sql` … `v6.sql`, `supabase-category-migration.sql`, `supabase-rls.sql`).
 
+## Multi-tenant (Fase 1, en progreso)
+
+### `organizations` (v7)
+Un registro por consultor/tenant. Hoy solo existe una fila (`slug = 'bruck'`), sembrada por la migración. RLS: cualquier usuario autenticado puede leer, solo admin puede escribir.
+
+Próximos pasos de esta fase (ver [ROADMAP.md](./ROADMAP.md)): `companies` (reemplaza `profiles.company` texto libre), `memberships` (usuario↔empresa↔rol), `permissions`/plantillas de rol. `profiles.role` se mantiene como fallback durante toda la transición — no se rompe nada de lo existente hasta que el middleware migre a chequear `memberships`.
+
 ## Tablas núcleo del portal
 
 ### `profiles`

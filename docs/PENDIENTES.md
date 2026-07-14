@@ -10,6 +10,7 @@ _Última actualización: 2026-07-14_
 - [ ] Descomponer `contabilidad-panel.tsx` (~1400 líneas) en componentes más chicos si el módulo sigue creciendo.
 - [ ] Configurar `darkMode` en `tailwind.config.js` y aplicar dark mode real en la UI (pedido por las instrucciones maestras del proyecto, no implementado aún).
 - [ ] Definir estrategia de testing (hoy no hay tests ni CI configurados).
+- [ ] `npx tsc --noEmit` reporta 67 errores preexistentes (mayormente `Property 'x' does not exist on type 'never'` en API routes que usan el cliente Supabase tipado con `Database`, más `implicit any` en `middleware.ts`/`lib/supabase/server.ts`). No introducidos por trabajo reciente; requieren revisión aparte antes de confiar en el tipado del cliente Supabase.
 
 ## Funcionalidades del documento funcional no implementadas
 
