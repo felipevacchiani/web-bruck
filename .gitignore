@@ -2,3 +2,9 @@ node_modules
 .next
 .env*.local
 .env
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Datos y entregables reales de clientes: nunca deben commitearse al repo
+seed-*.sql
+informes-*/

@@ -1,12 +1,14 @@
 # BRUCK Portal de Clientes
 
-Portal privado para clientes de BRUCK. Construido con Next.js 15 + Supabase.
+Portal privado para clientes de BRUCK. Construido con Next.js 14 + Supabase.
 
 ## Stack
-- Next.js 15 (App Router)
+- Next.js 14.2 (App Router)
 - Supabase (Auth + Database + Storage)
 - Tailwind CSS
 - TypeScript
+
+Ver `/docs` para arquitectura, modelo de datos, decisiones y roadmap detallados.
 
 ## Setup
 
@@ -32,14 +34,16 @@ npm run dev
 ## Estructura
 ```
 app/
-  login/          → Login + recuperar contraseña
-  dashboard/      → Vista cliente (sus archivos)
-  view/[id]/      → Visor de archivo HTML
-  admin/          → Panel admin (lista clientes)
-  admin/clients/  → Crear/editar clientes
-  api/admin/      → API routes (crear usuarios, subir archivos)
-lib/supabase/     → Cliente browser, server y tipos
-middleware.ts     → Protección de rutas + control de roles
+  login/                    → Login + recuperar contraseña
+  dashboard/                → Vista cliente (sus archivos + contabilidad)
+  view/[id]/                → Visor de archivo HTML
+  admin/                    → Panel admin (lista clientes, alertas, auditoría, reportes)
+  admin/clients/[id]/       → Ficha de cliente + módulo Contabilidad Interna
+  api/admin/                → API routes rol admin (usuarios, archivos, contabilidad interna)
+  api/client/ci/            → API routes rol client para Contabilidad Interna
+lib/supabase/               → Clientes browser/server/admin, auth de Contabilidad Interna, tipos
+middleware.ts                → Protección de rutas + control de roles (admin/client)
+*.sql (raíz)                 → Migraciones aplicadas manualmente en Supabase SQL Editor
 ```
 
 ## Crear usuario admin

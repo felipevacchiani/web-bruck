@@ -18,7 +18,3 @@ module.exports = {
   },
   plugins: [],
 }
-  plugins: [],
-}
-
-export default config
