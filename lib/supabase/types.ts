@@ -22,6 +22,18 @@ export interface Company {
   updated_at: string
 }
 
+export type MembershipRole = 'cliente' | 'auditor'
+
+export interface Membership {
+  id: string
+  user_id: string
+  company_id: string
+  role: MembershipRole
+  active: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface Profile {
   id: string
   email: string
@@ -174,6 +186,7 @@ export type Database = {
     Tables: {
       organizations: { Row: Organization; Insert: Partial<Organization>; Update: Partial<Organization> }
       companies: { Row: Company; Insert: Partial<Company>; Update: Partial<Company> }
+      memberships: { Row: Membership; Insert: Partial<Membership>; Update: Partial<Membership> }
       profiles:   { Row: Profile;    Insert: Partial<Profile>;    Update: Partial<Profile>    }
       files:      { Row: FileRecord; Insert: Partial<FileRecord>; Update: Partial<FileRecord> }
       audit_logs: { Row: AuditLog;   Insert: Partial<AuditLog>;  Update: Partial<AuditLog>  }

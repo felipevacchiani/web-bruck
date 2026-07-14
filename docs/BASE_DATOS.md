@@ -12,7 +12,10 @@ Un registro por consultor/tenant. Hoy solo existe una fila (`slug = 'bruck'`), s
 ### `companies` (v8)
 Entidad "empresa" real, vinculada a `organizations`. Backfill automático: una `company` por cada `profile` con `role = 'client'` (usando `profiles.company` como nombre, o `full_name`/`email` si está vacío). `profiles.company_id`, `files.company_id` y `bruck_*.company_id` se agregaron **nullable** y se backfillearon desde el `client_id` existente. `profiles.company` (texto) queda deprecado pero funcional — no se tocó ni se eliminó. RLS: admin acceso total, cliente lee solo su propia empresa.
 
-Próximos pasos de esta fase (ver [ROADMAP.md](./ROADMAP.md)): `memberships` (usuario↔empresa↔rol), `permissions`/plantillas de rol. `profiles.role` se mantiene como fallback durante toda la transición — no se rompe nada de lo existente hasta que el middleware migre a chequear `memberships`. El código de la app (API routes, middleware) sigue usando `client_id` sin cambios hasta el Paso 5.
+### `memberships` (v9)
+Relación usuario↔empresa↔rol (`'cliente' | 'auditor'`), con `UNIQUE(user_id, company_id)` — permite que un mismo usuario pertenezca a varias empresas sin cerrar sesión. Backfill: una membership `'cliente'` por cada `profile` con `role = 'client'`. Los **admin no reciben membership por empresa**: siguen accediendo a todas las empresas de la organización vía `profiles.role = 'admin'` + `is_admin()`, que ya cubre ese caso — evita sobre-diseñar un nivel de membership a nivel organización que hoy no se necesita. RLS: admin todo, usuario lee solo sus propias memberships.
+
+Próximo paso de esta fase (ver [ROADMAP.md](./ROADMAP.md)): `permissions`/plantillas de rol. `profiles.role` se mantiene como fallback durante toda la transición — no se rompe nada de lo existente hasta que el middleware migre a chequear `memberships`. El código de la app (API routes, middleware) sigue usando `client_id` sin cambios hasta el Paso 5.
 
 ## Tablas núcleo del portal
 

@@ -1,5 +1,12 @@
 # Changelog — BRUCK APP
 
+## 2026-07-14 — Fase 1, Paso 3: tabla memberships
+
+- feat: migración `bruck-migration-v9.sql` crea `public.memberships` (user_id, company_id, role, UNIQUE(user_id, company_id)), con backfill de una membership `'cliente'` por cada cliente existente.
+- feat: agregado tipo `Membership`/`MembershipRole` y entrada en `Database.Tables` de `lib/supabase/types.ts`.
+- Decisión: admins no reciben membership por empresa (siguen accediendo vía `is_admin()`) — evita modelar un nivel de membership a nivel organización que hoy no aporta nada.
+- No se modificó `middleware.ts` ni ninguna API route.
+
 ## 2026-07-14 — Fase 1, Paso 2: tabla companies
 
 - feat: migración `bruck-migration-v8.sql` crea `public.companies` (vinculada a `organizations`), agrega `company_id` nullable a `profiles`/`files`/`bruck_*` con backfill automático desde los clientes existentes.
