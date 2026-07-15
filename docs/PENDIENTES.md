@@ -30,6 +30,13 @@ _Última actualización: 2026-07-14_
 - [ ] No hay auto-registro de consultores (`super_admin` los crea manualmente) — suficiente para las primeras ventas, revisar si hace falta self-signup más adelante.
 - [x] Probado end-to-end con una segunda organización real de prueba (2026-07-15): aislamiento de clientes, actividad y datos confirmado; se dejó como sandbox permanente para futuras pruebas.
 
+## Centro de Datos (iniciado 2026-07-15)
+
+- [x] Google Sheets público (link compartido) como fuente de datos — leído en vivo, mostrado como tabla.
+- [ ] Google Sheets privados vía OAuth (requiere que el usuario configure credenciales en Google Cloud Console primero).
+- [ ] Excel/CSV subido directamente, conexión a bases de datos externas, APIs, ERP — sin caso de uso real todavía.
+- [ ] Vincular una fuente de datos a un widget/gráfico del dashboard (hoy solo se ve como tabla cruda).
+
 ## Capítulo 4 — Portal del Cliente (mayormente cerrado 2026-07-15)
 
 Completos y verificados: Centro de notificaciones, Centro de solicitudes, Centro de tareas, Actividad reciente, Página de inicio personalizada, Perfil de la empresa.

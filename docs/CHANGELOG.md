@@ -185,3 +185,13 @@
 - Reutiliza 100% datos reales de Contabilidad Interna del cliente (movimientos + presupuestos) — no es una maqueta ni un dato decorativo.
 - Distinto del visor de "dashboards HTML subidos" (que sigue existiendo sin cambios) — este es el primer dashboard **nativo e interactivo** de la plataforma.
 - Build verificado.
+
+## 2026-07-15 — Fuentes de datos externas: Google Sheets (link público)
+
+- feat: migración `bruck-migration-v22.sql` crea `public.data_sources` (organization_id, company_id, name, type, url) con RLS.
+- feat: `lib/google-sheets.ts` — convierte un link normal de Google Sheets a su URL de exportación CSV y lo parsea (parser CSV propio, sin dependencias). No se guarda copia de las filas: se lee en vivo cada vez que se visualiza.
+- feat: `GET/POST /api/admin/clients/[id]/data-sources` (conectar/listar), `GET/DELETE .../[sourceId]` (leer datos en vivo / eliminar). Equivalentes de solo lectura para el cliente en `/api/client/data-sources`.
+- feat: sección "Fuentes de datos" en la ficha de cliente del admin (conectar por nombre + URL, ver como tabla, eliminar); vista "🔗 Fuentes de datos" en el sidebar del cliente (solo lectura).
+- Si el Sheet no está compartido como "Cualquiera con el link puede ver", el sistema devuelve un error explícito en vez de fallar en silencio.
+- Primer paso del "Centro de Datos" del documento funcional — hoy solo Google Sheets públicos; Excel/CSV/BD/ERP/API y sheets privados (OAuth) quedan documentados como pendientes.
+- Build verificado.

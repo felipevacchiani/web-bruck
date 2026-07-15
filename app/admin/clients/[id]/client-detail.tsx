@@ -154,6 +154,50 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   }
 
   const [tasks, setTasks] = useState<any[]>([])
+  const [dataSources, setDataSources] = useState<any[]>([])
+  const [showNewSource, setShowNewSource] = useState(false)
+  const [sourceForm, setSourceForm] = useState({ name: '', url: '' })
+  const [savingSource, setSavingSource] = useState(false)
+  const [sourceError, setSourceError] = useState('')
+  const [viewingSource, setViewingSource] = useState<any>(null)
+  const [sourceData, setSourceData] = useState<{ headers: string[]; rows: string[][] } | null>(null)
+  const [sourceDataError, setSourceDataError] = useState('')
+  const [loadingSourceData, setLoadingSourceData] = useState(false)
+
+  const loadDataSources = () => {
+    fetch(`/api/admin/clients/${client.id}/data-sources`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setDataSources(data.data || []) })
+  }
+  useEffect(() => { loadDataSources() }, [client.id])
+
+  const submitSource = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingSource(true); setSourceError('')
+    const res = await fetch(`/api/admin/clients/${client.id}/data-sources`, {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(sourceForm),
+    })
+    const d = await res.json()
+    setSavingSource(false)
+    if (!res.ok) { setSourceError(d.error || 'Error al conectar la fuente'); return }
+    setShowNewSource(false); setSourceForm({ name:'', url:'' }); loadDataSources()
+  }
+
+  const deleteSource = async (sourceId: string) => {
+    if (!confirm('¿Eliminar esta fuente de datos?')) return
+    await fetch(`/api/admin/clients/${client.id}/data-sources/${sourceId}`, { method: 'DELETE' })
+    loadDataSources()
+  }
+
+  const viewSource = async (source: any) => {
+    setViewingSource(source); setSourceData(null); setSourceDataError(''); setLoadingSourceData(true)
+    const res = await fetch(`/api/admin/clients/${client.id}/data-sources/${source.id}`)
+    const d = await res.json()
+    setLoadingSourceData(false)
+    if (!res.ok) { setSourceDataError(d.error || 'Error al leer el Sheet'); return }
+    setSourceData(d)
+  }
+
   const [showNewTask, setShowNewTask] = useState(false)
   const [taskForm, setTaskForm] = useState({ title:'', description:'', assigned_to:'', due_date:'' })
   const [savingTask, setSavingTask] = useState(false)
@@ -723,6 +767,91 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+
+          <div style={{ background:'rgba(14,14,14,0.8)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: dataSources.length ? 12 : 0 }}>
+              <span style={{ color:'white', fontSize:13, fontWeight:600 }}>Fuentes de datos</span>
+              <button onClick={()=>setShowNewSource(true)} style={{ background:'none', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>+ Conectar Google Sheet</button>
+            </div>
+            {dataSources.length > 0 && (
+              <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                {dataSources.map(s => (
+                  <div key={s.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 0' }}>
+                    <span style={{ color:'#d4d4d8', fontSize:13 }}>📊 {s.name}</span>
+                    <div style={{ display:'flex', gap:6 }}>
+                      <button onClick={()=>viewSource(s)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:11, padding:'4px 10px', borderRadius:7, cursor:'pointer' }}>Ver</button>
+                      <button onClick={()=>deleteSource(s.id)} style={{ background:'none', border:'1px solid rgba(239,68,68,0.15)', color:'#f87171', fontSize:11, padding:'4px 10px', borderRadius:7, cursor:'pointer' }}>Eliminar</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {showNewSource && (
+            <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+              <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, maxWidth:440, width:'100%' }}>
+                <div style={{ color:'white', fontSize:16, fontWeight:700, marginBottom:6 }}>Conectar Google Sheet</div>
+                <div style={{ color:'#71717a', fontSize:12, marginBottom:18 }}>El Sheet debe estar compartido como "Cualquiera con el link puede ver".</div>
+                {sourceError && <div style={{ background:'rgba(239,68,68,0.09)', border:'1px solid rgba(239,68,68,0.22)', borderRadius:10, padding:'9px 12px', marginBottom:14, color:'#f87171', fontSize:13 }}>{sourceError}</div>}
+                <form onSubmit={submitSource}>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Nombre</label>
+                    <input required value={sourceForm.name} onChange={e=>setSourceForm(f=>({...f,name:e.target.value}))} placeholder="Ej: Presupuesto anual 2026" style={INP} />
+                  </div>
+                  <div style={{ marginBottom:20 }}>
+                    <label style={LBL}>URL del Google Sheet</label>
+                    <input required value={sourceForm.url} onChange={e=>setSourceForm(f=>({...f,url:e.target.value}))} placeholder="https://docs.google.com/spreadsheets/d/…" style={INP} />
+                  </div>
+                  <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+                    <button type="button" onClick={()=>{setShowNewSource(false);setSourceError('')}} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
+                    <button type="submit" disabled={savingSource} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingSource?0.6:1 }}>
+                      {savingSource?'Conectando…':'Conectar'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {viewingSource && (
+            <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.8)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={()=>setViewingSource(null)}>
+              <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:20, maxWidth:'90vw', width:900, maxHeight:'80vh', display:'flex', flexDirection:'column' }} onClick={e=>e.stopPropagation()}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+                  <div style={{ color:'white', fontSize:15, fontWeight:700 }}>📊 {viewingSource.name}</div>
+                  <button onClick={()=>setViewingSource(null)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'7px 14px', borderRadius:8, cursor:'pointer' }}>✕ Cerrar</button>
+                </div>
+                <div style={{ overflow:'auto', flex:1 }}>
+                  {loadingSourceData ? (
+                    <div style={{ color:'#52525b', fontSize:13, padding:24, textAlign:'center' }}>Cargando…</div>
+                  ) : sourceDataError ? (
+                    <div style={{ color:'#f87171', fontSize:13, padding:24, textAlign:'center' }}>{sourceDataError}</div>
+                  ) : sourceData && sourceData.rows.length > 0 ? (
+                    <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
+                      <thead>
+                        <tr>
+                          {sourceData.headers.map((h,i)=>(
+                            <th key={i} style={{ textAlign:'left', color:'#52525b', padding:'7px 10px', borderBottom:'1px solid rgba(255,255,255,0.08)', position:'sticky', top:0, background:'#0d0d0d', whiteSpace:'nowrap' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sourceData.rows.map((row,i)=>(
+                          <tr key={i} style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
+                            {row.map((cell,j)=>(
+                              <td key={j} style={{ color:'#d4d4d8', padding:'6px 10px', whiteSpace:'nowrap' }}>{cell}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div style={{ color:'#52525b', fontSize:13, padding:24, textAlign:'center' }}>Sin filas de datos.</div>
+                  )}
+                </div>
               </div>
             </div>
           )}
