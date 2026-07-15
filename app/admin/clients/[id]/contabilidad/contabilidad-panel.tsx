@@ -15,7 +15,7 @@ interface Props {
   onBack?: () => void
 }
 
-type Tab = 'dashboard' | 'movimientos' | 'bancos' | 'cuentas' | 'contables' | 'rubros' | 'conciliaciones'
+type Tab = 'dashboard' | 'movimientos' | 'bancos' | 'cuentas' | 'contables' | 'rubros' | 'conciliaciones' | 'presupuestos'
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -178,6 +178,13 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const [cObservaciones, setCObservaciones] = useState('')
   const [cSaving, setCSaving] = useState(false)
   const [cError, setCError] = useState('')
+
+  // Presupuestos
+  const [pMes, setPMes] = useState(nowD.getMonth() + 1)
+  const [pAnio, setPAnio] = useState(nowD.getFullYear())
+  const [pData, setPData] = useState<any[]>([])
+  const [pDrafts, setPDrafts] = useState<Record<string, string>>({})
+  const [pSavingId, setPSavingId] = useState<string | null>(null)
 
   // Modal
   const [modal, setModal] = useState<{ type: string; item?: any } | null>(null)
@@ -372,6 +379,26 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
     loadPeriodo(); loadHistorial()
   }
 
+  const loadPresupuestos = useCallback(async () => {
+    const r = await fetch(`${base}/presupuestos?mes=${pMes}&anio=${pAnio}`)
+    if (!r.ok) { setPData([]); return }
+    const d = await r.json()
+    setPData(d.data || [])
+    setPDrafts({})
+  }, [base, pMes, pAnio])
+
+  useEffect(() => { if (tab === 'presupuestos') loadPresupuestos() }, [tab, loadPresupuestos])
+
+  const savePresupuesto = async (rubroId: string, monto: string) => {
+    setPSavingId(rubroId)
+    await fetch(`${base}/presupuestos`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rubro_id: rubroId, mes: pMes, anio: pAnio, monto: parseFloat(monto) || 0 }),
+    })
+    setPSavingId(null)
+    loadPresupuestos()
+  }
+
   const inlineSave = useCallback(async (id: string, fields: Record<string, unknown>) => {
     setRowSaving(s => ({ ...s, [id]: true }))
     await fetch(`${base}/movimientos/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...fields, clasificacion_origen: 'manual' }) })
@@ -549,6 +576,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
     { id: 'contables', label: 'Cuentas Contables' },
     { id: 'rubros', label: 'Rubros' },
     { id: 'conciliaciones', label: 'Conciliaciones' },
+    { id: 'presupuestos', label: 'Presupuestos' },
   ]
 
   const bCuentaObj = cuentas.find(c => c.id === bCuenta)
@@ -1213,6 +1241,64 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                       )
                     })}
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── PRESUPUESTOS ── */}
+          {tab === 'presupuestos' && (
+            <div>
+              <div style={{ display: 'flex', gap: 10, marginBottom: 20, alignItems: 'flex-end' }}>
+                <div style={{ width: 160 }}>
+                  <label style={LBL}>Mes</label>
+                  <select value={pMes} onChange={e => setPMes(parseInt(e.target.value))} style={SEL}>
+                    {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+                  </select>
+                </div>
+                <div style={{ width: 110 }}>
+                  <label style={LBL}>Año</label>
+                  <select value={pAnio} onChange={e => setPAnio(parseInt(e.target.value))} style={SEL}>
+                    {FISCAL_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {!pData.length ? (
+                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
+                  <div style={{ color: '#52525b', fontSize: 13 }}>No hay rubros activos para presupuestar.</div>
+                </div>
+              ) : (
+                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 8, padding: '9px 16px', background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                    {['Rubro', 'Presupuestado', 'Ejecutado', 'Desvío', ''].map(h => (
+                      <span key={h} style={{ color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</span>
+                    ))}
+                  </div>
+                  {pData.map((row: any, i: number) => {
+                    const cat = row.rubro.categoria
+                    const ejecutado = cat === 'ingreso' ? row.real.credito : cat === 'egreso' ? row.real.debito : (row.real.credito - row.real.debito)
+                    const draft = pDrafts[row.rubro.id] ?? String(row.presupuesto?.monto ?? 0)
+                    const montoNum = parseFloat(draft) || 0
+                    const desvio = ejecutado - montoNum
+                    const desvioBueno = cat === 'egreso' ? desvio <= 0 : desvio >= 0
+                    const desvioColor = montoNum === 0 ? '#52525b' : (desvioBueno ? '#34d399' : '#f87171')
+                    const dirty = draft !== String(row.presupuesto?.monto ?? 0)
+                    return (
+                      <div key={row.rubro.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 8, alignItems: 'center', padding: '8px 16px', borderTop: i ? '1px solid rgba(255,255,255,0.05)' : undefined }}>
+                        <span style={{ color: 'white', fontSize: 13 }}>{row.rubro.nombre}</span>
+                        <input type="number" step="0.01" value={draft}
+                          onChange={e => setPDrafts(d => ({ ...d, [row.rubro.id]: e.target.value }))}
+                          style={{ ...INP, fontSize: 12, padding: '6px 9px' }} />
+                        <span style={{ color: '#a1a1aa', fontSize: 13 }}>{fmt(ejecutado)}</span>
+                        <span style={{ color: desvioColor, fontSize: 13, fontWeight: 600 }}>{montoNum === 0 ? '—' : fmt(desvio)}</span>
+                        <button onClick={() => savePresupuesto(row.rubro.id, draft)} disabled={!dirty || pSavingId === row.rubro.id}
+                          style={{ ...BTN_S, fontSize: 11, padding: '5px 11px', opacity: dirty ? 1 : 0.4, color: dirty ? '#31AE79' : '#52525b', border: dirty ? '1px solid rgba(49,174,121,0.3)' : BTN_S.border }}>
+                          {pSavingId === row.rubro.id ? '…' : 'Guardar'}
+                        </button>
+                      </div>
+                    )
+                  })}
                 </div>
               )}
             </div>

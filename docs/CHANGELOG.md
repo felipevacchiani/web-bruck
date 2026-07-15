@@ -1,5 +1,14 @@
 # Changelog — BRUCK APP
 
+## 2026-07-14 — Fase 2: presupuestos por rubro/período
+
+- feat: migración `bruck-migration-v13.sql` crea `bruck_presupuestos` (`client_id`, `company_id`, `rubro_id`, `mes`, `anio`, `monto`, `UNIQUE(rubro_id,mes,anio)`) con RLS (admin todo, cliente SELECT propio).
+- feat: rutas `GET/POST /api/client/ci/presupuestos` (upsert por rubro+período) y `DELETE /api/client/ci/presupuestos/[id]` (+ equivalentes admin). El GET calcula lo real ejecutado desde `bruck_movimientos` por rubro/mes/año.
+- feat: tab "Presupuestos" en `ContabilidadPanel` — edición inline por rubro con guardado explícito, columna de desvío coloreada según si es favorable (verde) o desfavorable (rojo) según la categoría del rubro (ingreso/egreso). Agregado al sidebar embebido del cliente.
+- feat: tipo `CIPresupuesto` en `lib/supabase/types.ts`.
+- fix (no relacionado): corregida columna `disponible` faltante en `bruck_cuentas_bancarias` — la migración v4 nunca se había aplicado en esta base, bloqueaba crear cuentas bancarias nuevas.
+- Build y typecheck verificados (67 errores preexistentes sin cambios).
+
 ## 2026-07-14 — Fase 2: conciliaciones bancarias formales
 
 - feat: migración `bruck-migration-v12.sql` agrega `UNIQUE(cuenta_bancaria_id, mes, anio)` a `bruck_conciliaciones` (tabla existía desde v3 sin uso).

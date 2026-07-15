@@ -63,6 +63,9 @@ Storage: bucket `client-files` (privado), ampliado en `migration.sql` para acept
 ### `bruck_movimientos`
 `client_id`, `cuenta_bancaria_id` → `bruck_cuentas_bancarias`, `fecha`, `descripcion`, `debito`, `credito`, `mes`, `anio`, `estado`: `'pendiente' | 'conciliado' | 'revisado'`, `tipo_movimiento`: `'ingreso' | 'gasto' | 'transferencia'`, `cuenta_contable_id` → `bruck_cuentas_contables`, `rubro_id` → `bruck_rubros`, `clasificacion_origen`: `'manual' | 'automatico'`, `hash_dedup` (deduplicación de importaciones, v5), `comentario` (v5), `factura` boolean (v6).
 
+### `bruck_presupuestos` (v13)
+`client_id`, `company_id`, `rubro_id`, `mes`, `anio`, `monto`, `UNIQUE(rubro_id, mes, anio)`. Monto presupuestado por rubro/período. Backend/UI en `/api/{admin/ci/[clientId]|client/ci}/presupuestos` (tab "Presupuestos" en `ContabilidadPanel`): compara contra lo real ejecutado calculado on-the-fly desde `bruck_movimientos` (débito para rubros `egreso`, crédito para `ingreso`, neto para `neutro`). RLS: mismo patrón que el resto de `bruck_*` (admin todo, cliente SELECT propio).
+
 ### `bruck_conciliaciones` (v12: agrega `UNIQUE(cuenta_bancaria_id, mes, anio)`)
 `client_id`, `cuenta_bancaria_id`, `mes`, `anio`, `saldo_apertura`, `saldo_cierre`, `estado` (`'abierto'|'cerrado'`), `fecha_cierre`, `observaciones`. Desde 2026-07-14 tiene backend y UI completos (tab "Conciliaciones" en `ContabilidadPanel`, rutas `/api/{admin/ci/[clientId]|client/ci}/conciliaciones`): cierra formalmente un mes por cuenta, encadenando `saldo_apertura` con el `saldo_cierre` del período anterior y sugiriendo el cierre a partir de los movimientos reales. Distinto del flag `estado` por movimiento (`bruck_movimientos.estado`), que sigue existiendo igual que antes.
 

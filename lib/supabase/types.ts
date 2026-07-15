@@ -154,6 +154,11 @@ export interface CIMovimiento {
   rubro_id: string | null; clasificacion_origen: string
   hash_dedup: string | null; created_at: string; updated_at: string
 }
+export interface CIPresupuesto {
+  id: string; client_id: string; company_id: string | null; rubro_id: string
+  mes: number; anio: number; monto: number
+  created_at: string; updated_at: string
+}
 export interface CIConciliacion {
   id: string; client_id: string; company_id: string | null; cuenta_bancaria_id: string | null
   mes: number; anio: number; saldo_apertura: number; saldo_cierre: number

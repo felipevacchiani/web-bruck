@@ -25,8 +25,7 @@ _Última actualización: 2026-07-14_
 
 ## Fase 2 — Contabilidad Interna (pendiente)
 
-- [ ] Presupuestos: definir modelo de datos (por rubro/mes/año) y comparación contra lo ejecutado real.
-- [ ] Flujo de fondos: proyección de ingresos/egresos futuros, probablemente dependiente de Presupuestos.
+- [ ] Flujo de fondos: proyección de ingresos/egresos futuros, usando Presupuestos como base para meses sin movimientos reales.
 
 ## Fase 1 — Enforcement de permisos (parcial)
 
