@@ -66,6 +66,11 @@ export default function ClientDashboard({ profile, files }: Props) {
 
   const [showActivity, setShowActivity] = useState(false)
   const [showHome, setShowHome] = useState(true)
+  const [showCompany, setShowCompany] = useState(false)
+  const [companyProfile, setCompanyProfile] = useState<any>(null)
+  useEffect(() => {
+    fetch('/api/client/company-profile').then(r=>r.ok?r.json():null).then(d=>{ if (d) setCompanyProfile(d.data) })
+  }, [])
   const [ciSummary, setCiSummary] = useState<any>(null)
   useEffect(() => {
     fetch('/api/client/ci/dashboard').then(r=>r.ok?r.json():null).then(d=>{ if (d) setCiSummary(d) })
@@ -228,7 +233,7 @@ export default function ClientDashboard({ profile, files }: Props) {
         <div className={`db-sidebar-mobile${sidebarOpen?' open':''}`}>
           <div style={{ padding:'16px 10px', flex:1, overflowY:'auto' }}>
             {/* INICIO */}
-            <button onClick={()=>{ setShowHome(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setSidebarOpen(false) }}
+            <button onClick={()=>{ setShowHome(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowCompany(false) }}
               style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showHome?'rgba(49,174,121,0.1)':'none', border:showHome?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showHome?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left', marginBottom:8 }}>
               <span style={{ fontSize:14 }}>🏠</span><span style={{ fontSize:13, fontWeight:500 }}>Inicio</span>
             </button>
@@ -241,7 +246,7 @@ export default function ClientDashboard({ profile, files }: Props) {
               {value:'todos' as const,label:'Todos',icon:'📋',count:currentFiles.length},
               ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
             ].map(cat=>(
-              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false) }}
+              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false) }}
                 style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px 8px 20px', borderRadius:9, border:activeCategory===cat.value&&!contabTab?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#71717a', marginBottom:2, textAlign:'left' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:9 }}>
                   <span style={{ fontSize:14 }}>{cat.icon}</span>
@@ -253,7 +258,7 @@ export default function ClientDashboard({ profile, files }: Props) {
 
             {/* SOLICITUDES */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
-              <button onClick={()=>{ setShowRequests(true); setContabTab(null); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false) }}
+              <button onClick={()=>{ setShowRequests(true); setContabTab(null); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false) }}
                 style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px', borderRadius:9, background:showRequests?'rgba(49,174,121,0.1)':'none', border:showRequests?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showRequests?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left' }}>
                 <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📥</span><span style={{ fontSize:13 }}>Solicitudes</span></span>
                 {pendingRequestsCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingRequestsCount}</span>}
@@ -271,9 +276,17 @@ export default function ClientDashboard({ profile, files }: Props) {
 
             {/* ACTIVIDAD RECIENTE */}
             <div>
-              <button onClick={()=>{ setShowActivity(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setSidebarOpen(false); setShowHome(false) }}
+              <button onClick={()=>{ setShowActivity(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false) }}
                 style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showActivity?'rgba(49,174,121,0.1)':'none', border:showActivity?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showActivity?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left' }}>
                 <span style={{ fontSize:14 }}>🕐</span><span style={{ fontSize:13 }}>Actividad reciente</span>
+              </button>
+            </div>
+
+            {/* MI EMPRESA */}
+            <div>
+              <button onClick={()=>{ setShowCompany(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setSidebarOpen(false) }}
+                style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showCompany?'rgba(49,174,121,0.1)':'none', border:showCompany?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showCompany?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left' }}>
+                <span style={{ fontSize:14 }}>🏢</span><span style={{ fontSize:13 }}>Mi empresa</span>
               </button>
             </div>
 
@@ -281,7 +294,7 @@ export default function ClientDashboard({ profile, files }: Props) {
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 10px', marginBottom:6 }}>Contabilidad</div>
               {CI_TABS.map(t => (
-                <button key={t.id} onClick={()=>{ setContabTab(t.id); setShowRequests(false); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false) }}
+                <button key={t.id} onClick={()=>{ setContabTab(t.id); setShowRequests(false); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false) }}
                   style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:contabTab===t.id?'rgba(49,174,121,0.1)':'none', border:contabTab===t.id?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:contabTab===t.id?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
                   <span style={{ fontSize:14 }}>{t.icon}</span>
                   <span style={{ fontSize:13 }}>{t.label}</span>
@@ -299,7 +312,7 @@ export default function ClientDashboard({ profile, files }: Props) {
         <aside className={`db-sidebar${sidebarCollapsed?' collapsed':''}`}>
           <nav style={{ padding:'16px 10px', flex:1, overflowY:'auto' }}>
             {/* INICIO */}
-            <button onClick={()=>{ setShowHome(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false) }}
+            <button onClick={()=>{ setShowHome(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowCompany(false) }}
               style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'7px 10px', borderRadius:9, background:showHome?'rgba(49,174,121,0.1)':'none', border:showHome?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showHome?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left', marginBottom:8 }}>
               <span style={{ fontSize:14 }}>🏠</span><span style={{ fontSize:13, fontWeight:500 }}>Inicio</span>
             </button>
@@ -312,7 +325,7 @@ export default function ClientDashboard({ profile, files }: Props) {
               {value:'todos' as const,label:'Todos',icon:'📋',count:currentFiles.length},
               ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
             ].map(cat=>(
-              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false) }}
+              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false) }}
                 style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px 7px 20px', borderRadius:9, border:activeCategory===cat.value&&!contabTab?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#71717a', marginBottom:2, textAlign:'left' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:9 }}>
                   <span style={{ fontSize:14 }}>{cat.icon}</span>
@@ -324,7 +337,7 @@ export default function ClientDashboard({ profile, files }: Props) {
 
             {/* SOLICITUDES */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
-              <button onClick={()=>{ setShowRequests(true); setContabTab(null); setShowTasks(false); setShowActivity(false); setShowHome(false) }}
+              <button onClick={()=>{ setShowRequests(true); setContabTab(null); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false) }}
                 style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px', borderRadius:9, background:showRequests?'rgba(49,174,121,0.1)':'none', border:showRequests?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showRequests?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left' }}>
                 <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📥</span><span style={{ fontSize:13 }}>Solicitudes</span></span>
                 {pendingRequestsCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingRequestsCount}</span>}
@@ -342,9 +355,17 @@ export default function ClientDashboard({ profile, files }: Props) {
 
             {/* ACTIVIDAD RECIENTE */}
             <div>
-              <button onClick={()=>{ setShowActivity(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setSidebarOpen(false); setShowHome(false) }}
+              <button onClick={()=>{ setShowActivity(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false) }}
                 style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showActivity?'rgba(49,174,121,0.1)':'none', border:showActivity?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showActivity?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left' }}>
                 <span style={{ fontSize:14 }}>🕐</span><span style={{ fontSize:13 }}>Actividad reciente</span>
+              </button>
+            </div>
+
+            {/* MI EMPRESA */}
+            <div>
+              <button onClick={()=>{ setShowCompany(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setSidebarOpen(false) }}
+                style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showCompany?'rgba(49,174,121,0.1)':'none', border:showCompany?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showCompany?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left' }}>
+                <span style={{ fontSize:14 }}>🏢</span><span style={{ fontSize:13 }}>Mi empresa</span>
               </button>
             </div>
 
@@ -352,7 +373,7 @@ export default function ClientDashboard({ profile, files }: Props) {
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 10px', marginBottom:6 }}>Contabilidad</div>
               {CI_TABS.map(t => (
-                <button key={t.id} onClick={()=>{ setContabTab(t.id); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false) }}
+                <button key={t.id} onClick={()=>{ setContabTab(t.id); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false) }}
                   style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'7px 10px', borderRadius:9, background:contabTab===t.id?'rgba(49,174,121,0.1)':'none', border:contabTab===t.id?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:contabTab===t.id?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
                   <span style={{ fontSize:14 }}>{t.icon}</span>
                   <span style={{ fontSize:13 }}>{t.label}</span>
@@ -572,6 +593,44 @@ export default function ClientDashboard({ profile, files }: Props) {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : showCompany ? (
+            <div className="db-main-pad">
+              <div style={{ maxWidth:640, margin:'0 auto' }}>
+                <div style={{ marginBottom:20 }}>
+                  <h1 style={{ color:'white', fontSize:18, fontWeight:600, margin:0 }}>Mi empresa</h1>
+                </div>
+                {!companyProfile ? (
+                  <div style={{ border:'1px solid rgba(255,255,255,0.06)', borderRadius:14, padding:'40px 24px', textAlign:'center' }}>
+                    <p style={{ color:'#52525b', fontSize:13 }}>Sin datos de empresa cargados todavía.</p>
+                  </div>
+                ) : (
+                  <div style={{ background:'rgba(255,255,255,0.025)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, padding:20 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:18 }}>
+                      {companyProfile.logo_url ? (
+                        <img src={companyProfile.logo_url} alt="" style={{ width:44, height:44, borderRadius:10, objectFit:'cover' }} />
+                      ) : (
+                        <div style={{ width:44, height:44, borderRadius:10, background:'rgba(49,174,121,0.1)', border:'1px solid rgba(49,174,121,0.2)', display:'flex', alignItems:'center', justifyContent:'center', color:'#31AE79', fontWeight:700, fontSize:16 }}>
+                          {companyProfile.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <div style={{ color:'white', fontSize:15, fontWeight:600 }}>{companyProfile.razon_social || companyProfile.name}</div>
+                        {companyProfile.cuit && <div style={{ color:'#71717a', fontSize:12 }}>CUIT {companyProfile.cuit}</div>}
+                      </div>
+                    </div>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
+                      {companyProfile.direccion && <div><div style={{ color:'#52525b', fontSize:11, textTransform:'uppercase', marginBottom:3 }}>Dirección</div><div style={{ color:'#d4d4d8', fontSize:13 }}>{companyProfile.direccion}</div></div>}
+                      {companyProfile.telefono && <div><div style={{ color:'#52525b', fontSize:11, textTransform:'uppercase', marginBottom:3 }}>Teléfono</div><div style={{ color:'#d4d4d8', fontSize:13 }}>{companyProfile.telefono}</div></div>}
+                      {companyProfile.email_contacto && <div><div style={{ color:'#52525b', fontSize:11, textTransform:'uppercase', marginBottom:3 }}>Email</div><div style={{ color:'#d4d4d8', fontSize:13 }}>{companyProfile.email_contacto}</div></div>}
+                      {companyProfile.info_societaria && <div><div style={{ color:'#52525b', fontSize:11, textTransform:'uppercase', marginBottom:3 }}>Información societaria</div><div style={{ color:'#d4d4d8', fontSize:13 }}>{companyProfile.info_societaria}</div></div>}
+                    </div>
+                    {!companyProfile.direccion && !companyProfile.telefono && !companyProfile.email_contacto && !companyProfile.info_societaria && (
+                      <div style={{ color:'#52525b', fontSize:12 }}>Tu consultor todavía no completó los datos de la empresa.</div>
+                    )}
                   </div>
                 )}
               </div>

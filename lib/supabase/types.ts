@@ -13,11 +13,23 @@ export interface Organization {
   updated_at: string
 }
 
+export interface Sucursal { nombre: string; direccion: string }
+export interface Responsable { nombre: string; cargo: string; email: string }
+
 export interface Company {
   id: string
   organization_id: string
   name: string
   active: boolean
+  cuit: string | null
+  razon_social: string | null
+  direccion: string | null
+  telefono: string | null
+  email_contacto: string | null
+  logo_url: string | null
+  info_societaria: string | null
+  sucursales: Sucursal[]
+  responsables: Responsable[]
   created_at: string
   updated_at: string
 }

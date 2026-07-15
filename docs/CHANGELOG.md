@@ -160,3 +160,11 @@
 - feat: **página de inicio personalizada** (`showHome`, vista por defecto al iniciar sesión): saludo, KPIs clickeables (solicitudes pendientes, tareas pendientes, documentos pendientes, saldo actual vía `/api/client/ci/dashboard`), próximos vencimientos (documentos con `due_date` en 7 días sin aprobar), documentos recientes, y actividad reciente (últimas 5 notificaciones) con acceso directo a cada módulo.
 - Responde las 3 preguntas que pide el documento funcional: qué está pasando (KPIs + actividad), qué tengo que hacer (solicitudes/tareas pendientes + vencimientos), qué cambió (actividad reciente).
 - Build verificado.
+
+## 2026-07-15 — Portal del Cliente, punto 6: Perfil de la empresa
+
+- feat: migración `bruck-migration-v21.sql` amplía `companies` con `cuit`, `razon_social`, `direccion`, `telefono`, `email_contacto`, `logo_url`, `info_societaria`, `sucursales` (jsonb), `responsables` (jsonb).
+- feat: `GET/PUT /api/admin/clients/[id]/company-profile` (el consultor edita) + `GET /api/client/company-profile` (el cliente ve, solo lectura).
+- feat: sección colapsable "Perfil de la empresa" en la ficha de cliente del admin; vista "🏢 Mi empresa" en el sidebar del cliente.
+- **Simplificaciones documentadas**: `logo_url` es un campo de texto (pegar una URL ya alojada), no un upload de imagen — evita duplicar la lógica de storage. "Bancos" no se agrega porque ya existe como `bruck_cuentas_bancarias`. "Integraciones" no se agrega — sin caso de uso real todavía. Edición es solo del consultor; el cliente ve pero no edita (no hay señal de que necesite autoservicio ahí).
+- Build verificado.

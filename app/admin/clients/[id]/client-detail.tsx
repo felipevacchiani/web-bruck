@@ -103,6 +103,28 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const [inviteError, setInviteError] = useState('')
   const [invitingUser, setInvitingUser] = useState(false)
   const [requests, setRequests] = useState<any[]>([])
+  const [companyProfile, setCompanyProfile] = useState<any>(null)
+  const [showCompanyProfile, setShowCompanyProfile] = useState(false)
+  const [companyForm, setCompanyForm] = useState<any>(null)
+  const [savingCompany, setSavingCompany] = useState(false)
+
+  const loadCompanyProfile = () => {
+    fetch(`/api/admin/clients/${client.id}/company-profile`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) { setCompanyProfile(data.data); setCompanyForm(data.data) } })
+  }
+  useEffect(() => { loadCompanyProfile() }, [client.id])
+
+  const saveCompanyProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingCompany(true)
+    const res = await fetch(`/api/admin/clients/${client.id}/company-profile`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(companyForm),
+    })
+    setSavingCompany(false)
+    if (res.ok) loadCompanyProfile()
+  }
+
   const [showNewRequest, setShowNewRequest] = useState(false)
   const [requestForm, setRequestForm] = useState({ title:'', description:'', category:'otro' as FileCategory, fiscalMonth: new Date().getMonth()+1, fiscalYear: new Date().getFullYear(), dueDate:'' })
   const [savingRequest, setSavingRequest] = useState(false)
@@ -465,6 +487,56 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
               ))}
             </div>
           </div>
+
+          {companyProfile && (
+            <div style={{ background:'rgba(14,14,14,0.8)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: showCompanyProfile ? 16 : 0 }}>
+                <span style={{ color:'white', fontSize:13, fontWeight:600 }}>Perfil de la empresa</span>
+                <button onClick={()=>setShowCompanyProfile(s=>!s)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>
+                  {showCompanyProfile ? 'Ocultar' : 'Editar'}
+                </button>
+              </div>
+              {showCompanyProfile && companyForm && (
+                <form onSubmit={saveCompanyProfile}>
+                  <div className="cd-2col" style={{ marginBottom:14 }}>
+                    <div>
+                      <label style={LBL}>Razón social</label>
+                      <input value={companyForm.razon_social||''} onChange={e=>setCompanyForm((f:any)=>({...f,razon_social:e.target.value}))} style={INP} />
+                    </div>
+                    <div>
+                      <label style={LBL}>CUIT</label>
+                      <input value={companyForm.cuit||''} onChange={e=>setCompanyForm((f:any)=>({...f,cuit:e.target.value}))} placeholder="30-12345678-9" style={INP} />
+                    </div>
+                  </div>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Dirección</label>
+                    <input value={companyForm.direccion||''} onChange={e=>setCompanyForm((f:any)=>({...f,direccion:e.target.value}))} style={INP} />
+                  </div>
+                  <div className="cd-2col" style={{ marginBottom:14 }}>
+                    <div>
+                      <label style={LBL}>Teléfono</label>
+                      <input value={companyForm.telefono||''} onChange={e=>setCompanyForm((f:any)=>({...f,telefono:e.target.value}))} style={INP} />
+                    </div>
+                    <div>
+                      <label style={LBL}>Email de contacto</label>
+                      <input type="email" value={companyForm.email_contacto||''} onChange={e=>setCompanyForm((f:any)=>({...f,email_contacto:e.target.value}))} style={INP} />
+                    </div>
+                  </div>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Logo (URL)</label>
+                    <input value={companyForm.logo_url||''} onChange={e=>setCompanyForm((f:any)=>({...f,logo_url:e.target.value}))} placeholder="https://…" style={INP} />
+                  </div>
+                  <div style={{ marginBottom:16 }}>
+                    <label style={LBL}>Información societaria</label>
+                    <input value={companyForm.info_societaria||''} onChange={e=>setCompanyForm((f:any)=>({...f,info_societaria:e.target.value}))} placeholder="Ej: S.A., inscripta en..." style={INP} />
+                  </div>
+                  <button type="submit" disabled={savingCompany} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingCompany?0.6:1 }}>
+                    {savingCompany?'Guardando…':'Guardar'}
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
 
           <div style={{ background:'rgba(14,14,14,0.8)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: companyUsers.length ? 12 : 0 }}>
