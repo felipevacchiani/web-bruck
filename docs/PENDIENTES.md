@@ -23,9 +23,9 @@ _Última actualización: 2026-07-14_
 - Centro de Clientes tipo CRM.
 - Cualquier funcionalidad de IA (explícitamente fuera de alcance hasta nueva indicación).
 
-## Fase 2 — Contabilidad Interna (pendiente)
+## Fase 2 — Contabilidad Interna (cerrada 2026-07-14)
 
-- [ ] Flujo de fondos: proyección de ingresos/egresos futuros, usando Presupuestos como base para meses sin movimientos reales.
+Conciliaciones, Presupuestos y Flujo de Fondos implementados y verificados en producción. Posible mejora futura (no bloqueante): permitir elegir el rango de meses del Flujo de Fondos (hoy fijo en 3 atrás / 3 adelante).
 
 ## Fase 1 — Enforcement de permisos (parcial)
 

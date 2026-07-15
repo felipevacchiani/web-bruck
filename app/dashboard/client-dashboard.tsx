@@ -39,6 +39,7 @@ export default function ClientDashboard({ profile, files }: Props) {
     { id: 'rubros', label: 'Rubros', icon: '🏷' },
     { id: 'conciliaciones', label: 'Conciliaciones', icon: '🧮' },
     { id: 'presupuestos', label: 'Presupuestos', icon: '🎯' },
+    { id: 'flujo', label: 'Flujo de Fondos', icon: '📈' },
   ]
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push('/login'); router.refresh() }

@@ -15,7 +15,7 @@ interface Props {
   onBack?: () => void
 }
 
-type Tab = 'dashboard' | 'movimientos' | 'bancos' | 'cuentas' | 'contables' | 'rubros' | 'conciliaciones' | 'presupuestos'
+type Tab = 'dashboard' | 'movimientos' | 'bancos' | 'cuentas' | 'contables' | 'rubros' | 'conciliaciones' | 'presupuestos' | 'flujo'
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(n)
@@ -185,6 +185,11 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const [pData, setPData] = useState<any[]>([])
   const [pDrafts, setPDrafts] = useState<Record<string, string>>({})
   const [pSavingId, setPSavingId] = useState<string | null>(null)
+
+  // Flujo de fondos
+  const [flData, setFlData] = useState<any[]>([])
+  const [flSaldoInicial, setFlSaldoInicial] = useState(0)
+  const [flLoaded, setFlLoaded] = useState(false)
 
   // Modal
   const [modal, setModal] = useState<{ type: string; item?: any } | null>(null)
@@ -399,6 +404,15 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
     loadPresupuestos()
   }
 
+  const loadFlujo = useCallback(async () => {
+    const r = await fetch(`${base}/flujo-fondos`)
+    if (!r.ok) { setFlData([]); setFlLoaded(true); return }
+    const d = await r.json()
+    setFlData(d.data || []); setFlSaldoInicial(d.saldoInicial || 0); setFlLoaded(true)
+  }, [base])
+
+  useEffect(() => { if (tab === 'flujo' && !flLoaded) loadFlujo() }, [tab, flLoaded, loadFlujo])
+
   const inlineSave = useCallback(async (id: string, fields: Record<string, unknown>) => {
     setRowSaving(s => ({ ...s, [id]: true }))
     await fetch(`${base}/movimientos/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...fields, clasificacion_origen: 'manual' }) })
@@ -577,6 +591,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
     { id: 'rubros', label: 'Rubros' },
     { id: 'conciliaciones', label: 'Conciliaciones' },
     { id: 'presupuestos', label: 'Presupuestos' },
+    { id: 'flujo', label: 'Flujo de Fondos' },
   ]
 
   const bCuentaObj = cuentas.find(c => c.id === bCuenta)
@@ -1299,6 +1314,40 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                       </div>
                     )
                   })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── FLUJO DE FONDOS ── */}
+          {tab === 'flujo' && (
+            <div>
+              <div style={{ color: '#71717a', fontSize: 12, marginBottom: 16 }}>
+                3 meses hacia atrás (real) y 3 hacia adelante (proyectado con Presupuestos) desde hoy. Saldo inicial del rango: <strong style={{ color: '#a1a1aa' }}>{fmt(flSaldoInicial)}</strong>
+              </div>
+              {!flData.length ? (
+                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
+                  <div style={{ color: '#52525b', fontSize: 13 }}>{flLoaded ? 'Sin datos para mostrar.' : 'Cargando…'}</div>
+                </div>
+              ) : (
+                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr auto', gap: 8, padding: '9px 16px', background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                    {['Mes', 'Ingresos', 'Egresos', 'Neto', 'Saldo', ''].map(h => (
+                      <span key={h} style={{ color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</span>
+                    ))}
+                  </div>
+                  {flData.map((row: any, i: number) => (
+                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr auto', gap: 8, alignItems: 'center', padding: '9px 16px', borderTop: i ? '1px solid rgba(255,255,255,0.05)' : undefined }}>
+                      <span style={{ color: 'white', fontSize: 13 }}>{MONTHS[row.mes - 1]} {row.anio}</span>
+                      <span style={{ color: '#34d399', fontSize: 13 }}>{fmt(row.ingresos)}</span>
+                      <span style={{ color: '#f87171', fontSize: 13 }}>{fmt(row.egresos)}</span>
+                      <span style={{ color: row.neto >= 0 ? '#34d399' : '#f87171', fontSize: 13, fontWeight: 600 }}>{fmt(row.neto)}</span>
+                      <span style={{ color: row.saldo >= 0 ? '#a1a1aa' : '#f87171', fontSize: 13, fontWeight: 600 }}>{fmt(row.saldo)}</span>
+                      <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.05em', ...(row.origen === 'real' ? { background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.25)', color: '#60a5fa' } : { background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.2)', color: '#facc15' }) }}>
+                        {row.origen === 'real' ? 'Real' : 'Proyectado'}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

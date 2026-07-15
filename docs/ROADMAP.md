@@ -30,4 +30,6 @@ Con esto, la Fase 1 (bases de multi-tenant y permisos) queda funcionalmente cerr
 
 1. **Conciliaciones bancarias formales** (v12, hecho 2026-07-14) — tab "Conciliaciones" en `ContabilidadPanel` (admin y cliente), rutas `/api/{admin/ci/[clientId]|client/ci}/conciliaciones[/[id]]`. Cierra formalmente un mes por cuenta con saldo apertura/cierre encadenado entre períodos, distinto del flag suelto por movimiento.
 2. **Presupuestos** (v13, hecho 2026-07-14) — tab "Presupuestos" en `ContabilidadPanel`, rutas `/api/{admin/ci/[clientId]|client/ci}/presupuestos[/[id]]`. Monto por rubro/mes/año, comparado contra lo real ejecutado.
-3. **Flujo de fondos** (pendiente) — ahora que existe Presupuestos, puede usarlo como base de proyección para meses sin movimientos reales todavía.
+3. **Flujo de fondos** (hecho 2026-07-14) — tab "Flujo de Fondos" en `ContabilidadPanel`, endpoint `GET /api/{admin/ci/[clientId]|client/ci}/flujo-fondos`. Sin tabla nueva: combina `bruck_movimientos` reales (meses ≤ actual) con `bruck_presupuestos` proyectados (meses futuros), saldo acumulado encadenado desde el saldo inicial de las cuentas. A nivel de cliente completo, no por cuenta individual (los presupuestos tampoco están segmentados por cuenta).
+
+Con esto, la Fase 2 (Contabilidad Interna) queda funcionalmente cerrada: Conciliaciones, Presupuestos y Flujo de Fondos.

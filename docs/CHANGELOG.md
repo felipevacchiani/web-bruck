@@ -1,5 +1,13 @@
 # Changelog — BRUCK APP
 
+## 2026-07-14 — Fase 2: flujo de fondos (cierre de Fase 2)
+
+- feat: endpoint `GET /api/{admin/ci/[clientId]|client/ci}/flujo-fondos` — sin tabla nueva. Combina `bruck_movimientos` reales (períodos ≤ mes actual) con `bruck_presupuestos` proyectados (períodos futuros), saldo acumulado encadenado desde `bruck_cuentas_bancarias.saldo_inicial`. Rango por defecto: 3 meses atrás, 3 adelante (parámetros `desde`/`hasta` opcionales en formato `YYYY-MM`).
+- feat: tab "Flujo de Fondos" en `ContabilidadPanel` — tabla Mes/Ingresos/Egresos/Neto/Saldo con badge Real/Proyectado. Agregado al sidebar embebido del cliente.
+- Alcance a nivel de cliente completo, no por cuenta bancaria individual (consistente con que Presupuestos tampoco está segmentado por cuenta).
+- Build y typecheck verificados (67 errores preexistentes sin cambios).
+- **Fase 2 (Contabilidad Interna: Conciliaciones + Presupuestos + Flujo de Fondos) queda cerrada.**
+
 ## 2026-07-14 — Fase 2: presupuestos por rubro/período
 
 - feat: migración `bruck-migration-v13.sql` crea `bruck_presupuestos` (`client_id`, `company_id`, `rubro_id`, `mes`, `anio`, `monto`, `UNIQUE(rubro_id,mes,anio)`) con RLS (admin todo, cliente SELECT propio).
