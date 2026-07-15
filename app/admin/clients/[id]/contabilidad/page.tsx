@@ -12,12 +12,13 @@ export default async function ContabilidadPage({ params }: Props) {
   if (!user) redirect('/login')
 
   const admin = createAdminClient()
-  const { data: me } = await (admin.from('profiles') as any).select('role').eq('id', user.id).single()
-  if (me?.role !== 'admin') redirect('/dashboard')
+  const { data: me } = await (admin.from('profiles') as any).select('role, organization_id').eq('id', user.id).single()
+  if (!['admin','super_admin'].includes(me?.role)) redirect('/dashboard')
 
   const { data: client } = await (admin.from('profiles') as any)
-    .select('id, full_name, company, email').eq('id', id).eq('role', 'client').single()
+    .select('id, full_name, company, email, organization_id').eq('id', id).eq('role', 'client').single()
   if (!client) notFound()
+  if (me.role !== 'super_admin' && client.organization_id !== me.organization_id) notFound()
 
   return <ContabilidadPanel clientId={id} clientName={client.full_name || client.company || client.email} />
 }

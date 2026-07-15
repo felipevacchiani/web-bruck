@@ -18,7 +18,7 @@ export async function verifyClientAuth(action: PermissionAction = 'ver') {
     .select('role, active').eq('id', user.id).single()
   if (!profile || !profile.active) return null
 
-  if (profile.role !== 'admin') {
+  if (!['admin','super_admin'].includes(profile.role)) {
     const allowed = await hasPermission(admin, user.id, 'contabilidad', action)
     if (!allowed) return null
   }

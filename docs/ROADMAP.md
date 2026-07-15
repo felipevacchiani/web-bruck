@@ -41,3 +41,15 @@ Con esto, la Fase 2 (Contabilidad Interna) queda funcionalmente cerrada: Concili
 3. **Estados de documento más ricos** — confirmado por el usuario que los estados actuales (`pendiente/visto/aprobado`) están bien, no requiere cambios.
 
 Con esto, la Fase 3 (Gestión Documental avanzada) queda cerrada: etiquetas libres + versionado inmutable.
+
+## Fase 4 — Multi-tenant real: Super Administrador (hecha 2026-07-14)
+
+Requisito de negocio del usuario: vender BRUCK APP a múltiples consultores/líderes, no solo usarlo internamente. Se completó el modelo de 4 niveles del documento funcional (BRUCK → Super Admin → Consultor → Empresas → Usuarios):
+
+1. **Esquema** (v16): `profiles.organization_id` + rol `super_admin`. `felipevacchiani@gmail.com` promovido a `super_admin`.
+2. **Autorización**: los 31 puntos del código que chequeaban `role === 'admin'` ahora aceptan `admin` **o** `super_admin`.
+3. **UI Super Admin**: `/admin/organizaciones` (visible solo para `super_admin`) — crear una organización nueva + su primer consultor (usuario `admin` con contraseña inicial), ver empresas/consultores por organización.
+4. **Scoping real**: todas las rutas admin (clientes, archivos, Contabilidad Interna, alertas, auditoría, reportes) filtran por `organization_id` — un consultor ya no ve clientes/datos de otro consultor. Solo `super_admin` ve todo.
+5. **Creación de cliente corregida**: ahora crea `company` + `membership` en la organización del consultor (antes quedaba huérfano, sin scoping posible).
+
+Ver [BASE_DATOS.md](./BASE_DATOS.md) para el detalle del enforcement (a nivel de API route, no de RLS) y su limitación conocida.

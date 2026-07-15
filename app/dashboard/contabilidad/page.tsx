@@ -15,7 +15,7 @@ export default async function ClienteContabilidadPage({ searchParams }: { search
     .select('full_name, company, email, role, active').eq('id', user.id).single()
 
   if (!profile || !profile.active) redirect('/login')
-  if (profile.role === 'admin') redirect('/admin')
+  if (['admin','super_admin'].includes(profile.role)) redirect('/admin')
 
   const clientName = profile.full_name || profile.company || profile.email
   const params = await searchParams

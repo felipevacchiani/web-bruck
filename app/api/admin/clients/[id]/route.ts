@@ -5,18 +5,23 @@ import { NextRequest, NextResponse } from 'next/server'
 
 interface Params { params: Promise<{ id: string }> }
 
-async function verifyAdminAndGetUser() {
+async function verifyAdminAndGetUser(clientId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { admin: null, user: null }
   const admin = createAdminClient()
-  const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
-  return profile?.role === 'admin' ? { admin, user } : { admin: null, user: null }
+  const { data: profile } = await admin.from('profiles').select('role, organization_id').eq('id', user.id).single()
+  if (!['admin','super_admin'].includes(profile?.role)) return { admin: null, user: null }
+  if (profile.role !== 'super_admin') {
+    const { data: client } = await admin.from('profiles').select('organization_id').eq('id', clientId).single()
+    if (!client || client.organization_id !== profile.organization_id) return { admin: null, user: null }
+  }
+  return { admin, user }
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   const { id } = await params
-  const { admin, user } = await verifyAdminAndGetUser()
+  const { admin, user } = await verifyAdminAndGetUser(id)
   if (!admin || !user) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const body = await req.json()
@@ -42,7 +47,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const { id } = await params
-  const { admin, user } = await verifyAdminAndGetUser()
+  const { admin, user } = await verifyAdminAndGetUser(id)
   if (!admin || !user) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   // Fetch client info for audit before deleting

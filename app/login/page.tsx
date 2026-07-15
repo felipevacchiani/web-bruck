@@ -47,7 +47,7 @@ function LoginForm() {
       .eq('id', data.user.id)
       .single()
 
-    router.push(profile?.role === 'admin' ? '/admin' : '/dashboard')
+    router.push(['admin','super_admin'].includes(profile?.role) ? '/admin' : '/dashboard')
     router.refresh()
   }
 

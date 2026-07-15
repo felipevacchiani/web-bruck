@@ -32,8 +32,9 @@ export default async function AuditoriaPage({
   if (!user) redirect('/login')
 
   const adminSb = createAdminClient()
-  const { data: profile } = await adminSb.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') redirect('/dashboard')
+  const { data: profile } = await adminSb.from('profiles').select('role, organization_id').eq('id', user.id).single()
+  if (!['admin','super_admin'].includes(profile?.role)) redirect('/dashboard')
+  const isSuperAdmin = profile?.role === 'super_admin'
 
   const sp = await searchParams
   const page   = Math.max(1, parseInt(sp.page || '1'))
@@ -48,6 +49,14 @@ export default async function AuditoriaPage({
     .range(offset, offset + limit - 1)
 
   if (action) query = query.eq('action', action)
+
+  // La actividad se registra con el user_id de quien la ejecuta
+  // (siempre un admin/consultor). Filtramos por los consultores de
+  // la propia organización para no mezclar auditoría entre orgs.
+  if (!isSuperAdmin) {
+    const { data: orgAdmins } = await adminSb.from('profiles').select('id').eq('organization_id', profile?.organization_id).eq('role', 'admin')
+    query = query.in('user_id', (orgAdmins || []).map((a: any) => a.id))
+  }
 
   const { data: logs, count } = await query
 

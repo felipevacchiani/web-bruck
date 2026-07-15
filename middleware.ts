@@ -30,7 +30,7 @@ export async function middleware(request: NextRequest) {
   if (publicRoutes.includes(pathname)) {
     if (user) {
       const profile = await getProfile(supabase, user.id)
-      const redirectTo = profile?.role === 'admin' ? '/admin' : '/dashboard'
+      const redirectTo = ['admin','super_admin'].includes(profile?.role) ? '/admin' : '/dashboard'
       return NextResponse.redirect(new URL(redirectTo, request.url))
     }
     return supabaseResponse
@@ -53,11 +53,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login?error=account_disabled', request.url))
   }
 
-  if (pathname.startsWith('/admin') && profile.role !== 'admin') {
+  if (pathname.startsWith('/admin') && !['admin','super_admin'].includes(profile.role)) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  if (pathname === '/dashboard' && profile.role === 'admin') {
+  if (pathname === '/dashboard' && ['admin','super_admin'].includes(profile.role)) {
     return NextResponse.redirect(new URL('/admin', request.url))
   }
 

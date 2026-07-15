@@ -12,12 +12,18 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const admin = createAdminClient()
-  const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  const { data: profile } = await admin.from('profiles').select('role, organization_id').eq('id', user.id).single()
+  if (!['admin','super_admin'].includes(profile?.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
-  const { data: existing } = await (admin.from('files') as any).select('is_current').eq('id', id).single()
+  const { data: existing } = await (admin.from('files') as any).select('is_current, client_id').eq('id', id).single()
   if (existing && !existing.is_current) {
     return NextResponse.json({ error: 'Versión histórica: es inmutable, no se puede editar' }, { status: 409 })
+  }
+  if (existing && profile.role !== 'super_admin') {
+    const { data: targetClient } = await (admin.from('profiles') as any).select('organization_id').eq('id', existing.client_id).single()
+    if (!targetClient || targetClient.organization_id !== profile.organization_id) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+    }
   }
 
   const body = await req.json().catch(() => ({}))
@@ -52,8 +58,8 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const admin = createAdminClient()
-  const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  const { data: profile } = await admin.from('profiles').select('role, organization_id').eq('id', user.id).single()
+  if (!['admin','super_admin'].includes(profile?.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const body = await req.json().catch(() => ({}))
 
@@ -61,6 +67,12 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   const { data: fileInfo } = await (admin.from('files') as any).select('name, client_id, is_current').eq('id', id).single()
   if (fileInfo && !fileInfo.is_current) {
     return NextResponse.json({ error: 'Versión histórica: es inmutable, no se puede eliminar' }, { status: 409 })
+  }
+  if (fileInfo && profile.role !== 'super_admin') {
+    const { data: targetClient } = await (admin.from('profiles') as any).select('organization_id').eq('id', fileInfo.client_id).single()
+    if (!targetClient || targetClient.organization_id !== profile.organization_id) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+    }
   }
 
   if (body.storage_path) {

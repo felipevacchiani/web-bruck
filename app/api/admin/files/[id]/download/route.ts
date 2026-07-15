@@ -14,9 +14,16 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const { data: file } = await admin.from('files').select('storage_path, name, client_id').eq('id', id).single()
   if (!file) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
 
-  const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin' && (file as any).client_id !== user.id) {
+  const { data: profile } = await admin.from('profiles').select('role, organization_id').eq('id', user.id).single()
+  const isAdminRole = ['admin','super_admin'].includes(profile?.role)
+  if (!isAdminRole && (file as any).client_id !== user.id) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  }
+  if (isAdminRole && profile?.role !== 'super_admin') {
+    const { data: targetClient } = await admin.from('profiles').select('organization_id').eq('id', (file as any).client_id).single()
+    if (!targetClient || (targetClient as any).organization_id !== profile.organization_id) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+    }
   }
 
   const { data: signed } = await admin.storage

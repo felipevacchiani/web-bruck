@@ -21,31 +21,33 @@ export default async function AlertasPage() {
   if (!user) redirect('/login')
 
   const adminSb = createAdminClient()
-  const { data: profile } = await adminSb.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') redirect('/dashboard')
+  const { data: profile } = await adminSb.from('profiles').select('role, organization_id').eq('id', user.id).single()
+  if (!['admin','super_admin'].includes(profile?.role)) redirect('/dashboard')
+  const isSuperAdmin = profile?.role === 'super_admin'
 
-  // Fetch all files with due_date, joined with client profiles
+  let clientsQuery = adminSb.from('profiles').select('id, full_name, company, email').eq('role', 'client')
+  if (!isSuperAdmin) clientsQuery = clientsQuery.eq('organization_id', profile?.organization_id)
+  const { data: clients } = await clientsQuery
+
+  const clientMap: Record<string, any> = {}
+  for (const c of clients || []) clientMap[c.id] = c
+
+  // Fetch all files with due_date, joined con perfiles de cliente
   const { data: rawFiles } = await adminSb
     .from('files')
     .select('id, name, due_date, doc_status, category, client_id, group_title, fiscal_month, fiscal_year')
     .not('due_date', 'is', null)
     .order('due_date', { ascending: true })
 
-  const { data: clients } = await adminSb
-    .from('profiles')
-    .select('id, full_name, company, email')
-    .eq('role', 'client')
-
-  const clientMap: Record<string, any> = {}
-  for (const c of clients || []) clientMap[c.id] = c
-
   const today = new Date(); today.setHours(0,0,0,0)
 
-  const files = (rawFiles || []).map(f => ({
-    ...f,
-    days: daysUntil(f.due_date!),
-    client: clientMap[f.client_id] ?? null,
-  }))
+  const files = (rawFiles || [])
+    .filter(f => isSuperAdmin || clientMap[f.client_id])
+    .map(f => ({
+      ...f,
+      days: daysUntil(f.due_date!),
+      client: clientMap[f.client_id] ?? null,
+    }))
 
   const overdue  = files.filter(f => f.days < 0 && f.doc_status !== 'aprobado')
   const today_   = files.filter(f => f.days === 0 && f.doc_status !== 'aprobado')

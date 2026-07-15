@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'client'
+export type UserRole = 'admin' | 'client' | 'super_admin'
 
 // ── Multi-tenant (Fase 1, Paso 1) ─────────────────────────────────────────
 // Por ahora solo existe una organización ('bruck'). companies, memberships
@@ -63,6 +63,7 @@ export interface Profile {
   full_name: string | null
   company: string | null
   company_id: string | null
+  organization_id: string | null
   role: UserRole
   active: boolean
   created_at: string

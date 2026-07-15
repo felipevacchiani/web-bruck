@@ -4,6 +4,15 @@ _Última actualización: 2026-07-14_
 
 No existe un esquema único consolidado: se reconstruye leyendo las migraciones incrementales aplicadas en orden (`migration.sql`, `bruck-migration-v2.sql` … `v6.sql`, `supabase-category-migration.sql`, `supabase-rls.sql`).
 
+## Multi-tenant real (Fase 4, 2026-07-14)
+
+### `profiles.organization_id` + rol `super_admin` (v16)
+Cada `profile` (admin o client) pertenece a una `organization`. Nuevo rol `super_admin`: ve y administra **todas** las organizaciones (equipo BRUCK/dueño de la plataforma). Un `admin` (consultor) solo ve clientes/empresas de **su propia** organización. `is_admin()` (usada en casi todas las políticas RLS) se amplió para incluir `super_admin`.
+
+**Enforcement real está a nivel de API route (`service_role`), no de RLS.** Cada endpoint admin verifica explícitamente que el cliente/archivo/dato solicitado pertenezca a `organization_id` del admin que hace la request (salvo que sea `super_admin`). RLS sigue siendo binario (`admin`/`super_admin` = ve todo, `client` = solo lo suyo) — no filtra por organización a nivel de base de datos. Esto es consistente con el resto del proyecto (Fase 1 también enforced permisos a nivel de API, no de RLS), pero es una superficie a reforzar más adelante si se necesita defensa en profundidad real contra un bug de una API route.
+
+Crear un cliente ahora también crea su `company` + `membership` (con plantilla "Cliente Estándar" de su organización) — antes esto no pasaba, dejando huérfanos los clientes creados después de la Fase 1. Crear una organización nueva (`POST /api/super-admin/organizations`, solo `super_admin`) siembra sus propias plantillas "Cliente Estándar"/"Auditor" (antes solo existían para BRUCK).
+
 ## Multi-tenant (Fase 1, en progreso)
 
 ### `organizations` (v7)

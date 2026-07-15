@@ -25,3 +25,13 @@ Confirmado con las instrucciones maestras del proyecto: no se desarrolla ninguna
 ## Pendiente de decisión
 
 Foco de la próxima fase de desarrollo funcional una vez cerrada la Fase 1 (ver [ROADMAP.md](./ROADMAP.md) y [PENDIENTES.md](./PENDIENTES.md)).
+
+## 2026-07-14 — Enforcement de multi-tenant a nivel de API route, no de RLS
+
+**Contexto:** al construir el scoping por organización (Fase 4), había que decidir si el aislamiento entre consultores se hace cumplir en RLS (a nivel de base de datos) o en cada API route (a nivel de aplicación, con `service_role`).
+
+**Decisión:** se implementó a nivel de API route, replicando el mismo patrón que ya usa todo el proyecto (Fase 1 hizo lo mismo con los permisos granulares). Cada endpoint admin verifica explícitamente `organization_id` antes de operar. RLS se mantiene binaria (`admin`/`super_admin` ve todo vía `is_admin()`, `client` ve solo lo suyo) — **no filtra por organización**.
+
+**Por qué:** consistencia con el resto del código (toda la lógica de negocio ya vive en las API routes con `service_role`, no hay flujos que dependan de RLS para autorización fina), y porque hacerlo en RLS hubiera requerido reescribir todas las políticas existentes de `bruck_*`, `files`, `companies`, etc. para incluir `organization_id` en cada una — mucho mayor superficie de cambio para el mismo resultado práctico hoy (un solo entorno real, sin consultores externos todavía).
+
+**Riesgo aceptado:** si una API route tiene un bug de scoping, no hay red de seguridad a nivel de base de datos. Documentado como pendiente en `docs/PENDIENTES.md` — reforzar con RLS real antes de vender a un segundo consultor externo de verdad.

@@ -9,14 +9,20 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const admin = createAdminClient()
-  const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  const { data: profile } = await admin.from('profiles').select('role, organization_id').eq('id', user.id).single()
+  if (!['admin','super_admin'].includes(profile?.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const formData = await req.formData()
   const file = formData.get('file') as File | null
   if (!file) return NextResponse.json({ error: 'Archivo requerido' }, { status: 400 })
 
   const clientId     = formData.get('client_id') as string
+  if (profile.role !== 'super_admin') {
+    const { data: targetClient } = await admin.from('profiles').select('organization_id').eq('id', clientId).single()
+    if (!targetClient || targetClient.organization_id !== profile.organization_id) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+    }
+  }
   const name         = (formData.get('name') as string) || file.name
   const description  = (formData.get('description') as string) || null
   const category     = (formData.get('category') as string) || 'otro'

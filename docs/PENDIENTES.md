@@ -23,6 +23,13 @@ _Última actualización: 2026-07-14_
 - Centro de Clientes tipo CRM.
 - Cualquier funcionalidad de IA (explícitamente fuera de alcance hasta nueva indicación).
 
+## Fase 4 — Multi-tenant real (mayormente cerrada, con gaps conocidos)
+
+- [ ] **RLS no filtra por organización** — el enforcement de aislamiento entre consultores está a nivel de API route (`service_role`), no de RLS. Si una API route tuviera un bug de scoping, no hay red de seguridad a nivel de base de datos. Reforzar con políticas RLS por `organization_id` cuando haya más de un consultor real usando la plataforma.
+- [ ] Auditoría (`/admin/auditoria`) se scopea de forma aproximada (por `user_id` del consultor), no por `organization_id` directo en `audit_logs` — funciona pero no es tan preciso como el resto del scoping.
+- [ ] No hay auto-registro de consultores (`super_admin` los crea manualmente) — suficiente para las primeras ventas, revisar si hace falta self-signup más adelante.
+- [ ] No probado end-to-end con una segunda organización real todavía — verificar con el usuario antes de vender a un consultor real.
+
 ## Fase 3 — Gestión Documental (cerrada 2026-07-14)
 
 Etiquetas libres + versionado inmutable implementados y verificados. Estados de documento confirmados como suficientes por el usuario, sin cambios.

@@ -13,6 +13,8 @@ export default async function ClientDetailPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const { data: myProfile } = await supabase.from('profiles').select('role, organization_id').eq('id', user.id).single()
+
   const { data: client } = await supabase
     .from('profiles')
     .select('*')
@@ -21,6 +23,7 @@ export default async function ClientDetailPage({ params }: Props) {
     .single()
 
   if (!client) notFound()
+  if (myProfile?.role !== 'super_admin' && client.organization_id !== myProfile?.organization_id) notFound()
 
   const { data: files } = await supabase
     .from('files')

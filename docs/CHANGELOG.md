@@ -96,3 +96,13 @@
 - chore: eliminado archivo huérfano `app/output/app/admin/clients/[id]/client-detail.tsx` (no enrutado, no referenciado).
 - docs: actualizado `README.md` (versión real de Next.js 14, estructura con módulo Contabilidad Interna).
 - docs: creada carpeta `/docs` (ARQUITECTURA, BASE_DATOS, REGLAS_NEGOCIO, DECISIONES, ROADMAP, PENDIENTES, CHANGELOG).
+
+## 2026-07-14 — Fase 4: Super Administrador / multi-tenant real
+
+- feat: migración `bruck-migration-v16.sql` agrega `profiles.organization_id`, rol `super_admin` (constraint ampliado), `is_admin()` ampliada, promueve `felipevacchiani@gmail.com` a `super_admin`.
+- feat: 31 puntos del código (`middleware.ts` + rutas admin/CI/files + páginas) actualizados de `role === 'admin'` a `['admin','super_admin'].includes(role)`, vía reemplazo sistemático verificado (regex + build).
+- feat: `POST/GET /api/super-admin/organizations` (solo `super_admin`) — crear organización + su primer consultor, con sus propias plantillas de permisos sembradas. UI en `/admin/organizaciones`.
+- feat: **scoping real por organización** en: listado y ficha de clientes, archivos (subir/editar/eliminar/versionar/descargar/ver), las 14 rutas de Contabilidad Interna del admin, alertas, auditoría (aproximado), reportes CSV. Un consultor (`admin`) ya no ve ni puede tocar datos de otro consultor; `super_admin` ve todo.
+- fix: creación de cliente (`POST /api/admin/clients`) ahora crea `company` + `membership` (con plantilla "Cliente Estándar") en la organización del consultor — antes el cliente quedaba sin `company_id`/`organization_id`, roto para cualquier scoping futuro.
+- Build verificado. Typecheck sube a ~93 errores (mismo patrón preexistente de `never` por falta de casts `as any`, ya tolerado por `next.config.js` `ignoreBuildErrors: true` en todo el proyecto — no bloquea build).
+- **Limitación conocida documentada**: el aislamiento entre organizaciones es a nivel de API route, no de RLS. Ver [PENDIENTES.md](./PENDIENTES.md).

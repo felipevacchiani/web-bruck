@@ -12,12 +12,18 @@ export async function POST(req: NextRequest, { params }: Params) {
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const admin = createAdminClient()
-  const { data: profile } = await (admin.from('profiles') as any).select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  const { data: profile } = await (admin.from('profiles') as any).select('role, organization_id').eq('id', user.id).single()
+  if (!['admin','super_admin'].includes(profile?.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const { data: prev } = await (admin.from('files') as any).select('*').eq('id', id).single()
   if (!prev) return NextResponse.json({ error: 'Documento no encontrado' }, { status: 404 })
   if (!prev.is_current) return NextResponse.json({ error: 'Solo se puede versionar la versión vigente' }, { status: 409 })
+  if (profile.role !== 'super_admin') {
+    const { data: targetClient } = await (admin.from('profiles') as any).select('organization_id').eq('id', prev.client_id).single()
+    if (!targetClient || targetClient.organization_id !== profile.organization_id) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+    }
+  }
 
   const formData = await req.formData()
   const file = formData.get('file') as File | null

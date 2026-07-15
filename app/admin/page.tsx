@@ -34,34 +34,44 @@ export default async function AdminPage() {
 
   const adminSupabase = createAdminClient()
 
+  const { data: myProfile } = await adminSupabase.from('profiles').select('role, organization_id').eq('id', user.id).single()
+  const isSuperAdmin = myProfile?.role === 'super_admin'
+
+  let clientsQuery = adminSupabase.from('profiles').select('*').eq('role', 'client').order('created_at', { ascending: false })
+  if (!isSuperAdmin) clientsQuery = clientsQuery.eq('organization_id', myProfile?.organization_id)
+
   const [
     { data: clients },
     { data: allFiles },
     { data: recentAudit },
     { data: dueDateFiles },
   ] = await Promise.all([
-    adminSupabase.from('profiles').select('*').eq('role', 'client').order('created_at', { ascending: false }),
+    clientsQuery,
     adminSupabase.from('files').select('client_id, doc_status, due_date'),
     adminSupabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(6),
-    adminSupabase.from('files').select('id, due_date, doc_status').not('due_date', 'is', null),
+    adminSupabase.from('files').select('id, client_id, due_date, doc_status').not('due_date', 'is', null),
   ])
 
+  const scopedClientIds = new Set((clients || []).map((c: any) => c.id))
+  const scopedFiles = isSuperAdmin ? (allFiles || []) : (allFiles || []).filter((f: any) => scopedClientIds.has(f.client_id))
+  const scopedDueDateFiles = isSuperAdmin ? (dueDateFiles || []) : (dueDateFiles || []).filter((f: any) => scopedClientIds.has(f.client_id))
+
   const fileCountMap: Record<string, number> = {}
-  for (const f of allFiles || []) fileCountMap[f.client_id] = (fileCountMap[f.client_id] || 0) + 1
+  for (const f of scopedFiles) fileCountMap[f.client_id] = (fileCountMap[f.client_id] || 0) + 1
 
   const list = (clients || []).map((c: any) => ({ ...c, file_count: fileCountMap[c.id] ?? 0 }))
 
-  const totalFiles    = (allFiles || []).length
+  const totalFiles    = scopedFiles.length
   const activeCount   = list.filter((c: any) => c.active).length
-  const pendingDocs   = (allFiles || []).filter(f => f.doc_status === 'pendiente').length
-  const approvedDocs  = (allFiles || []).filter(f => f.doc_status === 'aprobado').length
+  const pendingDocs   = scopedFiles.filter((f: any) => f.doc_status === 'pendiente').length
+  const approvedDocs  = scopedFiles.filter((f: any) => f.doc_status === 'aprobado').length
 
   const today = new Date(); today.setHours(0,0,0,0)
-  const overdueDocs = (dueDateFiles || []).filter(f => {
+  const overdueDocs = scopedDueDateFiles.filter((f: any) => {
     if (f.doc_status === 'aprobado') return false
     return daysUntil(f.due_date!) < 0
   }).length
-  const soonDocs = (dueDateFiles || []).filter(f => {
+  const soonDocs = scopedDueDateFiles.filter((f: any) => {
     if (f.doc_status === 'aprobado') return false
     const d = daysUntil(f.due_date!)
     return d >= 0 && d <= 7
@@ -126,6 +136,7 @@ export default async function AdminPage() {
               { href: '/admin/alertas', label: `⚠ Alertas${overdueDocs + soonDocs > 0 ? ` (${overdueDocs + soonDocs})` : ''}`, active: false },
               { href: '/admin/reportes', label: '📊 Reportes', active: false },
               { href: '/admin/auditoria', label: '📋 Auditoría', active: false },
+              ...(isSuperAdmin ? [{ href: '/admin/organizaciones', label: '🏢 Organizaciones', active: false }] : []),
             ].map(n => (
               <Link key={n.href} href={n.href} style={{
                 fontSize: 12, fontWeight: 500, padding: '7px 14px', borderRadius: 9,

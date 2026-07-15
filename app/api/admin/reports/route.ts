@@ -9,8 +9,9 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const admin = createAdminClient()
-  const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  const { data: profile } = await admin.from('profiles').select('role, organization_id').eq('id', user.id).single()
+  if (!['admin','super_admin'].includes(profile?.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  const isSuperAdmin = profile?.role === 'super_admin'
 
   const sp = req.nextUrl.searchParams
   const clientId   = sp.get('client_id') || ''
@@ -18,25 +19,29 @@ export async function GET(req: NextRequest) {
   const status     = sp.get('status') || ''
   const fiscalYear = sp.get('fiscal_year') || ''
 
+  let clientsScopeQuery = admin.from('profiles').select('id, full_name, company, email').eq('role', 'client')
+  if (!isSuperAdmin) clientsScopeQuery = clientsScopeQuery.eq('organization_id', profile.organization_id)
+  const { data: clients } = await clientsScopeQuery
+
+  const clientMap: Record<string, any> = {}
+  for (const c of clients || []) clientMap[c.id] = c
+
+  if (clientId && !isSuperAdmin && !clientMap[clientId]) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  }
+
   let filesQuery = admin
     .from('files')
     .select('id, name, group_title, document_label, category, tax_subcategory, doc_status, due_date, fiscal_month, fiscal_year, file_size, created_at, client_id')
     .order('created_at', { ascending: false })
 
   if (clientId)   filesQuery = filesQuery.eq('client_id', clientId)
+  else if (!isSuperAdmin) filesQuery = filesQuery.in('client_id', Object.keys(clientMap))
   if (category)   filesQuery = filesQuery.eq('category', category)
   if (status)     filesQuery = filesQuery.eq('doc_status', status)
   if (fiscalYear) filesQuery = filesQuery.eq('fiscal_year', parseInt(fiscalYear))
 
   const { data: files } = await filesQuery
-
-  const { data: clients } = await admin
-    .from('profiles')
-    .select('id, full_name, company, email')
-    .eq('role', 'client')
-
-  const clientMap: Record<string, any> = {}
-  for (const c of clients || []) clientMap[c.id] = c
 
   const catLabel = (v: string) => FILE_CATEGORIES.find(c => c.value === v)?.label ?? v
   const statusLabel = (v: string) => DOC_STATUSES.find(s => s.value === v)?.label ?? v

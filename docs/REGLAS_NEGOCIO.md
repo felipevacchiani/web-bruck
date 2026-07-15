@@ -8,19 +8,21 @@ _Última actualización: 2026-07-14_
 - El único sistema a evolucionar es el portal (`portal.somosbruck.com`). La landing institucional (`somosbruck.com`) está **fuera de alcance**.
 - No se desarrollan funcionalidades de IA salvo que el documento funcional las marque explícitamente como "evolución futura".
 
-## Roles (estado actual)
+## Roles (estado actual, desde Fase 4)
 
-- `admin`: equipo BRUCK. Gestiona clientes, sube documentos, administra Contabilidad Interna de cualquier cliente, ve auditoría y alertas.
-- `client`: usuario de una empresa cliente. Ve solo sus propios archivos y su propia Contabilidad Interna.
+- `super_admin`: equipo BRUCK/dueño de la plataforma. Ve y administra **todas** las organizaciones (consultores). Crea organizaciones nuevas desde `/admin/organizaciones`. Hoy solo `felipevacchiani@gmail.com`.
+- `admin` (consultor/líder): gestiona clientes, sube documentos, administra Contabilidad Interna — pero **solo de las empresas de su propia organización**. No ve ni puede tocar datos de otro consultor.
+- `client`: usuario de una empresa cliente. Ve solo sus propios archivos y su propia Contabilidad Interna, según la plantilla de permisos de su `membership`.
 - `profiles.active = false` bloquea el acceso completo, independientemente del rol.
 
-No hay roles intermedios, equipos ni permisos por acción — cualquier admin puede todo, cualquier client solo lo suyo.
+Modelo de 4 niveles: BRUCK APP → Super Admin → Consultor (organización) → Empresas → Usuarios. Dentro de una organización no hay roles intermedios ni equipos todavía — cualquier `admin` de esa organización puede todo dentro de ella, cualquier `client` solo lo suyo (matizado por permisos granulares, ver Fase 1).
 
 ## Gestión documental
 
 - Categorías fijas: `impuestos`, `financiero`, `legal`, `laboral`, `otro` (con subcategoría fiscal para impuestos: IVA, Ganancias, IIBB/SICREB, cargas 931).
 - Estado de documento: `pendiente → visto → aprobado`.
-- Los documentos pueden agruparse (`file_group_id`) para versionado simple, pero no hay versionado inmutable formal como describe el documento funcional.
+- Los documentos pueden agruparse (`file_group_id`, agrupación de varios archivos subidos juntos) y además tienen versionado inmutable formal (`version`/`is_current`/`previous_version_id`, Fase 3): subir una nueva versión nunca borra ni sobreescribe la anterior.
+- Etiquetas libres (`tags`) complementan la categoría fija para búsqueda/filtro propio del cliente.
 
 ## Contabilidad Interna
 
