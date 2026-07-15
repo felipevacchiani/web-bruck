@@ -28,7 +28,15 @@ _Última actualización: 2026-07-14_
 - [ ] **RLS no filtra por organización** — el enforcement de aislamiento entre consultores está a nivel de API route (`service_role`), no de RLS. Si una API route tuviera un bug de scoping, no hay red de seguridad a nivel de base de datos. Reforzar con políticas RLS por `organization_id` cuando haya más de un consultor real usando la plataforma.
 - [ ] Auditoría (`/admin/auditoria`) se scopea de forma aproximada (por `user_id` del consultor), no por `organization_id` directo en `audit_logs` — funciona pero no es tan preciso como el resto del scoping.
 - [ ] No hay auto-registro de consultores (`super_admin` los crea manualmente) — suficiente para las primeras ventas, revisar si hace falta self-signup más adelante.
-- [ ] No probado end-to-end con una segunda organización real todavía — verificar con el usuario antes de vender a un consultor real.
+- [x] Probado end-to-end con una segunda organización real de prueba (2026-07-15): aislamiento de clientes, actividad y datos confirmado; se dejó como sandbox permanente para futuras pruebas.
+
+## Sistema de permisos — próximos pasos (documento funcional, arquitectura general)
+
+- [x] Perfiles predefinidos (Director, Gerencia Administrativa, Tesorería, Administración, RRHH) — sembrados 2026-07-15, aproximados a la granularidad actual (ver `CHANGELOG.md`).
+- [ ] Selector de empresa sin cerrar sesión (un usuario con memberships en varias empresas hoy no tiene forma de cambiar entre ellas en la UI).
+- [ ] UI del consultor para crear/editar empresas de forma completa (invitar usuarios, asignar plantilla de permisos) — hoy la creación de cliente es básica (nombre/email/empresa/contraseña).
+- [ ] Funciones adicionales de Super Admin: suspender/reactivar consultores, licencias, planes, backups, acceso temporal auditado a una organización.
+- [ ] Permisos por categoría dentro de un módulo (ej. RRHH filtrado solo a documentos `laboral`, no todo `archivos`) — requiere ampliar el modelo de `permission_template_actions` más allá de módulo×acción.
 
 ## Fase 3 — Gestión Documental (cerrada 2026-07-14)
 

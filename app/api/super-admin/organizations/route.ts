@@ -64,18 +64,25 @@ export async function POST(req: NextRequest) {
   if (orgError) return NextResponse.json({ error: orgError.message }, { status: 500 })
 
   // Sembrar las mismas plantillas de permisos base que tiene BRUCK
-  // (v10), para que el nuevo consultor pueda usar el modelo de
-  // permisos desde el primer día.
-  const seedTemplates = [
-    { name: 'Cliente Estándar', description: 'Acceso completo a sus propios archivos y contabilidad interna', actions: ['ver', 'crear', 'editar', 'eliminar'] },
-    { name: 'Auditor', description: 'Solo lectura de archivos y contabilidad interna, sin capacidad de modificar datos', actions: ['ver'] },
+  // (v10 + v17), para que el nuevo consultor pueda usar el modelo
+  // de permisos desde el primer día.
+  const FULL = ['ver', 'crear', 'editar', 'eliminar']
+  const OPERATIVO = ['ver', 'crear', 'editar']
+  const seedTemplates: { name: string; description: string; perModule: Record<string, string[]> }[] = [
+    { name: 'Cliente Estándar', description: 'Acceso completo a sus propios archivos y contabilidad interna', perModule: { archivos: FULL, contabilidad: FULL } },
+    { name: 'Auditor', description: 'Solo lectura de archivos y contabilidad interna, sin capacidad de modificar datos', perModule: { archivos: ['ver'], contabilidad: ['ver'] } },
+    { name: 'Director', description: 'Acceso de solo lectura a información estratégica: dashboards, reportes, documentación y contabilidad', perModule: { archivos: ['ver'], contabilidad: ['ver'] } },
+    { name: 'Gerencia Administrativa', description: 'Acceso prácticamente completo: documentación, contabilidad, bancos', perModule: { archivos: FULL, contabilidad: FULL } },
+    { name: 'Tesorería', description: 'Orientado al manejo financiero: registrar movimientos, conciliar cuentas, consultar bancos', perModule: { archivos: ['ver'], contabilidad: OPERATIVO } },
+    { name: 'Administración', description: 'Acceso operativo: cargar documentación, gestionar vencimientos, registrar movimientos', perModule: { archivos: OPERATIVO, contabilidad: OPERATIVO } },
+    { name: 'Recursos Humanos', description: 'Acceso únicamente a información laboral; sin acceso a datos financieros', perModule: { archivos: ['ver'] } },
   ]
   for (const tpl of seedTemplates) {
     const { data: tplRow } = await (admin.from('permission_templates') as any)
       .insert({ organization_id: org.id, name: tpl.name, description: tpl.description }).select().single()
     if (tplRow) {
-      for (const moduleName of ['archivos', 'contabilidad']) {
-        for (const action of tpl.actions) {
+      for (const [moduleName, actions] of Object.entries(tpl.perModule)) {
+        for (const action of actions) {
           await (admin.from('permission_template_actions') as any)
             .insert({ template_id: tplRow.id, module: moduleName, action })
         }

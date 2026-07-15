@@ -106,3 +106,10 @@
 - fix: creación de cliente (`POST /api/admin/clients`) ahora crea `company` + `membership` (con plantilla "Cliente Estándar") en la organización del consultor — antes el cliente quedaba sin `company_id`/`organization_id`, roto para cualquier scoping futuro.
 - Build verificado. Typecheck sube a ~93 errores (mismo patrón preexistente de `never` por falta de casts `as any`, ya tolerado por `next.config.js` `ignoreBuildErrors: true` en todo el proyecto — no bloquea build).
 - **Limitación conocida documentada**: el aislamiento entre organizaciones es a nivel de API route, no de RLS. Ver [PENDIENTES.md](./PENDIENTES.md).
+
+## 2026-07-15 — Perfiles predefinidos (Director, Gerencia Administrativa, Tesorería, Administración, RRHH)
+
+- feat: migración `bruck-migration-v17.sql` siembra 4 plantillas nuevas para todas las organizaciones existentes (además de "Cliente Estándar" y "Auditor" de v10): Director (solo lectura), Gerencia Administrativa (completo), Tesorería (contabilidad operativa sin eliminar + archivos solo lectura), Administración (operativo sin eliminar), Recursos Humanos (solo archivos, sin contabilidad).
+- feat: `POST /api/super-admin/organizations` siembra las mismas 6 plantillas para organizaciones nuevas (antes solo sembraba 2).
+- **Limitación conocida**: los perfiles se aproximan con la granularidad actual (módulo `archivos`/`contabilidad` × acción `ver/crear/editar/eliminar`). No hay permisos por categoría dentro de un módulo (ej. "RRHH solo ve documentos laborales" no está implementado — RRHH ve todo `archivos` en modo lectura, no filtrado por categoría). Documentado en `docs/PENDIENTES.md`.
+- Build verificado.
