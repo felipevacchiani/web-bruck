@@ -5,13 +5,17 @@ import { useEffect, useState } from 'react'
 import type { FileRecord } from '@/lib/supabase/types'
 import { FILE_CATEGORIES } from '@/lib/supabase/types'
 
-interface Props { file: FileRecord; signedUrl: string }
+interface VersionEntry { id: string; version: number; created_at: string }
+interface Props { file: FileRecord; signedUrl: string; versions?: VersionEntry[] }
 
-export default function FileViewer({ file, signedUrl }: Props) {
+const fmtDate = (d: string) => new Date(d).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+
+export default function FileViewer({ file, signedUrl, versions = [] }: Props) {
   const router = useRouter()
   const [htmlContent, setHtmlContent] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [showVersions, setShowVersions] = useState(false)
   const cat = FILE_CATEGORIES.find(c => c.value === (file.category || 'otro'))
 
   useEffect(() => {
@@ -40,6 +44,29 @@ export default function FileViewer({ file, signedUrl }: Props) {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          <span style={{ color: '#52525b', fontSize: 11, whiteSpace: 'nowrap' }} title="Fecha de esta versión">
+            Actualizado {fmtDate(file.created_at)}
+          </span>
+          {versions.length > 0 && (
+            <div style={{ position: 'relative' }}>
+              <button onClick={() => setShowVersions(s => !s)} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#71717a', fontSize: 11, padding: '4px 10px', borderRadius: 7, cursor: 'pointer' }}>
+                v{file.version} · Historial ({versions.length})
+              </button>
+              {showVersions && (
+                <>
+                  <div onClick={() => setShowVersions(false)} style={{ position: 'fixed', inset: 0, zIndex: 19 }} />
+                  <div style={{ position: 'absolute', top: 32, right: 0, width: 240, background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, boxShadow: '0 12px 32px rgba(0,0,0,0.5)', zIndex: 20, overflow: 'hidden' }}>
+                    {versions.map(v => (
+                      <a key={v.id} href={`/view/${v.id}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#a1a1aa', fontSize: 12, textDecoration: 'none' }}>
+                        <span>Versión {v.version}</span>
+                        <span style={{ color: '#52525b', fontSize: 11 }}>{fmtDate(v.created_at)}</span>
+                      </a>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
           {cat && (
             <span style={{ color: '#3f3f46', fontSize: 11, padding: '3px 8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 6 }}>
               {cat.label}

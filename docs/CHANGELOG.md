@@ -168,3 +168,11 @@
 - feat: sección colapsable "Perfil de la empresa" en la ficha de cliente del admin; vista "🏢 Mi empresa" en el sidebar del cliente.
 - **Simplificaciones documentadas**: `logo_url` es un campo de texto (pegar una URL ya alojada), no un upload de imagen — evita duplicar la lógica de storage. "Bancos" no se agrega porque ya existe como `bruck_cuentas_bancarias`. "Integraciones" no se agrega — sin caso de uso real todavía. Edición es solo del consultor; el cliente ve pero no edita (no hay señal de que necesite autoservicio ahí).
 - Build verificado.
+
+## 2026-07-15 — Portal del Cliente, punto 7: Dashboards publicados (versión acotada)
+
+- feat: el visor de dashboards HTML (`/view/[id]`) ahora muestra la fecha de la versión actual y, si existen versiones anteriores (Fase 3), un desplegable "Historial" para navegar a cada una.
+- **No implementado a propósito, documentado como iniciativa aparte**: filtros interactivos, comparar períodos, exportar desde el dashboard. Esto requiere un constructor de dashboards real (motor de gráficos con binding a datos) — un proyecto propio, no un incremento chico. Construir una versión decorativa que no filtre/compare de verdad violaría el estándar de calidad del proyecto ("no funciones sin implementar"). Ver `docs/PENDIENTES.md`.
+- Build verificado.
+
+**Cierre de Capítulo 4 (Portal del Cliente)**: 6 de 7 puntos completos y verificados en producción (notificaciones, solicitudes, tareas, actividad reciente, página de inicio, perfil de empresa); el punto 7 queda parcialmente resuelto con una mejora honesta y acotada, más una iniciativa grande documentada para el constructor de dashboards real.

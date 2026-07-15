@@ -33,5 +33,15 @@ export default async function ViewPage({ params }: Props) {
 
   if (!signedData) redirect(['admin','super_admin'].includes(profile?.role) ? '/admin' : '/dashboard')
 
-  return <FileViewer file={file} signedUrl={signedData.signedUrl} />
+  // Historial de versiones anteriores (Fase 3: versionado inmutable)
+  const versions: { id: string; version: number; created_at: string }[] = []
+  let cursor = (file as any).previous_version_id as string | null
+  while (cursor) {
+    const { data: prev } = await admin.from('files').select('id, version, created_at, previous_version_id').eq('id', cursor).single()
+    if (!prev) break
+    versions.push({ id: (prev as any).id, version: (prev as any).version, created_at: (prev as any).created_at })
+    cursor = (prev as any).previous_version_id
+  }
+
+  return <FileViewer file={file} signedUrl={signedData.signedUrl} versions={versions} />
 }

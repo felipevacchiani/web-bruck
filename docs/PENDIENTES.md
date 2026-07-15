@@ -30,6 +30,16 @@ _Última actualización: 2026-07-14_
 - [ ] No hay auto-registro de consultores (`super_admin` los crea manualmente) — suficiente para las primeras ventas, revisar si hace falta self-signup más adelante.
 - [x] Probado end-to-end con una segunda organización real de prueba (2026-07-15): aislamiento de clientes, actividad y datos confirmado; se dejó como sandbox permanente para futuras pruebas.
 
+## Capítulo 4 — Portal del Cliente (mayormente cerrado 2026-07-15)
+
+Completos y verificados: Centro de notificaciones, Centro de solicitudes, Centro de tareas, Actividad reciente, Página de inicio personalizada, Perfil de la empresa.
+
+- [ ] **Constructor de dashboards real** (punto 7, pendiente grande): filtros interactivos, comparar períodos, exportar desde el dashboard. Hoy solo se ven fechas de versión + historial. Requiere un motor de gráficos con binding a datos — proyecto propio, a planificar por separado cuando haya prioridad para eso.
+- [ ] Tareas con `source` distinto de `'manual'`: generación automática desde documentos vencidos, solicitudes o automatizaciones no implementada.
+- [ ] "Conversar con la empresa" (IA conversacional) — explícitamente fuera de alcance, el documento funcional no lo marca como "evolución futura" y las instrucciones del proyecto excluyen IA salvo indicación expresa.
+- [ ] Notificaciones por email — hoy solo in-app, el documento menciona "también podrán enviarse por correo si la organización así lo configura".
+- [ ] Perfil de empresa: `logo_url` es solo texto (pegar URL), no hay upload de imagen real; `sucursales`/`responsables` tienen columna en la base pero no UI todavía.
+
 ## Sistema de permisos — próximos pasos (documento funcional, arquitectura general)
 
 - [x] Perfiles predefinidos (Director, Gerencia Administrativa, Tesorería, Administración, RRHH) — sembrados 2026-07-15, aproximados a la granularidad actual (ver `CHANGELOG.md`).
