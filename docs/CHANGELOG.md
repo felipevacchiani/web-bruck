@@ -153,3 +153,10 @@
 - feat: sección "Tareas" + modal "Nueva tarea" (con selector de asignado) en la ficha de cliente; vista "📝 Tareas" con badge de pendientes en el sidebar del cliente.
 - `source` queda como `'manual'` siempre por ahora — la generación automática desde documentos vencidos/solicitudes/automatizaciones no está implementada (documentado en `docs/PENDIENTES.md`).
 - Build verificado.
+
+## 2026-07-15 — Portal del Cliente, punto 4 y 5: Actividad reciente + Página de inicio
+
+- feat: vista "🕐 Actividad reciente" en el sidebar del cliente — línea de tiempo completa reutilizando `notifications` (sin tabla ni API nueva).
+- feat: **página de inicio personalizada** (`showHome`, vista por defecto al iniciar sesión): saludo, KPIs clickeables (solicitudes pendientes, tareas pendientes, documentos pendientes, saldo actual vía `/api/client/ci/dashboard`), próximos vencimientos (documentos con `due_date` en 7 días sin aprobar), documentos recientes, y actividad reciente (últimas 5 notificaciones) con acceso directo a cada módulo.
+- Responde las 3 preguntas que pide el documento funcional: qué está pasando (KPIs + actividad), qué tengo que hacer (solicitudes/tareas pendientes + vencimientos), qué cambió (actividad reciente).
+- Build verificado.
