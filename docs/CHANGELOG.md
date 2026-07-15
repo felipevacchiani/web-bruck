@@ -1,5 +1,15 @@
 # Changelog — BRUCK APP
 
+## 2026-07-14 — Fase 3: versionado inmutable de archivos (cierre de Fase 3)
+
+- feat: migración `bruck-migration-v15.sql` agrega `version`, `is_current`, `previous_version_id` a `files`.
+- feat: `POST /api/admin/files/[id]/version` — sube una nueva versión (crea fila nueva, marca la anterior `is_current=false`, encadena vía `previous_version_id`). Copia metadatos (categoría, tags, fechas fiscales, etc.) de la versión anterior; resetea `doc_status` a `pendiente` para re-aprobación.
+- feat: `PATCH`/`DELETE` de `/api/admin/files/[id]` ahora rechazan con 409 si el archivo no es la versión vigente (`is_current=false`) — inmutabilidad real a nivel de API, no solo de UI.
+- feat: listado principal (admin y cliente) filtra a solo `is_current=true`; badge `vN` cuando `version>1`; botón "↑ Nueva versión" y panel de historial (solo lectura, con descarga) en la ficha de cliente del admin.
+- fix (no relacionado): renombrado el campo "Etiqueta" (nombre del documento individual) a "Nombre del documento" — se confundía con el nuevo campo "Etiquetas" de búsqueda.
+- Build verificado. Typecheck: 66 errores (por debajo del baseline de 67 — los casts `as any` agregados en las rutas de archivos redujeron algunos errores preexistentes de paso).
+- **Fase 3 (Gestión Documental avanzada) queda cerrada**: etiquetas libres + versionado inmutable. Estados de documento confirmados como suficientes por el usuario.
+
 ## 2026-07-14 — Fase 3: etiquetas libres en archivos
 
 - feat: migración `bruck-migration-v14.sql` agrega `files.tags text[]` (default `{}`) + índice GIN.

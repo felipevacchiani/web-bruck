@@ -37,5 +37,7 @@ Con esto, la Fase 2 (Contabilidad Interna) queda funcionalmente cerrada: Concili
 ## Fase 3 — Gestión Documental avanzada (en progreso)
 
 1. **Etiquetas libres multi-categoría** (v14, hecho 2026-07-14) — campo `files.tags` (texto libre, múltiples), complementa la categoría fija existente. Input al subir, chips + filtro en la lista de archivos (admin y cliente).
-2. **Versionado inmutable formal** (pendiente) — hoy la agrupación (`file_group_id`) es suelta, sin número de versión ni garantía de inmutabilidad.
-3. **Estados de documento más ricos** (pendiente) — depende de qué estados adicionales defina el usuario (hoy solo `pendiente/visto/aprobado`).
+2. **Versionado inmutable formal** (v15, hecho 2026-07-14) — `version`/`is_current`/`previous_version_id` en `files`. Subir nueva versión crea fila nueva; la anterior queda inmutable (bloqueada a nivel de API, no solo de UI) y accesible desde el historial. Listado principal solo muestra la versión vigente.
+3. **Estados de documento más ricos** — confirmado por el usuario que los estados actuales (`pendiente/visto/aprobado`) están bien, no requiere cambios.
+
+Con esto, la Fase 3 (Gestión Documental avanzada) queda cerrada: etiquetas libres + versionado inmutable.

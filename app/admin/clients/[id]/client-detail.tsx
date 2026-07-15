@@ -90,6 +90,9 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const [filterTag, setFilterTag] = useState<string|null>(null)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [deletingId, setDeletingId] = useState<string|null>(null)
+  const [expandedHistory, setExpandedHistory] = useState<Set<string>>(new Set())
+  const [uploadingVersionId, setUploadingVersionId] = useState<string|null>(null)
+  const versionFileRefs = useRef<Record<string, HTMLInputElement|null>>({})
   const [clientForm, setClientForm] = useState({ full_name: client.full_name||'', company: client.company||'', active: client.active })
   const [permTemplates, setPermTemplates] = useState<{id:string; name:string; description:string|null}[]>([])
   const [currentTemplateId, setCurrentTemplateId] = useState<string|null>(null)
@@ -119,12 +122,25 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const availableTags = [...new Set(files.flatMap(f => f.tags||[]))].sort()
 
   const filtered = files.filter(f => {
+    if (f.is_current === false) return false
     if (activeTab !== 'todos' && f.category !== activeTab) return false
     if (filterYear  !== null && f.fiscal_year  !== filterYear)  return false
     if (filterMonth !== null && f.fiscal_month !== filterMonth) return false
     if (filterTag   !== null && !(f.tags||[]).includes(filterTag)) return false
     return true
   })
+
+  const versionHistory = (currentId: string): FileRecord[] => {
+    const chain: FileRecord[] = []
+    let cursor = files.find(f => f.id === currentId)?.previous_version_id
+    while (cursor) {
+      const f = files.find(x => x.id === cursor)
+      if (!f) break
+      chain.push(f)
+      cursor = f.previous_version_id
+    }
+    return chain
+  }
 
   const grouped = filtered.reduce<Record<string,FileRecord[]>>((acc,f) => {
     const k = f.file_group_id||f.id; if(!acc[k]) acc[k]=[]; acc[k].push(f); return acc
@@ -190,6 +206,19 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
     const res = await fetch(`/api/admin/files/${id}`, { method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({storage_path:sp}) })
     if (res.ok) setFiles(p=>p.filter(f=>f.id!==id))
     setDeletingId(null)
+  }
+
+  const toggleHistory = (id:string) => setExpandedHistory(p=>{ const n=new Set(p); n.has(id)?n.delete(id):n.add(id); return n })
+
+  const uploadNewVersion = async (fileId:string, file:File) => {
+    setUploadingVersionId(fileId)
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch(`/api/admin/files/${fileId}/version`, { method:'POST', body:fd })
+    const data = await res.json()
+    setUploadingVersionId(null)
+    if (!res.ok) { alert(data.error||'Error al subir la nueva versión'); return }
+    setFiles(p => [data.file, ...p.map(f => f.id===fileId ? {...f, is_current:false} : f)])
   }
 
   const deleteGroup = async (gf:FileRecord[]) => {
@@ -563,20 +592,47 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                         <StatusBadge status={first.doc_status} onClick={()=>cycleStatus(gf)} />
                         <span style={{ color:'#52525b', fontSize:11, padding:'3px 8px', background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.04)', borderRadius:6 }}>{cat?.label}</span>
                         {multi && <span style={{ color:'#31AE79', fontSize:11, padding:'3px 8px', background:'rgba(49,174,121,0.08)', border:'1px solid rgba(49,174,121,0.15)', borderRadius:6 }}>{gf.length} docs</span>}
+                        {!multi && first.version > 1 && <span style={{ color:'#60a5fa', fontSize:11, padding:'3px 8px', background:'rgba(96,165,250,0.08)', border:'1px solid rgba(96,165,250,0.15)', borderRadius:6 }}>v{first.version}</span>}
                       </div>
                       <div style={{ display:'flex', gap:6, flexShrink:0 }}>
                         {multi ? (
                           <button onClick={()=>toggleGroup(gk)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>
                             {expanded?'Ocultar':'Ver'}
                           </button>
-                        ) : isHTML(first) ? (
-                          <button onClick={()=>router.push(`/view/${first.id}`)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>Ver</button>
                         ) : (
-                          <button onClick={()=>download(first.id,first.name)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>↓</button>
+                          <>
+                            {isHTML(first) ? (
+                              <button onClick={()=>router.push(`/view/${first.id}`)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>Ver</button>
+                            ) : (
+                              <button onClick={()=>download(first.id,first.name)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>↓</button>
+                            )}
+                            <input ref={el=>{versionFileRefs.current[first.id]=el}} type="file" style={{ display:'none' }} onChange={e=>{ const f=e.target.files?.[0]; if(f) uploadNewVersion(first.id,f); e.target.value='' }} />
+                            <button onClick={()=>versionFileRefs.current[first.id]?.click()} disabled={uploadingVersionId===first.id} style={{ background:'none', border:'1px solid rgba(96,165,250,0.2)', color:'#60a5fa', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer', opacity:uploadingVersionId===first.id?0.5:1 }}>
+                              {uploadingVersionId===first.id?'...':'↑ Nueva versión'}
+                            </button>
+                            {versionHistory(first.id).length>0 && (
+                              <button onClick={()=>toggleHistory(first.id)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>
+                                Historial ({versionHistory(first.id).length})
+                              </button>
+                            )}
+                          </>
                         )}
                         <button onClick={()=>deleteGroup(gf)} style={{ background:'none', border:'1px solid rgba(239,68,68,0.18)', color:'#f87171', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer', opacity:0.7 }}>Eliminar</button>
                       </div>
                     </div>
+
+                    {!multi && expandedHistory.has(first.id) && (
+                      <div style={{ borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(0,0,0,0.2)' }}>
+                        {versionHistory(first.id).map(v=>(
+                          <div key={v.id} style={{ padding:'8px 16px 8px 64px', display:'flex', alignItems:'center', gap:10, borderBottom:'1px solid rgba(255,255,255,0.03)' }}>
+                            <span style={{ color:'#52525b', fontSize:11, fontWeight:600 }}>v{v.version}</span>
+                            <span style={{ color:'#71717a', fontSize:12, flex:1 }}>{v.name}</span>
+                            <span style={{ color:'#3f3f46', fontSize:11 }}>{fmt(v.created_at)}</span>
+                            <button onClick={()=>download(v.id,v.name)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.08)', color:'#71717a', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer' }}>↓</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     {multi && expanded && (
                       <div style={{ borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(0,0,0,0.2)' }}>
@@ -585,6 +641,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                             <span style={{ fontSize:14, flexShrink:0 }}>{fileIcon(f.mime_type,f.name)}</span>
                             <div style={{ flex:1, minWidth:0 }}>
                               <span style={{ color:'#d4d4d8', fontSize:12, fontWeight:500 }}>{f.document_label||f.name}</span>
+                              {f.version > 1 && <span style={{ color:'#60a5fa', fontSize:10, marginLeft:6 }}>v{f.version}</span>}
                               {f.file_size && <span style={{ color:'#3f3f46', fontSize:11, marginLeft:6 }}>{fmtSize(f.file_size)}</span>}
                             </div>
                             <div style={{ display:'flex', gap:6, flexShrink:0 }}>
@@ -593,6 +650,10 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                               ) : (
                                 <button onClick={()=>download(f.id,f.name)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.08)', color:'#71717a', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer' }}>↓</button>
                               )}
+                              <input ref={el=>{versionFileRefs.current[f.id]=el}} type="file" style={{ display:'none' }} onChange={e=>{ const nf=e.target.files?.[0]; if(nf) uploadNewVersion(f.id,nf); e.target.value='' }} />
+                              <button onClick={()=>versionFileRefs.current[f.id]?.click()} disabled={uploadingVersionId===f.id} style={{ background:'none', border:'1px solid rgba(96,165,250,0.15)', color:'#60a5fa', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer', opacity:uploadingVersionId===f.id?0.4:0.6 }}>
+                                {uploadingVersionId===f.id?'...':'↑'}
+                              </button>
                               <button onClick={()=>deleteFile(f.id,f.storage_path)} disabled={deletingId===f.id} style={{ background:'none', border:'1px solid rgba(239,68,68,0.15)', color:'#f87171', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer', opacity:deletingId===f.id?0.4:0.6 }}>
                                 {deletingId===f.id?'...':'✕'}
                               </button>

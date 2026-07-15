@@ -15,6 +15,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
+  const { data: existing } = await (admin.from('files') as any).select('is_current').eq('id', id).single()
+  if (existing && !existing.is_current) {
+    return NextResponse.json({ error: 'Versión histórica: es inmutable, no se puede editar' }, { status: 409 })
+  }
+
   const body = await req.json().catch(() => ({}))
   const allowed = ['doc_status', 'due_date', 'fiscal_month', 'fiscal_year', 'group_title', 'description', 'tags']
   const update: Record<string, unknown> = {}
@@ -53,7 +58,10 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   const body = await req.json().catch(() => ({}))
 
   // Fetch file info for audit before deleting
-  const { data: fileInfo } = await admin.from('files').select('name, client_id').eq('id', id).single()
+  const { data: fileInfo } = await (admin.from('files') as any).select('name, client_id, is_current').eq('id', id).single()
+  if (fileInfo && !fileInfo.is_current) {
+    return NextResponse.json({ error: 'Versión histórica: es inmutable, no se puede eliminar' }, { status: 409 })
+  }
 
   if (body.storage_path) {
     await admin.storage.from('client-files').remove([body.storage_path])

@@ -50,8 +50,9 @@ export default function ClientDashboard({ profile, files }: Props) {
     const a = document.createElement('a'); a.href=url; a.download=name; a.click(); URL.revokeObjectURL(url)
   }
 
-  const filteredFiles = activeCategory==='todos' ? files : files.filter(f=>f.category===activeCategory)
-  const countBy = (cat:FileCategory) => files.filter(f=>f.category===cat).length
+  const currentFiles = files.filter(f=>f.is_current !== false)
+  const filteredFiles = activeCategory==='todos' ? currentFiles : currentFiles.filter(f=>f.category===activeCategory)
+  const countBy = (cat:FileCategory) => currentFiles.filter(f=>f.category===cat).length
   const grouped = filteredFiles.reduce<Record<string,FileRecord[]>>((acc,f)=>{ const k=f.file_group_id||f.id; if(!acc[k]) acc[k]=[]; acc[k].push(f); return acc },{})
   const toggleGroup = (k:string) => setExpandedGroups(p=>{ const n=new Set(p); n.has(k)?n.delete(k):n.add(k); return n })
   const isHTML = (f:FileRecord) => f.mime_type==='text/html'||f.name.endsWith('.html')||f.name.endsWith('.htm')
@@ -120,7 +121,7 @@ export default function ClientDashboard({ profile, files }: Props) {
               <span style={{ color:'#52525b', fontSize:12 }}>{informesOpen ? '▾' : '▸'}</span>
             </button>
             {informesOpen && [
-              {value:'todos' as const,label:'Todos',icon:'📋',count:files.length},
+              {value:'todos' as const,label:'Todos',icon:'📋',count:currentFiles.length},
               ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
             ].map(cat=>(
               <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setSidebarOpen(false) }}
@@ -160,7 +161,7 @@ export default function ClientDashboard({ profile, files }: Props) {
               <span style={{ color:'#52525b', fontSize:11 }}>{informesOpen ? '▾' : '▸'}</span>
             </button>
             {informesOpen && [
-              {value:'todos' as const,label:'Todos',icon:'📋',count:files.length},
+              {value:'todos' as const,label:'Todos',icon:'📋',count:currentFiles.length},
               ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
             ].map(cat=>(
               <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null) }}
@@ -241,7 +242,10 @@ export default function ClientDashboard({ profile, files }: Props) {
                             {taxSub?.icon||cat?.icon||'📄'}
                           </div>
                           <div style={{ flex:1, minWidth:0 }}>
-                            <div style={{ color:'white', fontSize:14, fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{first.group_title||first.name}</div>
+                            <div style={{ color:'white', fontSize:14, fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                              {first.group_title||first.name}
+                              {first.version > 1 && <span style={{ color:'#60a5fa', fontSize:11, fontWeight:400, marginLeft:8 }}>v{first.version}</span>}
+                            </div>
                             <div style={{ display:'flex', gap:8, marginTop:3, flexWrap:'wrap' }}>
                               {taxSub && <span style={{ color:'#31AE79', fontSize:12 }}>{taxSub.label}</span>}
                               {first.description && <span style={{ color:'#52525b', fontSize:12 }}>{first.description}</span>}

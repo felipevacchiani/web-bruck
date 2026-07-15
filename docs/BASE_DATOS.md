@@ -41,6 +41,7 @@ Documentos subidos por cliente.
 - `fiscal_month`, `fiscal_year`, `due_date`
 - `doc_status`: `'pendiente' | 'visto' | 'aprobado'`
 - `tags` (v14): `text[]`, etiquetas libres definidas por el admin al subir/editar, **complementan** la categoría fija (no la reemplazan). Filtrable en la UI tanto del admin como del cliente. Índice GIN para búsqueda por contención.
+- `version`, `is_current`, `previous_version_id` (v15): versionado inmutable. Subir una "nueva versión" (`POST /api/admin/files/[id]/version`) crea una fila nueva, marca la anterior `is_current = false` y la encadena vía `previous_version_id`. Las versiones históricas **no se pueden editar ni eliminar** (`PATCH`/`DELETE` rechazan con 409 si `is_current = false`) — inmutabilidad real, no solo de UI. El listado principal (admin y cliente) muestra solo `is_current = true`; el historial se navega desde la ficha del documento vigente.
 
 RLS: cliente ve solo `client_id = auth.uid()`; admin ve todo.
 

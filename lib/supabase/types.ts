@@ -122,6 +122,9 @@ export interface FileRecord {
   doc_status: DocStatus
   due_date: string | null
   tags: string[]
+  version: number
+  is_current: boolean
+  previous_version_id: string | null
   created_at: string
 }
 

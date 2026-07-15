@@ -23,10 +23,9 @@ _Última actualización: 2026-07-14_
 - Centro de Clientes tipo CRM.
 - Cualquier funcionalidad de IA (explícitamente fuera de alcance hasta nueva indicación).
 
-## Fase 3 — Gestión Documental (pendiente)
+## Fase 3 — Gestión Documental (cerrada 2026-07-14)
 
-- [ ] Versionado inmutable formal (`version` + `is_current` por archivo dentro de un grupo).
-- [ ] Estados de documento más ricos — definir con el usuario qué estados adicionales necesita antes de implementar.
+Etiquetas libres + versionado inmutable implementados y verificados. Estados de documento confirmados como suficientes por el usuario, sin cambios.
 
 ## Fase 2 — Contabilidad Interna (cerrada 2026-07-14)
 
