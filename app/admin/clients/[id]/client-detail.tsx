@@ -97,7 +97,31 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const [permTemplates, setPermTemplates] = useState<{id:string; name:string; description:string|null}[]>([])
   const [currentTemplateId, setCurrentTemplateId] = useState<string|null>(null)
   const [savingPerm, setSavingPerm] = useState(false)
+  const [companyUsers, setCompanyUsers] = useState<{id:string; email:string; full_name:string|null; active:boolean; permission_template_name:string|null}[]>([])
+  const [showInvite, setShowInvite] = useState(false)
+  const [inviteForm, setInviteForm] = useState({ email:'', full_name:'', password:'', permission_template_id:'' })
+  const [inviteError, setInviteError] = useState('')
+  const [invitingUser, setInvitingUser] = useState(false)
   const fileRefs = useRef<(HTMLInputElement|null)[]>([])
+
+  const loadCompanyUsers = () => {
+    fetch(`/api/admin/clients/${client.id}/company-users`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setCompanyUsers(data.users || []) })
+  }
+  useEffect(() => { loadCompanyUsers() }, [client.id])
+
+  const submitInvite = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setInvitingUser(true); setInviteError('')
+    const res = await fetch(`/api/admin/clients/${client.id}/company-users`, {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(inviteForm),
+    })
+    const d = await res.json()
+    setInvitingUser(false)
+    if (!res.ok) { setInviteError(d.error || 'Error al invitar usuario'); return }
+    setShowInvite(false); setInviteForm({ email:'', full_name:'', password:'', permission_template_id:'' }); loadCompanyUsers()
+  }
 
   useEffect(() => {
     fetch(`/api/admin/clients/${client.id}/permission-template`)
@@ -388,6 +412,65 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
               ))}
             </div>
           </div>
+
+          <div style={{ background:'rgba(14,14,14,0.8)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: companyUsers.length ? 12 : 0 }}>
+              <span style={{ color:'white', fontSize:13, fontWeight:600 }}>Usuarios de esta empresa</span>
+              <button onClick={()=>setShowInvite(true)} style={{ background:'none', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>+ Invitar usuario</button>
+            </div>
+            {companyUsers.length > 0 && (
+              <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                {companyUsers.map(u => (
+                  <div key={u.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 0' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <span style={{ color:'#d4d4d8', fontSize:13 }}>{u.full_name || u.email}</span>
+                      <span style={{ color:'#52525b', fontSize:12 }}>{u.email}</span>
+                      {!u.active && <span style={{ fontSize:10, color:'#f87171' }}>Inactivo</span>}
+                    </div>
+                    {u.permission_template_name && (
+                      <span style={{ fontSize:11, color:'#71717a', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', padding:'2px 9px', borderRadius:6 }}>{u.permission_template_name}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {showInvite && (
+            <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+              <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, maxWidth:420, width:'100%' }}>
+                <div style={{ color:'white', fontSize:16, fontWeight:700, marginBottom:18 }}>Invitar usuario a esta empresa</div>
+                {inviteError && <div style={{ background:'rgba(239,68,68,0.09)', border:'1px solid rgba(239,68,68,0.22)', borderRadius:10, padding:'9px 12px', marginBottom:14, color:'#f87171', fontSize:13 }}>{inviteError}</div>}
+                <form onSubmit={submitInvite}>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Nombre</label>
+                    <input value={inviteForm.full_name} onChange={e=>setInviteForm(f=>({...f,full_name:e.target.value}))} placeholder="Ej: María Gómez" style={INP} />
+                  </div>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Email</label>
+                    <input required type="email" value={inviteForm.email} onChange={e=>setInviteForm(f=>({...f,email:e.target.value}))} placeholder="maria@empresa.com" style={INP} />
+                  </div>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Contraseña inicial</label>
+                    <input required value={inviteForm.password} onChange={e=>setInviteForm(f=>({...f,password:e.target.value}))} placeholder="Mínimo 6 caracteres" style={INP} />
+                  </div>
+                  <div style={{ marginBottom:20 }}>
+                    <label style={LBL}>Plantilla de permisos</label>
+                    <select value={inviteForm.permission_template_id} onChange={e=>setInviteForm(f=>({...f,permission_template_id:e.target.value}))} style={SEL}>
+                      <option value="">Sin plantilla</option>
+                      {permTemplates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+                    <button type="button" onClick={()=>{setShowInvite(false);setInviteError('')}} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
+                    <button type="submit" disabled={invitingUser} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:invitingUser?0.6:1 }}>
+                      {invitingUser?'Invitando…':'Invitar'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
 
           <div className="cd-top-row">
             <div style={{ display:'flex', alignItems:'center', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:10, padding:4, overflowX:'auto', maxWidth:'100%' }}>

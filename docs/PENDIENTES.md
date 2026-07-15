@@ -33,8 +33,8 @@ _Última actualización: 2026-07-14_
 ## Sistema de permisos — próximos pasos (documento funcional, arquitectura general)
 
 - [x] Perfiles predefinidos (Director, Gerencia Administrativa, Tesorería, Administración, RRHH) — sembrados 2026-07-15, aproximados a la granularidad actual (ver `CHANGELOG.md`).
-- [ ] Selector de empresa sin cerrar sesión (un usuario con memberships en varias empresas hoy no tiene forma de cambiar entre ellas en la UI).
-- [ ] UI del consultor para crear/editar empresas de forma completa (invitar usuarios, asignar plantilla de permisos) — hoy la creación de cliente es básica (nombre/email/empresa/contraseña).
+- [x] Selector de empresa sin cerrar sesión — descartado (2026-07-15): confirmado con el usuario que no hay caso real de un usuario cliente en más de una empresa. El consultor ya administra muchas empresas desde una sola cuenta (eso ya funcionaba).
+- [x] Invitar usuarios adicionales a una empresa existente, con plantilla de permisos — hecho 2026-07-15 (`/api/admin/clients/[id]/company-users` + sección en la ficha de cliente).
 - [ ] Funciones adicionales de Super Admin: suspender/reactivar consultores, licencias, planes, backups, acceso temporal auditado a una organización.
 - [ ] Permisos por categoría dentro de un módulo (ej. RRHH filtrado solo a documentos `laboral`, no todo `archivos`) — requiere ampliar el modelo de `permission_template_actions` más allá de módulo×acción.
 

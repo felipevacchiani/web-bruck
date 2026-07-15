@@ -113,3 +113,9 @@
 - feat: `POST /api/super-admin/organizations` siembra las mismas 6 plantillas para organizaciones nuevas (antes solo sembraba 2).
 - **Limitación conocida**: los perfiles se aproximan con la granularidad actual (módulo `archivos`/`contabilidad` × acción `ver/crear/editar/eliminar`). No hay permisos por categoría dentro de un módulo (ej. "RRHH solo ve documentos laborales" no está implementado — RRHH ve todo `archivos` en modo lectura, no filtrado por categoría). Documentado en `docs/PENDIENTES.md`.
 - Build verificado.
+
+## 2026-07-15 — Invitar usuarios adicionales a una empresa
+
+- feat: `GET/POST /api/admin/clients/[id]/company-users` — lista los usuarios que comparten `company_id` con el cliente y permite invitar uno nuevo (email/nombre/contraseña + plantilla de permisos), scopeado por organización igual que el resto de rutas de Fase 4.
+- feat: sección "Usuarios de esta empresa" + modal "Invitar usuario" en la ficha de cliente del admin. Antes cada empresa quedaba atada 1:1 a un solo usuario; ahora una empresa puede tener usuarios ilimitados, cada uno con su propia plantilla de permisos (ej. uno "Tesorería", otro "Recursos Humanos").
+- Build verificado.
