@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile, FileRecord, FileCategory } from '@/lib/supabase/types'
-import { FILE_CATEGORIES, TAX_SUBCATEGORIES, NOTIFICATION_ICONS } from '@/lib/supabase/types'
+import { FILE_CATEGORIES, TAX_SUBCATEGORIES, NOTIFICATION_ICONS, TASK_STATUSES } from '@/lib/supabase/types'
 import ContabilidadPanel from '@/app/admin/clients/[id]/contabilidad/contabilidad-panel'
 
 interface Props { profile: Profile; files: FileRecord[] }
@@ -47,6 +47,23 @@ export default function ClientDashboard({ profile, files }: Props) {
     if (res.ok) loadRequests()
     else alert('Error al subir el archivo')
   }
+  const [showTasks, setShowTasks] = useState(false)
+  const [myTasks, setMyTasks] = useState<any[]>([])
+  const [updatingTaskId, setUpdatingTaskId] = useState<string|null>(null)
+
+  const loadTasks = () => {
+    fetch('/api/client/tasks').then(r=>r.ok?r.json():null).then(d=>{ if (d) setMyTasks(d.data||[]) })
+  }
+  useEffect(() => { loadTasks() }, [])
+  const pendingTasksCount = myTasks.filter(t=>t.status==='pendiente'||t.status==='en_proceso').length
+
+  const updateTaskStatus = async (taskId: string, status: string) => {
+    setUpdatingTaskId(taskId)
+    await fetch(`/api/client/tasks/${taskId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ status }) })
+    setUpdatingTaskId(null)
+    loadTasks()
+  }
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -203,7 +220,7 @@ export default function ClientDashboard({ profile, files }: Props) {
               {value:'todos' as const,label:'Todos',icon:'📋',count:currentFiles.length},
               ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
             ].map(cat=>(
-              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false); setSidebarOpen(false) }}
+              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false); setShowTasks(false); setSidebarOpen(false) }}
                 style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px 8px 20px', borderRadius:9, border:activeCategory===cat.value&&!contabTab?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#71717a', marginBottom:2, textAlign:'left' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:9 }}>
                   <span style={{ fontSize:14 }}>{cat.icon}</span>
@@ -215,10 +232,19 @@ export default function ClientDashboard({ profile, files }: Props) {
 
             {/* SOLICITUDES */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
-              <button onClick={()=>{ setShowRequests(true); setContabTab(null); setSidebarOpen(false) }}
+              <button onClick={()=>{ setShowRequests(true); setContabTab(null); setShowTasks(false); setSidebarOpen(false) }}
                 style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px', borderRadius:9, background:showRequests?'rgba(49,174,121,0.1)':'none', border:showRequests?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showRequests?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left' }}>
                 <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📥</span><span style={{ fontSize:13 }}>Solicitudes</span></span>
                 {pendingRequestsCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingRequestsCount}</span>}
+              </button>
+            </div>
+
+            {/* TAREAS */}
+            <div>
+              <button onClick={()=>{ setShowTasks(true); setContabTab(null); setShowRequests(false); setSidebarOpen(false) }}
+                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px', borderRadius:9, background:showTasks?'rgba(49,174,121,0.1)':'none', border:showTasks?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showTasks?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left' }}>
+                <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📝</span><span style={{ fontSize:13 }}>Tareas</span></span>
+                {pendingTasksCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingTasksCount}</span>}
               </button>
             </div>
 
@@ -226,7 +252,7 @@ export default function ClientDashboard({ profile, files }: Props) {
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 10px', marginBottom:6 }}>Contabilidad</div>
               {CI_TABS.map(t => (
-                <button key={t.id} onClick={()=>{ setContabTab(t.id); setShowRequests(false); setSidebarOpen(false) }}
+                <button key={t.id} onClick={()=>{ setContabTab(t.id); setShowRequests(false); setShowTasks(false); setSidebarOpen(false) }}
                   style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:contabTab===t.id?'rgba(49,174,121,0.1)':'none', border:contabTab===t.id?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:contabTab===t.id?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
                   <span style={{ fontSize:14 }}>{t.icon}</span>
                   <span style={{ fontSize:13 }}>{t.label}</span>
@@ -252,7 +278,7 @@ export default function ClientDashboard({ profile, files }: Props) {
               {value:'todos' as const,label:'Todos',icon:'📋',count:currentFiles.length},
               ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
             ].map(cat=>(
-              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false) }}
+              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false); setShowTasks(false) }}
                 style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px 7px 20px', borderRadius:9, border:activeCategory===cat.value&&!contabTab?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#71717a', marginBottom:2, textAlign:'left' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:9 }}>
                   <span style={{ fontSize:14 }}>{cat.icon}</span>
@@ -264,10 +290,19 @@ export default function ClientDashboard({ profile, files }: Props) {
 
             {/* SOLICITUDES */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
-              <button onClick={()=>{ setShowRequests(true); setContabTab(null) }}
+              <button onClick={()=>{ setShowRequests(true); setContabTab(null); setShowTasks(false) }}
                 style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px', borderRadius:9, background:showRequests?'rgba(49,174,121,0.1)':'none', border:showRequests?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showRequests?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left' }}>
                 <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📥</span><span style={{ fontSize:13 }}>Solicitudes</span></span>
                 {pendingRequestsCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingRequestsCount}</span>}
+              </button>
+            </div>
+
+            {/* TAREAS */}
+            <div>
+              <button onClick={()=>{ setShowTasks(true); setContabTab(null); setShowRequests(false) }}
+                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px', borderRadius:9, background:showTasks?'rgba(49,174,121,0.1)':'none', border:showTasks?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showTasks?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left' }}>
+                <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📝</span><span style={{ fontSize:13 }}>Tareas</span></span>
+                {pendingTasksCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingTasksCount}</span>}
               </button>
             </div>
 
@@ -275,7 +310,7 @@ export default function ClientDashboard({ profile, files }: Props) {
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 10px', marginBottom:6 }}>Contabilidad</div>
               {CI_TABS.map(t => (
-                <button key={t.id} onClick={()=>{ setContabTab(t.id); setShowRequests(false) }}
+                <button key={t.id} onClick={()=>{ setContabTab(t.id); setShowRequests(false); setShowTasks(false) }}
                   style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'7px 10px', borderRadius:9, background:contabTab===t.id?'rgba(49,174,121,0.1)':'none', border:contabTab===t.id?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:contabTab===t.id?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
                   <span style={{ fontSize:14 }}>{t.icon}</span>
                   <span style={{ fontSize:13 }}>{t.label}</span>
@@ -343,6 +378,48 @@ export default function ClientDashboard({ profile, files }: Props) {
                         )}
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : showTasks ? (
+            <div className="db-main-pad">
+              <div style={{ maxWidth:820, margin:'0 auto' }}>
+                <div style={{ marginBottom:20 }}>
+                  <h1 style={{ color:'white', fontSize:18, fontWeight:600, margin:0 }}>Tareas</h1>
+                  <p style={{ color:'#52525b', fontSize:13, marginTop:4, margin:0 }}>
+                    {myTasks.length===0?'Sin tareas':`${myTasks.length} tarea${myTasks.length!==1?'s':''}`}
+                  </p>
+                </div>
+                {myTasks.length===0 ? (
+                  <div style={{ border:'1px solid rgba(255,255,255,0.06)', borderRadius:14, padding:'40px 24px', textAlign:'center' }}>
+                    <p style={{ color:'#52525b', fontSize:13 }}>No tenés tareas asignadas.</p>
+                  </div>
+                ) : (
+                  <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                    {myTasks.map(t => {
+                      const s = TASK_STATUSES.find(x=>x.value===t.status)
+                      return (
+                        <div key={t.id} style={{ background:'rgba(255,255,255,0.025)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, padding:16 }}>
+                          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:10, marginBottom:10 }}>
+                            <div>
+                              <div style={{ color:'white', fontSize:14, fontWeight:600 }}>{t.title}</div>
+                              {t.description && <div style={{ color:'#71717a', fontSize:13, marginTop:4 }}>{t.description}</div>}
+                              {t.due_date && <div style={{ color:'#52525b', fontSize:12, marginTop:4 }}>Vence: {new Date(t.due_date+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'})}</div>}
+                            </div>
+                            <span style={{ fontSize:11, fontWeight:500, padding:'2px 9px', borderRadius:20, background:s?.bg, border:`1px solid ${s?.border}`, color:s?.color, whiteSpace:'nowrap' }}>{s?.label}</span>
+                          </div>
+                          <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                            {TASK_STATUSES.map(opt => (
+                              <button key={opt.value} onClick={()=>updateTaskStatus(t.id, opt.value)} disabled={updatingTaskId===t.id || t.status===opt.value}
+                                style={{ background: t.status===opt.value?opt.bg:'none', border:`1px solid ${t.status===opt.value?opt.border:'rgba(255,255,255,0.1)'}`, color: t.status===opt.value?opt.color:'#71717a', fontSize:11, padding:'5px 11px', borderRadius:7, cursor: t.status===opt.value?'default':'pointer', opacity:updatingTaskId===t.id?0.5:1 }}>
+                                {opt.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </div>

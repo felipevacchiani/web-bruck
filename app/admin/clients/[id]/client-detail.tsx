@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Profile, FileRecord, FileCategory, TaxSubcategory, DocStatus } from '@/lib/supabase/types'
-import { FILE_CATEGORIES, TAX_SUBCATEGORIES, DOC_STATUSES, MONTHS, FISCAL_YEARS } from '@/lib/supabase/types'
+import { FILE_CATEGORIES, TAX_SUBCATEGORIES, DOC_STATUSES, MONTHS, FISCAL_YEARS, TASK_STATUSES } from '@/lib/supabase/types'
 
 interface Props { client: Profile; files: FileRecord[] }
 
@@ -129,6 +129,32 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
     setShowNewRequest(false)
     setRequestForm({ title:'', description:'', category:'otro', fiscalMonth: new Date().getMonth()+1, fiscalYear: new Date().getFullYear(), dueDate:'' })
     loadRequests()
+  }
+
+  const [tasks, setTasks] = useState<any[]>([])
+  const [showNewTask, setShowNewTask] = useState(false)
+  const [taskForm, setTaskForm] = useState({ title:'', description:'', assigned_to:'', due_date:'' })
+  const [savingTask, setSavingTask] = useState(false)
+  const [taskError, setTaskError] = useState('')
+
+  const loadTasks = () => {
+    fetch(`/api/admin/clients/${client.id}/tasks`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setTasks(data.data || []) })
+  }
+  useEffect(() => { loadTasks() }, [client.id])
+
+  const submitTask = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingTask(true); setTaskError('')
+    const res = await fetch(`/api/admin/clients/${client.id}/tasks`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ title: taskForm.title, description: taskForm.description, assigned_to: taskForm.assigned_to || null, due_date: taskForm.due_date || null }),
+    })
+    const d = await res.json()
+    setSavingTask(false)
+    if (!res.ok) { setTaskError(d.error || 'Error al crear la tarea'); return }
+    setShowNewTask(false); setTaskForm({ title:'', description:'', assigned_to:'', due_date:'' }); loadTasks()
   }
 
   const loadCompanyUsers = () => {
@@ -563,6 +589,65 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     <button type="button" onClick={()=>{setShowNewRequest(false);setRequestError('')}} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
                     <button type="submit" disabled={savingRequest} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingRequest?0.6:1 }}>
                       {savingRequest?'Creando…':'Crear solicitud'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          <div style={{ background:'rgba(14,14,14,0.8)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: tasks.length ? 12 : 0 }}>
+              <span style={{ color:'white', fontSize:13, fontWeight:600 }}>Tareas</span>
+              <button onClick={()=>setShowNewTask(true)} style={{ background:'none', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>+ Nueva tarea</button>
+            </div>
+            {tasks.length > 0 && (
+              <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                {tasks.map(t => {
+                  const s = TASK_STATUSES.find(x=>x.value===t.status)
+                  return (
+                    <div key={t.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 0' }}>
+                      <div>
+                        <span style={{ color:'#d4d4d8', fontSize:13 }}>{t.title}</span>
+                        {t.assignee && <span style={{ color:'#52525b', fontSize:11, marginLeft:8 }}>{t.assignee.full_name || t.assignee.email}</span>}
+                      </div>
+                      <span style={{ fontSize:11, fontWeight:500, padding:'2px 9px', borderRadius:20, background:s?.bg, border:`1px solid ${s?.border}`, color:s?.color }}>{s?.label}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {showNewTask && (
+            <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+              <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, maxWidth:420, width:'100%' }}>
+                <div style={{ color:'white', fontSize:16, fontWeight:700, marginBottom:18 }}>Nueva tarea</div>
+                {taskError && <div style={{ background:'rgba(239,68,68,0.09)', border:'1px solid rgba(239,68,68,0.22)', borderRadius:10, padding:'9px 12px', marginBottom:14, color:'#f87171', fontSize:13 }}>{taskError}</div>}
+                <form onSubmit={submitTask}>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Título</label>
+                    <input required value={taskForm.title} onChange={e=>setTaskForm(f=>({...f,title:e.target.value}))} placeholder="Ej: Revisar conciliación de mayo" style={INP} />
+                  </div>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Descripción (opcional)</label>
+                    <input value={taskForm.description} onChange={e=>setTaskForm(f=>({...f,description:e.target.value}))} placeholder="Detalle adicional" style={INP} />
+                  </div>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Asignar a</label>
+                    <select value={taskForm.assigned_to} onChange={e=>setTaskForm(f=>({...f,assigned_to:e.target.value}))} style={SEL}>
+                      <option value="">Sin asignar</option>
+                      {companyUsers.map(u => <option key={u.id} value={u.id}>{u.full_name || u.email}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ marginBottom:20 }}>
+                    <label style={LBL}>Fecha límite (opcional)</label>
+                    <input type="date" value={taskForm.due_date} onChange={e=>setTaskForm(f=>({...f,due_date:e.target.value}))} style={INP} />
+                  </div>
+                  <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+                    <button type="button" onClick={()=>{setShowNewTask(false);setTaskError('')}} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
+                    <button type="submit" disabled={savingTask} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingTask?0.6:1 }}>
+                      {savingTask?'Creando…':'Crear tarea'}
                     </button>
                   </div>
                 </form>

@@ -144,3 +144,12 @@
 - feat: `GET /api/client/requests` + `POST /api/client/requests/[id]/fulfill` — el cliente ve sus solicitudes y sube el archivo directamente desde la solicitud; el sistema crea el `file` con la categoría/período precargados, marca la solicitud como completada y notifica al consultor que la creó.
 - feat: sección "Solicitudes" + modal "Nueva solicitud" en la ficha de cliente del admin; nueva vista "📥 Solicitudes" (con badge de pendientes) en el sidebar del dashboard del cliente.
 - Build verificado.
+
+## 2026-07-15 — Portal del Cliente, punto 3: Centro de tareas
+
+- feat: migración `bruck-migration-v20.sql` crea `public.tasks` (organization_id, company_id, assigned_to, created_by, title, description, source, status, due_date) con RLS.
+- feat: `GET/POST /api/admin/clients/[id]/tasks` — el consultor crea una tarea y la asigna a un usuario específico de la empresa (de los ya invitados), notifica al asignado.
+- feat: `GET /api/client/tasks` + `PUT /api/client/tasks/[id]` — el usuario ve sus tareas asignadas y cambia el estado entre `pendiente/en_proceso/finalizada/no_aplica`; notifica a quien creó la tarea.
+- feat: sección "Tareas" + modal "Nueva tarea" (con selector de asignado) en la ficha de cliente; vista "📝 Tareas" con badge de pendientes en el sidebar del cliente.
+- `source` queda como `'manual'` siempre por ahora — la generación automática desde documentos vencidos/solicitudes/automatizaciones no está implementada (documentado en `docs/PENDIENTES.md`).
+- Build verificado.

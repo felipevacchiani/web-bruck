@@ -243,6 +243,33 @@ export interface ClientRequest {
   completed_at: string | null
 }
 
+// ── Centro de tareas (Portal del Cliente) ──────────────────────────────────
+
+export type TaskStatus = 'pendiente' | 'en_proceso' | 'finalizada' | 'no_aplica'
+export type TaskSource = 'manual' | 'document_due' | 'request' | 'automation'
+
+export const TASK_STATUSES: { value: TaskStatus; label: string; color: string; bg: string; border: string }[] = [
+  { value: 'pendiente',  label: 'Pendiente',   color: '#facc15', bg: 'rgba(250,204,21,0.08)',  border: 'rgba(250,204,21,0.2)'  },
+  { value: 'en_proceso', label: 'En proceso',  color: '#60a5fa', bg: 'rgba(96,165,250,0.08)',  border: 'rgba(96,165,250,0.2)'  },
+  { value: 'finalizada', label: 'Finalizada',  color: '#34d399', bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.2)'  },
+  { value: 'no_aplica',  label: 'No aplica',   color: '#71717a', bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)' },
+]
+
+export interface ClientTask {
+  id: string
+  organization_id: string
+  company_id: string
+  assigned_to: string | null
+  created_by: string | null
+  title: string
+  description: string | null
+  source: TaskSource
+  status: TaskStatus
+  due_date: string | null
+  created_at: string
+  updated_at: string
+}
+
 // ── Notificaciones (Portal del Cliente) ────────────────────────────────────
 
 export type NotificationType =
@@ -290,6 +317,7 @@ export type Database = {
       permission_template_actions: { Row: PermissionTemplateAction; Insert: Partial<PermissionTemplateAction>; Update: Partial<PermissionTemplateAction> }
       notifications: { Row: Notification; Insert: Partial<Notification>; Update: Partial<Notification> }
       requests: { Row: ClientRequest; Insert: Partial<ClientRequest>; Update: Partial<ClientRequest> }
+      tasks: { Row: ClientTask; Insert: Partial<ClientTask>; Update: Partial<ClientTask> }
       profiles:   { Row: Profile;    Insert: Partial<Profile>;    Update: Partial<Profile>    }
       files:      { Row: FileRecord; Insert: Partial<FileRecord>; Update: Partial<FileRecord> }
       audit_logs: { Row: AuditLog;   Insert: Partial<AuditLog>;  Update: Partial<AuditLog>  }
