@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile, FileRecord, FileCategory } from '@/lib/supabase/types'
@@ -28,6 +28,25 @@ export default function ClientDashboard({ profile, files }: Props) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [informesOpen, setInformesOpen] = useState(true)
   const [contabTab, setContabTab] = useState<string | null>(null)
+  const [showRequests, setShowRequests] = useState(false)
+  const [myRequests, setMyRequests] = useState<any[]>([])
+  const [uploadingReqId, setUploadingReqId] = useState<string|null>(null)
+  const reqFileRefs = useRef<Record<string, HTMLInputElement|null>>({})
+
+  const loadRequests = () => {
+    fetch('/api/client/requests').then(r=>r.ok?r.json():null).then(d=>{ if (d) setMyRequests(d.data||[]) })
+  }
+  useEffect(() => { loadRequests() }, [])
+  const pendingRequestsCount = myRequests.filter(r=>r.status==='pendiente').length
+
+  const fulfillRequest = async (reqId: string, file: File) => {
+    setUploadingReqId(reqId)
+    const fd = new FormData(); fd.append('file', file)
+    const res = await fetch(`/api/client/requests/${reqId}/fulfill`, { method:'POST', body:fd })
+    setUploadingReqId(null)
+    if (res.ok) loadRequests()
+    else alert('Error al subir el archivo')
+  }
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -184,7 +203,7 @@ export default function ClientDashboard({ profile, files }: Props) {
               {value:'todos' as const,label:'Todos',icon:'📋',count:currentFiles.length},
               ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
             ].map(cat=>(
-              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setSidebarOpen(false) }}
+              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false); setSidebarOpen(false) }}
                 style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px 8px 20px', borderRadius:9, border:activeCategory===cat.value&&!contabTab?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#71717a', marginBottom:2, textAlign:'left' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:9 }}>
                   <span style={{ fontSize:14 }}>{cat.icon}</span>
@@ -194,11 +213,20 @@ export default function ClientDashboard({ profile, files }: Props) {
               </button>
             ))}
 
+            {/* SOLICITUDES */}
+            <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
+              <button onClick={()=>{ setShowRequests(true); setContabTab(null); setSidebarOpen(false) }}
+                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px', borderRadius:9, background:showRequests?'rgba(49,174,121,0.1)':'none', border:showRequests?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showRequests?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left' }}>
+                <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📥</span><span style={{ fontSize:13 }}>Solicitudes</span></span>
+                {pendingRequestsCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingRequestsCount}</span>}
+              </button>
+            </div>
+
             {/* CONTABILIDAD INTERNA */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 10px', marginBottom:6 }}>Contabilidad</div>
               {CI_TABS.map(t => (
-                <button key={t.id} onClick={()=>{ setContabTab(t.id); setSidebarOpen(false) }}
+                <button key={t.id} onClick={()=>{ setContabTab(t.id); setShowRequests(false); setSidebarOpen(false) }}
                   style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:contabTab===t.id?'rgba(49,174,121,0.1)':'none', border:contabTab===t.id?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:contabTab===t.id?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
                   <span style={{ fontSize:14 }}>{t.icon}</span>
                   <span style={{ fontSize:13 }}>{t.label}</span>
@@ -224,7 +252,7 @@ export default function ClientDashboard({ profile, files }: Props) {
               {value:'todos' as const,label:'Todos',icon:'📋',count:currentFiles.length},
               ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
             ].map(cat=>(
-              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null) }}
+              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false) }}
                 style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px 7px 20px', borderRadius:9, border:activeCategory===cat.value&&!contabTab?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#71717a', marginBottom:2, textAlign:'left' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:9 }}>
                   <span style={{ fontSize:14 }}>{cat.icon}</span>
@@ -234,11 +262,20 @@ export default function ClientDashboard({ profile, files }: Props) {
               </button>
             ))}
 
+            {/* SOLICITUDES */}
+            <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
+              <button onClick={()=>{ setShowRequests(true); setContabTab(null) }}
+                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px', borderRadius:9, background:showRequests?'rgba(49,174,121,0.1)':'none', border:showRequests?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showRequests?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left' }}>
+                <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📥</span><span style={{ fontSize:13 }}>Solicitudes</span></span>
+                {pendingRequestsCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingRequestsCount}</span>}
+              </button>
+            </div>
+
             {/* CONTABILIDAD INTERNA */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ color:'#52525b', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 10px', marginBottom:6 }}>Contabilidad</div>
               {CI_TABS.map(t => (
-                <button key={t.id} onClick={()=>setContabTab(t.id)}
+                <button key={t.id} onClick={()=>{ setContabTab(t.id); setShowRequests(false) }}
                   style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'7px 10px', borderRadius:9, background:contabTab===t.id?'rgba(49,174,121,0.1)':'none', border:contabTab===t.id?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:contabTab===t.id?'#31AE79':'#71717a', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
                   <span style={{ fontSize:14 }}>{t.icon}</span>
                   <span style={{ fontSize:13 }}>{t.label}</span>
@@ -264,6 +301,52 @@ export default function ClientDashboard({ profile, files }: Props) {
               defaultTab={contabTab}
               onBack={() => setContabTab(null)}
             />
+          ) : showRequests ? (
+            <div className="db-main-pad">
+              <div style={{ maxWidth:820, margin:'0 auto' }}>
+                <div style={{ marginBottom:20 }}>
+                  <h1 style={{ color:'white', fontSize:18, fontWeight:600, margin:0 }}>Solicitudes</h1>
+                  <p style={{ color:'#52525b', fontSize:13, marginTop:4, margin:0 }}>
+                    {myRequests.length===0?'Sin solicitudes':`${myRequests.length} solicitud${myRequests.length!==1?'es':''}`}
+                  </p>
+                </div>
+                {myRequests.length===0 ? (
+                  <div style={{ border:'1px solid rgba(255,255,255,0.06)', borderRadius:14, padding:'40px 24px', textAlign:'center' }}>
+                    <p style={{ color:'#52525b', fontSize:13 }}>No tenés solicitudes pendientes.</p>
+                  </div>
+                ) : (
+                  <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                    {myRequests.map(r => (
+                      <div key={r.id} style={{ background:'rgba(255,255,255,0.025)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, padding:16 }}>
+                        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:10, marginBottom: r.description ? 6 : 0 }}>
+                          <div>
+                            <div style={{ color:'white', fontSize:14, fontWeight:600 }}>{r.title}</div>
+                            {(r.fiscal_month || r.fiscal_year) && (
+                              <div style={{ color:'#52525b', fontSize:12, marginTop:2 }}>
+                                {r.fiscal_month ? ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][r.fiscal_month-1] : ''} {r.fiscal_year||''}
+                              </div>
+                            )}
+                          </div>
+                          <span style={{ fontSize:11, fontWeight:500, padding:'2px 9px', borderRadius:20, background:r.status==='completada'?'rgba(52,211,153,0.08)':'rgba(250,204,21,0.08)', border:r.status==='completada'?'1px solid rgba(52,211,153,0.2)':'1px solid rgba(250,204,21,0.2)', color:r.status==='completada'?'#34d399':'#facc15', whiteSpace:'nowrap' }}>
+                            {r.status==='completada'?'✓ Completada':'Pendiente'}
+                          </span>
+                        </div>
+                        {r.description && <div style={{ color:'#71717a', fontSize:13, marginBottom:10 }}>{r.description}</div>}
+                        {r.due_date && <div style={{ color:'#52525b', fontSize:12, marginBottom:10 }}>Vence: {new Date(r.due_date+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'})}</div>}
+                        {r.status==='pendiente' && (
+                          <>
+                            <input ref={el=>{reqFileRefs.current[r.id]=el}} type="file" style={{ display:'none' }} onChange={e=>{ const f=e.target.files?.[0]; if(f) fulfillRequest(r.id,f); e.target.value='' }} />
+                            <button onClick={()=>reqFileRefs.current[r.id]?.click()} disabled={uploadingReqId===r.id} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:12, padding:'8px 16px', borderRadius:9, border:'none', cursor:'pointer', opacity:uploadingReqId===r.id?0.6:1 }}>
+                              {uploadingReqId===r.id ? 'Subiendo…' : '↑ Subir archivo'}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           ) : (
           <div className="db-main-pad">
             <div style={{ maxWidth:820, margin:'0 auto' }}>

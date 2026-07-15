@@ -221,6 +221,28 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   client_delete:      'Eliminación de cliente',
 }
 
+// ── Centro de solicitudes (Portal del Cliente) ─────────────────────────────
+
+export type RequestStatus = 'pendiente' | 'completada'
+
+export interface ClientRequest {
+  id: string
+  organization_id: string
+  company_id: string
+  created_by: string | null
+  title: string
+  description: string | null
+  category: FileCategory | null
+  tax_subcategory: TaxSubcategory | null
+  fiscal_month: number | null
+  fiscal_year: number | null
+  due_date: string | null
+  status: RequestStatus
+  file_id: string | null
+  created_at: string
+  completed_at: string | null
+}
+
 // ── Notificaciones (Portal del Cliente) ────────────────────────────────────
 
 export type NotificationType =
@@ -267,6 +289,7 @@ export type Database = {
       permission_templates: { Row: PermissionTemplate; Insert: Partial<PermissionTemplate>; Update: Partial<PermissionTemplate> }
       permission_template_actions: { Row: PermissionTemplateAction; Insert: Partial<PermissionTemplateAction>; Update: Partial<PermissionTemplateAction> }
       notifications: { Row: Notification; Insert: Partial<Notification>; Update: Partial<Notification> }
+      requests: { Row: ClientRequest; Insert: Partial<ClientRequest>; Update: Partial<ClientRequest> }
       profiles:   { Row: Profile;    Insert: Partial<Profile>;    Update: Partial<Profile>    }
       files:      { Row: FileRecord; Insert: Partial<FileRecord>; Update: Partial<FileRecord> }
       audit_logs: { Row: AuditLog;   Insert: Partial<AuditLog>;  Update: Partial<AuditLog>  }

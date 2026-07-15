@@ -102,7 +102,34 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const [inviteForm, setInviteForm] = useState({ email:'', full_name:'', password:'', permission_template_id:'' })
   const [inviteError, setInviteError] = useState('')
   const [invitingUser, setInvitingUser] = useState(false)
+  const [requests, setRequests] = useState<any[]>([])
+  const [showNewRequest, setShowNewRequest] = useState(false)
+  const [requestForm, setRequestForm] = useState({ title:'', description:'', category:'otro' as FileCategory, fiscalMonth: new Date().getMonth()+1, fiscalYear: new Date().getFullYear(), dueDate:'' })
+  const [savingRequest, setSavingRequest] = useState(false)
+  const [requestError, setRequestError] = useState('')
   const fileRefs = useRef<(HTMLInputElement|null)[]>([])
+
+  const loadRequests = () => {
+    fetch(`/api/admin/clients/${client.id}/requests`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setRequests(data.data || []) })
+  }
+  useEffect(() => { loadRequests() }, [client.id])
+
+  const submitRequest = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingRequest(true); setRequestError('')
+    const res = await fetch(`/api/admin/clients/${client.id}/requests`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ title: requestForm.title, description: requestForm.description, category: requestForm.category, fiscal_month: requestForm.fiscalMonth, fiscal_year: requestForm.fiscalYear, due_date: requestForm.dueDate || null }),
+    })
+    const d = await res.json()
+    setSavingRequest(false)
+    if (!res.ok) { setRequestError(d.error || 'Error al crear la solicitud'); return }
+    setShowNewRequest(false)
+    setRequestForm({ title:'', description:'', category:'otro', fiscalMonth: new Date().getMonth()+1, fiscalYear: new Date().getFullYear(), dueDate:'' })
+    loadRequests()
+  }
 
   const loadCompanyUsers = () => {
     fetch(`/api/admin/clients/${client.id}/company-users`)
@@ -465,6 +492,77 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     <button type="button" onClick={()=>{setShowInvite(false);setInviteError('')}} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
                     <button type="submit" disabled={invitingUser} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:invitingUser?0.6:1 }}>
                       {invitingUser?'Invitando…':'Invitar'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          <div style={{ background:'rgba(14,14,14,0.8)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: requests.length ? 12 : 0 }}>
+              <span style={{ color:'white', fontSize:13, fontWeight:600 }}>Solicitudes</span>
+              <button onClick={()=>setShowNewRequest(true)} style={{ background:'none', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>+ Nueva solicitud</button>
+            </div>
+            {requests.length > 0 && (
+              <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                {requests.map(r => (
+                  <div key={r.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 0' }}>
+                    <div>
+                      <span style={{ color:'#d4d4d8', fontSize:13 }}>{r.title}</span>
+                      {r.due_date && <span style={{ color:'#52525b', fontSize:11, marginLeft:8 }}>vence {new Date(r.due_date+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short'})}</span>}
+                    </div>
+                    <span style={{ fontSize:11, fontWeight:500, padding:'2px 9px', borderRadius:20, background:r.status==='completada'?'rgba(52,211,153,0.08)':'rgba(250,204,21,0.08)', border:r.status==='completada'?'1px solid rgba(52,211,153,0.2)':'1px solid rgba(250,204,21,0.2)', color:r.status==='completada'?'#34d399':'#facc15' }}>
+                      {r.status==='completada'?'Completada':'Pendiente'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {showNewRequest && (
+            <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+              <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, maxWidth:440, width:'100%' }}>
+                <div style={{ color:'white', fontSize:16, fontWeight:700, marginBottom:18 }}>Nueva solicitud</div>
+                {requestError && <div style={{ background:'rgba(239,68,68,0.09)', border:'1px solid rgba(239,68,68,0.22)', borderRadius:10, padding:'9px 12px', marginBottom:14, color:'#f87171', fontSize:13 }}>{requestError}</div>}
+                <form onSubmit={submitRequest}>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Título</label>
+                    <input required value={requestForm.title} onChange={e=>setRequestForm(f=>({...f,title:e.target.value}))} placeholder="Ej: Extracto bancario Banco Galicia agosto" style={INP} />
+                  </div>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Descripción (opcional)</label>
+                    <input value={requestForm.description} onChange={e=>setRequestForm(f=>({...f,description:e.target.value}))} placeholder="Detalle adicional" style={INP} />
+                  </div>
+                  <div className="cd-3col" style={{ marginBottom:14 }}>
+                    <div>
+                      <label style={LBL}>Categoría</label>
+                      <select value={requestForm.category} onChange={e=>setRequestForm(f=>({...f,category:e.target.value as FileCategory}))} style={SEL}>
+                        {FILE_CATEGORIES.map(c=><option key={c.value} value={c.value}>{c.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={LBL}>Mes fiscal</label>
+                      <select value={requestForm.fiscalMonth} onChange={e=>setRequestForm(f=>({...f,fiscalMonth:parseInt(e.target.value)}))} style={SEL}>
+                        {MONTHS.map((m,i)=><option key={i+1} value={i+1}>{m}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={LBL}>Año fiscal</label>
+                      <select value={requestForm.fiscalYear} onChange={e=>setRequestForm(f=>({...f,fiscalYear:parseInt(e.target.value)}))} style={SEL}>
+                        {FISCAL_YEARS.map(y=><option key={y} value={y}>{y}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div style={{ marginBottom:20 }}>
+                    <label style={LBL}>Fecha límite (opcional)</label>
+                    <input type="date" value={requestForm.dueDate} onChange={e=>setRequestForm(f=>({...f,dueDate:e.target.value}))} style={INP} />
+                  </div>
+                  <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+                    <button type="button" onClick={()=>{setShowNewRequest(false);setRequestError('')}} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
+                    <button type="submit" disabled={savingRequest} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingRequest?0.6:1 }}>
+                      {savingRequest?'Creando…':'Crear solicitud'}
                     </button>
                   </div>
                 </form>

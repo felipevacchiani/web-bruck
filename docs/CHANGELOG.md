@@ -136,3 +136,11 @@
 - feat: campanita con contador de no leídas + dropdown en el header del dashboard del cliente.
 - feat: primera integración real — aprobar un documento (`PATCH /api/admin/files/[id]` con `doc_status: 'aprobado'`) notifica automáticamente al cliente dueño.
 - Build verificado.
+
+## 2026-07-15 — Portal del Cliente, punto 2: Centro de solicitudes
+
+- feat: migración `bruck-migration-v19.sql` crea `public.requests` (organization_id, company_id, created_by, title, description, categoría/período sugeridos, due_date, status, file_id) con RLS.
+- feat: `GET/POST /api/admin/clients/[id]/requests` — el consultor crea una solicitud puntual para una empresa (ej. "extracto bancario de agosto"), notifica a todos los usuarios de esa empresa.
+- feat: `GET /api/client/requests` + `POST /api/client/requests/[id]/fulfill` — el cliente ve sus solicitudes y sube el archivo directamente desde la solicitud; el sistema crea el `file` con la categoría/período precargados, marca la solicitud como completada y notifica al consultor que la creó.
+- feat: sección "Solicitudes" + modal "Nueva solicitud" en la ficha de cliente del admin; nueva vista "📥 Solicitudes" (con badge de pendientes) en el sidebar del dashboard del cliente.
+- Build verificado.
