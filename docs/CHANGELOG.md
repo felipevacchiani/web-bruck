@@ -127,3 +127,12 @@
 - feat: botón "Suspender"/"Reactivar" por organización en `/admin/organizaciones`, con confirmación explícita.
 - Licencias, planes y backups quedan documentados como pendientes sin implementar — sin caso de uso real todavía (ver `docs/PENDIENTES.md`).
 - Build verificado.
+
+## 2026-07-15 — Portal del Cliente, punto 1: Centro de notificaciones
+
+- feat: migración `bruck-migration-v18.sql` crea `public.notifications` (user_id, company_id, type, title, message, link, read) con RLS.
+- feat: `lib/supabase/notifications.ts` — `notifyUser()`/`notifyCompany()`, helper reutilizable para el resto de módulos del Portal del Cliente (solicitudes, tareas, dashboards).
+- feat: `GET /api/client/notifications`, `PUT /api/client/notifications` (marcar todas leídas), `PUT /api/client/notifications/[id]` (marcar una leída).
+- feat: campanita con contador de no leídas + dropdown en el header del dashboard del cliente.
+- feat: primera integración real — aprobar un documento (`PATCH /api/admin/files/[id]` con `doc_status: 'aprobado'`) notifica automáticamente al cliente dueño.
+- Build verificado.

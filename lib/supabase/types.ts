@@ -221,6 +221,43 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   client_delete:      'Eliminación de cliente',
 }
 
+// ── Notificaciones (Portal del Cliente) ────────────────────────────────────
+
+export type NotificationType =
+  | 'dashboard_published'
+  | 'document_approved'
+  | 'document_rejected'
+  | 'new_task'
+  | 'task_updated'
+  | 'request_created'
+  | 'request_completed'
+  | 'dashboard_updated'
+  | 'consultant_comment'
+
+export interface Notification {
+  id: string
+  user_id: string
+  company_id: string | null
+  type: NotificationType
+  title: string
+  message: string | null
+  link: string | null
+  read: boolean
+  created_at: string
+}
+
+export const NOTIFICATION_ICONS: Record<NotificationType, string> = {
+  dashboard_published: '📊',
+  document_approved:   '✅',
+  document_rejected:   '❌',
+  new_task:             '📝',
+  task_updated:         '🔄',
+  request_created:      '📥',
+  request_completed:    '✔️',
+  dashboard_updated:    '📈',
+  consultant_comment:   '💬',
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -229,6 +266,7 @@ export type Database = {
       memberships: { Row: Membership; Insert: Partial<Membership>; Update: Partial<Membership> }
       permission_templates: { Row: PermissionTemplate; Insert: Partial<PermissionTemplate>; Update: Partial<PermissionTemplate> }
       permission_template_actions: { Row: PermissionTemplateAction; Insert: Partial<PermissionTemplateAction>; Update: Partial<PermissionTemplateAction> }
+      notifications: { Row: Notification; Insert: Partial<Notification>; Update: Partial<Notification> }
       profiles:   { Row: Profile;    Insert: Partial<Profile>;    Update: Partial<Profile>    }
       files:      { Row: FileRecord; Insert: Partial<FileRecord>; Update: Partial<FileRecord> }
       audit_logs: { Row: AuditLog;   Insert: Partial<AuditLog>;  Update: Partial<AuditLog>  }

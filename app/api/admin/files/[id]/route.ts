@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logAudit } from '@/lib/supabase/audit'
+import { notifyUser } from '@/lib/supabase/notifications'
 import { NextRequest, NextResponse } from 'next/server'
 
 interface Params { params: Promise<{ id: string }> }
@@ -37,6 +38,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const { data, error } = await admin.from('files').update(update).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  if (update.doc_status === 'aprobado' && existing?.client_id) {
+    await notifyUser({
+      userId: existing.client_id,
+      type: 'document_approved',
+      title: 'Documento aprobado',
+      message: (data as any)?.group_title || (data as any)?.name || undefined,
+      link: '/dashboard',
+    })
+  }
 
   const action = 'doc_status' in update ? 'file_status_change' : 'file_update'
   await logAudit({

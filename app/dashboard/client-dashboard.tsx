@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile, FileRecord, FileCategory } from '@/lib/supabase/types'
-import { FILE_CATEGORIES, TAX_SUBCATEGORIES } from '@/lib/supabase/types'
+import { FILE_CATEGORIES, TAX_SUBCATEGORIES, NOTIFICATION_ICONS } from '@/lib/supabase/types'
 import ContabilidadPanel from '@/app/admin/clients/[id]/contabilidad/contabilidad-panel'
 
 interface Props { profile: Profile; files: FileRecord[] }
@@ -29,6 +29,34 @@ export default function ClientDashboard({ profile, files }: Props) {
   const [informesOpen, setInformesOpen] = useState(true)
   const [contabTab, setContabTab] = useState<string | null>(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [showNotifs, setShowNotifs] = useState(false)
+
+  const loadNotifications = () => {
+    fetch('/api/client/notifications').then(r=>r.ok?r.json():null).then(d=>{
+      if (!d) return
+      setNotifications(d.data||[]); setUnreadCount(d.unread||0)
+    })
+  }
+  useEffect(() => { loadNotifications() }, [])
+
+  const markAllRead = async () => {
+    await fetch('/api/client/notifications', { method:'PUT' })
+    setNotifications(n=>n.map(x=>({...x,read:true}))); setUnreadCount(0)
+  }
+  const markOneRead = async (id:string) => {
+    await fetch(`/api/client/notifications/${id}`, { method:'PUT' })
+    setNotifications(n=>n.map(x=>x.id===id?{...x,read:true}:x))
+    setUnreadCount(c=>Math.max(0,c-1))
+  }
+  const notifTimeAgo = (iso:string) => {
+    const diffMin = Math.round((Date.now()-new Date(iso).getTime())/60000)
+    if (diffMin < 1) return 'ahora'
+    if (diffMin < 60) return `hace ${diffMin}m`
+    if (diffMin < 1440) return `hace ${Math.round(diffMin/60)}h`
+    return `hace ${Math.round(diffMin/1440)}d`
+  }
 
   const CI_TABS = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
@@ -91,6 +119,38 @@ export default function ClientDashboard({ profile, files }: Props) {
             </div>
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <div style={{ position:'relative' }}>
+              <button onClick={()=>setShowNotifs(s=>!s)} style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', color:'#a1a1aa', width:32, height:32, borderRadius:8, cursor:'pointer', position:'relative', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                🔔
+                {unreadCount > 0 && (
+                  <span style={{ position:'absolute', top:-4, right:-4, background:'#f87171', color:'white', fontSize:9, fontWeight:700, minWidth:16, height:16, borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', padding:'0 3px' }}>{unreadCount>9?'9+':unreadCount}</span>
+                )}
+              </button>
+              {showNotifs && (
+                <>
+                  <div onClick={()=>setShowNotifs(false)} style={{ position:'fixed', inset:0, zIndex:29 }} />
+                  <div style={{ position:'absolute', top:40, right:0, width:320, maxHeight:420, overflowY:'auto', background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:14, boxShadow:'0 12px 32px rgba(0,0,0,0.5)', zIndex:30 }}>
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 14px', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+                      <span style={{ color:'white', fontSize:13, fontWeight:600 }}>Notificaciones</span>
+                      {unreadCount > 0 && <button onClick={markAllRead} style={{ background:'none', border:'none', color:'#31AE79', fontSize:11, cursor:'pointer' }}>Marcar todas leídas</button>}
+                    </div>
+                    {notifications.length === 0 ? (
+                      <div style={{ padding:'32px 16px', textAlign:'center', color:'#52525b', fontSize:12 }}>Sin notificaciones</div>
+                    ) : notifications.map(n => (
+                      <div key={n.id} onClick={()=>!n.read && markOneRead(n.id)} style={{ display:'flex', gap:9, padding:'11px 14px', borderBottom:'1px solid rgba(255,255,255,0.04)', cursor: n.read?'default':'pointer', background: n.read?'transparent':'rgba(49,174,121,0.04)' }}>
+                        <span style={{ fontSize:15, flexShrink:0 }}>{NOTIFICATION_ICONS[n.type as keyof typeof NOTIFICATION_ICONS] || '🔔'}</span>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ color: n.read?'#a1a1aa':'white', fontSize:12, fontWeight:n.read?400:600 }}>{n.title}</div>
+                          {n.message && <div style={{ color:'#71717a', fontSize:11, marginTop:2 }}>{n.message}</div>}
+                          <div style={{ color:'#3f3f46', fontSize:10, marginTop:3 }}>{notifTimeAgo(n.created_at)}</div>
+                        </div>
+                        {!n.read && <div style={{ width:6, height:6, borderRadius:'50%', background:'#31AE79', flexShrink:0, marginTop:5 }} />}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
               <div style={{ width:28, height:28, borderRadius:'50%', background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.12)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                 <span style={{ color:'#d4d4d8', fontSize:11, fontWeight:600 }}>{(profile.full_name||profile.email).charAt(0).toUpperCase()}</span>
