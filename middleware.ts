@@ -53,6 +53,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login?error=account_disabled', request.url))
   }
 
+  // Si su organización fue suspendida (salvo super_admin), redirigir
+  if (profile.role !== 'super_admin' && profile.organizations && profile.organizations.active === false) {
+    await supabase.auth.signOut()
+    return NextResponse.redirect(new URL('/login?error=organization_suspended', request.url))
+  }
+
   if (pathname.startsWith('/admin') && !['admin','super_admin'].includes(profile.role)) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
@@ -67,7 +73,7 @@ export async function middleware(request: NextRequest) {
 async function getProfile(supabase: any, userId: string) {
   const { data } = await supabase
     .from('profiles')
-    .select('id, role, active')
+    .select('id, role, active, organizations(active)')
     .eq('id', userId)
     .single()
   return data

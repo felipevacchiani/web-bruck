@@ -25,6 +25,7 @@ function LoginForm() {
     }
     const errorParam = searchParams.get('error')
     if (errorParam === 'account_disabled') setError('Tu cuenta está desactivada. Contactá al administrador.')
+    if (errorParam === 'organization_suspended') setError('Tu organización está suspendida. Contactá a BRUCK.')
     if (errorParam === 'profile_not_found') setError('No se encontró tu perfil. Contactá al administrador.')
   }, [searchParams])
 

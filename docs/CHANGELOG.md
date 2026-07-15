@@ -119,3 +119,11 @@
 - feat: `GET/POST /api/admin/clients/[id]/company-users` — lista los usuarios que comparten `company_id` con el cliente y permite invitar uno nuevo (email/nombre/contraseña + plantilla de permisos), scopeado por organización igual que el resto de rutas de Fase 4.
 - feat: sección "Usuarios de esta empresa" + modal "Invitar usuario" en la ficha de cliente del admin. Antes cada empresa quedaba atada 1:1 a un solo usuario; ahora una empresa puede tener usuarios ilimitados, cada uno con su propia plantilla de permisos (ej. uno "Tesorería", otro "Recursos Humanos").
 - Build verificado.
+
+## 2026-07-15 — Suspender/reactivar organización (Super Admin)
+
+- feat: `PUT /api/super-admin/organizations/[id]` — togglea `organizations.active` (solo `super_admin`).
+- feat: `middleware.ts` bloquea el acceso de cualquier usuario (`admin`/`client`) cuya organización esté suspendida (`organizations.active = false`), redirigiendo a `/login?error=organization_suspended`. `super_admin` nunca es bloqueado por esto.
+- feat: botón "Suspender"/"Reactivar" por organización en `/admin/organizaciones`, con confirmación explícita.
+- Licencias, planes y backups quedan documentados como pendientes sin implementar — sin caso de uso real todavía (ver `docs/PENDIENTES.md`).
+- Build verificado.

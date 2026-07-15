@@ -26,6 +26,7 @@ export default function OrganizacionesPanel() {
   const [form, setForm] = useState(defForm())
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [togglingId, setTogglingId] = useState<string|null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -35,6 +36,17 @@ export default function OrganizacionesPanel() {
     setLoading(false)
   }
   useEffect(() => { load() }, [])
+
+  const toggleActive = async (o: Org) => {
+    const action = o.active ? 'suspender' : 'reactivar'
+    if (!confirm(`¿${action.charAt(0).toUpperCase()+action.slice(1)} "${o.name}"? ${o.active ? 'Todos sus usuarios perderán acceso inmediatamente.' : 'Sus usuarios recuperarán el acceso.'}`)) return
+    setTogglingId(o.id)
+    await fetch(`/api/super-admin/organizations/${o.id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ active: !o.active }),
+    })
+    setTogglingId(null)
+    load()
+  }
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -84,9 +96,14 @@ export default function OrganizacionesPanel() {
                     <span style={{ color:'white', fontSize:15, fontWeight:600 }}>{o.name}</span>
                     <span style={{ color:'#52525b', fontSize:12, marginLeft:8 }}>/{o.slug}</span>
                   </div>
-                  <span style={{ fontSize:11, fontWeight:500, padding:'3px 9px', borderRadius:20, background:o.active?'rgba(52,211,153,0.08)':'rgba(255,255,255,0.04)', border:o.active?'1px solid rgba(52,211,153,0.2)':'1px solid rgba(255,255,255,0.08)', color:o.active?'#34d399':'#71717a' }}>
-                    {o.active?'Activa':'Inactiva'}
-                  </span>
+                  <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                    <span style={{ fontSize:11, fontWeight:500, padding:'3px 9px', borderRadius:20, background:o.active?'rgba(52,211,153,0.08)':'rgba(255,255,255,0.04)', border:o.active?'1px solid rgba(52,211,153,0.2)':'1px solid rgba(255,255,255,0.08)', color:o.active?'#34d399':'#71717a' }}>
+                      {o.active?'Activa':'Inactiva'}
+                    </span>
+                    <button onClick={()=>toggleActive(o)} disabled={togglingId===o.id} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:11, padding:'4px 10px', borderRadius:7, cursor:'pointer', opacity:togglingId===o.id?0.5:1 }}>
+                      {togglingId===o.id ? '…' : (o.active ? 'Suspender' : 'Reactivar')}
+                    </button>
+                  </div>
                 </div>
                 <div style={{ display:'flex', gap:20, fontSize:12, color:'#71717a', marginBottom: o.consultores.length ? 10 : 0 }}>
                   <span>{o.empresas_count} empresa{o.empresas_count!==1?'s':''}</span>
