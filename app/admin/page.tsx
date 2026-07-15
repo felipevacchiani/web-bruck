@@ -40,6 +40,12 @@ export default async function AdminPage() {
   let clientsQuery = adminSupabase.from('profiles').select('*').eq('role', 'client').order('created_at', { ascending: false })
   if (!isSuperAdmin) clientsQuery = clientsQuery.eq('organization_id', myProfile?.organization_id)
 
+  let recentAuditQuery = adminSupabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(6)
+  if (!isSuperAdmin) {
+    const { data: orgAdmins } = await adminSupabase.from('profiles').select('id').eq('organization_id', myProfile?.organization_id).eq('role', 'admin')
+    recentAuditQuery = recentAuditQuery.in('user_id', (orgAdmins || []).map((a: any) => a.id))
+  }
+
   const [
     { data: clients },
     { data: allFiles },
@@ -48,7 +54,7 @@ export default async function AdminPage() {
   ] = await Promise.all([
     clientsQuery,
     adminSupabase.from('files').select('client_id, doc_status, due_date'),
-    adminSupabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(6),
+    recentAuditQuery,
     adminSupabase.from('files').select('id, client_id, due_date, doc_status').not('due_date', 'is', null),
   ])
 
