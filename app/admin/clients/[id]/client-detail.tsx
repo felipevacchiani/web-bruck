@@ -64,6 +64,7 @@ interface UF {
   fiscalMonth: number | null
   fiscalYear: number | null
   dueDate: string
+  tags: string
   docs: DocEntry[]
 }
 const defForm = (): UF => ({
@@ -71,6 +72,7 @@ const defForm = (): UF => ({
   fiscalMonth: new Date().getMonth() + 1,
   fiscalYear: new Date().getFullYear(),
   dueDate: '',
+  tags: '',
   docs: [{ label: '', file: null }]
 })
 
@@ -85,6 +87,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const [activeTab, setActiveTab] = useState<FileCategory|'todos'>('todos')
   const [filterYear, setFilterYear] = useState<number|null>(null)
   const [filterMonth, setFilterMonth] = useState<number|null>(null)
+  const [filterTag, setFilterTag] = useState<string|null>(null)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [deletingId, setDeletingId] = useState<string|null>(null)
   const [clientForm, setClientForm] = useState({ full_name: client.full_name||'', company: client.company||'', active: client.active })
@@ -113,11 +116,13 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   }
 
   const availableYears = [...new Set(files.map(f => f.fiscal_year).filter(Boolean) as number[])].sort((a,b)=>b-a)
+  const availableTags = [...new Set(files.flatMap(f => f.tags||[]))].sort()
 
   const filtered = files.filter(f => {
     if (activeTab !== 'todos' && f.category !== activeTab) return false
     if (filterYear  !== null && f.fiscal_year  !== filterYear)  return false
     if (filterMonth !== null && f.fiscal_month !== filterMonth) return false
+    if (filterTag   !== null && !(f.tags||[]).includes(filterTag)) return false
     return true
   })
 
@@ -170,6 +175,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
       if (form.fiscalMonth) fd.append('fiscal_month', String(form.fiscalMonth))
       if (form.fiscalYear)  fd.append('fiscal_year',  String(form.fiscalYear))
       if (form.dueDate)     fd.append('due_date', form.dueDate)
+      if (form.tags)        fd.append('tags', form.tags)
       const res = await fetch('/api/admin/files', { method:'POST', body:fd })
       const data = await res.json()
       if (!res.ok) { setUploadError(data.error||'Error al subir'); setUploading(false); return }
@@ -398,6 +404,17 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
             </div>
           )}
 
+          {availableTags.length > 0 && (
+            <div className="filter-bar">
+              <span style={{ color:'#52525b', fontSize:11, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' }}>Etiquetas:</span>
+              {availableTags.map(t=>(
+                <button key={t} onClick={()=>setFilterTag(filterTag===t?null:t)} style={{ padding:'4px 10px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:filterTag===t?'rgba(250,204,21,0.15)':'rgba(255,255,255,0.04)', color:filterTag===t?'#facc15':'#71717a' }}>
+                  #{t}
+                </button>
+              ))}
+            </div>
+          )}
+
           {showUpload && (
             <div style={{ background:'rgba(14,14,14,0.95)', border:'1px solid rgba(49,174,121,0.2)', borderRadius:16, padding:20, marginBottom:20 }}>
               <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:18 }}>
@@ -455,6 +472,11 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     </div>
                   </div>
                 )}
+
+                <div style={{ marginBottom:16 }}>
+                  <label style={LBL}>Etiquetas <span style={{ color:'#52525b', textTransform:'none', fontWeight:400 }}>(separadas por coma, opcional)</span></label>
+                  <input value={form.tags} onChange={e=>setForm(f=>({...f,tags:e.target.value}))} placeholder="Ej: urgente, socio-A, revisar" style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
+                </div>
 
                 <div style={{ marginBottom:18 }}>
                   <label style={LBL}>Descripción (opcional)</label>
@@ -532,6 +554,9 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                           {first.description && <span style={{ color:'#52525b', fontSize:11 }}>{first.description}</span>}
                           <span style={{ color:'#3f3f46', fontSize:11 }}>{fmt(first.created_at)}</span>
                           <DueBadge due={first.due_date} />
+                          {(first.tags||[]).map(t=>(
+                            <span key={t} style={{ fontSize:10, padding:'2px 7px', borderRadius:5, background:'rgba(250,204,21,0.08)', border:'1px solid rgba(250,204,21,0.18)', color:'#facc15' }}>#{t}</span>
+                          ))}
                         </div>
                       </div>
                       <div className="group-meta" style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>

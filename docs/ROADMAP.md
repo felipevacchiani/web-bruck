@@ -33,3 +33,9 @@ Con esto, la Fase 1 (bases de multi-tenant y permisos) queda funcionalmente cerr
 3. **Flujo de fondos** (hecho 2026-07-14) — tab "Flujo de Fondos" en `ContabilidadPanel`, endpoint `GET /api/{admin/ci/[clientId]|client/ci}/flujo-fondos`. Sin tabla nueva: combina `bruck_movimientos` reales (meses ≤ actual) con `bruck_presupuestos` proyectados (meses futuros), saldo acumulado encadenado desde el saldo inicial de las cuentas. A nivel de cliente completo, no por cuenta individual (los presupuestos tampoco están segmentados por cuenta).
 
 Con esto, la Fase 2 (Contabilidad Interna) queda funcionalmente cerrada: Conciliaciones, Presupuestos y Flujo de Fondos.
+
+## Fase 3 — Gestión Documental avanzada (en progreso)
+
+1. **Etiquetas libres multi-categoría** (v14, hecho 2026-07-14) — campo `files.tags` (texto libre, múltiples), complementa la categoría fija existente. Input al subir, chips + filtro en la lista de archivos (admin y cliente).
+2. **Versionado inmutable formal** (pendiente) — hoy la agrupación (`file_group_id`) es suelta, sin número de versión ni garantía de inmutabilidad.
+3. **Estados de documento más ricos** (pendiente) — depende de qué estados adicionales defina el usuario (hoy solo `pendiente/visto/aprobado`).

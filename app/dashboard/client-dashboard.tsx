@@ -246,6 +246,9 @@ export default function ClientDashboard({ profile, files }: Props) {
                               {taxSub && <span style={{ color:'#31AE79', fontSize:12 }}>{taxSub.label}</span>}
                               {first.description && <span style={{ color:'#52525b', fontSize:12 }}>{first.description}</span>}
                               <span style={{ color:'#3f3f46', fontSize:12 }}>{fmt(first.created_at)}</span>
+                              {(first.tags||[]).map(t=>(
+                                <span key={t} style={{ fontSize:10, padding:'2px 7px', borderRadius:5, background:'rgba(250,204,21,0.08)', border:'1px solid rgba(250,204,21,0.18)', color:'#facc15' }}>#{t}</span>
+                              ))}
                             </div>
                           </div>
                           <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>

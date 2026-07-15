@@ -16,7 +16,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const body = await req.json().catch(() => ({}))
-  const allowed = ['doc_status', 'due_date', 'fiscal_month', 'fiscal_year', 'group_title', 'description']
+  const allowed = ['doc_status', 'due_date', 'fiscal_month', 'fiscal_year', 'group_title', 'description', 'tags']
   const update: Record<string, unknown> = {}
   for (const key of allowed) {
     if (key in body) update[key] = body[key]

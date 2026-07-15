@@ -23,6 +23,11 @@ _Última actualización: 2026-07-14_
 - Centro de Clientes tipo CRM.
 - Cualquier funcionalidad de IA (explícitamente fuera de alcance hasta nueva indicación).
 
+## Fase 3 — Gestión Documental (pendiente)
+
+- [ ] Versionado inmutable formal (`version` + `is_current` por archivo dentro de un grupo).
+- [ ] Estados de documento más ricos — definir con el usuario qué estados adicionales necesita antes de implementar.
+
 ## Fase 2 — Contabilidad Interna (cerrada 2026-07-14)
 
 Conciliaciones, Presupuestos y Flujo de Fondos implementados y verificados en producción. Posible mejora futura (no bloqueante): permitir elegir el rango de meses del Flujo de Fondos (hoy fijo en 3 atrás / 3 adelante).

@@ -27,6 +27,8 @@ export async function POST(req: NextRequest) {
   const fiscalMonth  = formData.get('fiscal_month') ? parseInt(formData.get('fiscal_month') as string) : null
   const fiscalYear   = formData.get('fiscal_year')  ? parseInt(formData.get('fiscal_year') as string)  : null
   const dueDate      = (formData.get('due_date') as string) || null
+  const tagsRaw      = (formData.get('tags') as string) || ''
+  const tags         = tagsRaw.split(',').map(t => t.trim()).filter(Boolean)
 
   if (!clientId) return NextResponse.json({ error: 'client_id requerido' }, { status: 400 })
 
@@ -56,6 +58,7 @@ export async function POST(req: NextRequest) {
     fiscal_year:     fiscalYear,
     doc_status:      'pendiente',
     due_date:        dueDate || null,
+    tags,
   }).select().single()
 
   if (dbError) {

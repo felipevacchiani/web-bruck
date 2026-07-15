@@ -1,5 +1,14 @@
 # Changelog — BRUCK APP
 
+## 2026-07-14 — Fase 3: etiquetas libres en archivos
+
+- feat: migración `bruck-migration-v14.sql` agrega `files.tags text[]` (default `{}`) + índice GIN.
+- feat: `POST /api/admin/files` acepta `tags` (formdata, separadas por coma); `PATCH /api/admin/files/[id]` permite editarlas.
+- feat: input de etiquetas en el formulario de subida (admin), chips `#etiqueta` en la lista de archivos (admin y cliente), filtro por etiqueta en la vista del admin.
+- feat: campo `tags: string[]` en `FileRecord` (`lib/supabase/types.ts`).
+- Complementa la categoría fija existente — no se modificó `category` ni ningún dato existente.
+- Build verificado. Typecheck: 68 errores (1 más que el baseline de 67, mismo patrón preexistente `Set<T>` iteration ya presente en el archivo, no funcional).
+
 ## 2026-07-14 — Fase 2: flujo de fondos (cierre de Fase 2)
 
 - feat: endpoint `GET /api/{admin/ci/[clientId]|client/ci}/flujo-fondos` — sin tabla nueva. Combina `bruck_movimientos` reales (períodos ≤ mes actual) con `bruck_presupuestos` proyectados (períodos futuros), saldo acumulado encadenado desde `bruck_cuentas_bancarias.saldo_inicial`. Rango por defecto: 3 meses atrás, 3 adelante (parámetros `desde`/`hasta` opcionales en formato `YYYY-MM`).

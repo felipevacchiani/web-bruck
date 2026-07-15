@@ -40,6 +40,7 @@ Documentos subidos por cliente.
 - `file_group_id`, `group_title`, `document_label` — agrupación/versionado simple (agregado en v2)
 - `fiscal_month`, `fiscal_year`, `due_date`
 - `doc_status`: `'pendiente' | 'visto' | 'aprobado'`
+- `tags` (v14): `text[]`, etiquetas libres definidas por el admin al subir/editar, **complementan** la categoría fija (no la reemplazan). Filtrable en la UI tanto del admin como del cliente. Índice GIN para búsqueda por contención.
 
 RLS: cliente ve solo `client_id = auth.uid()`; admin ve todo.
 

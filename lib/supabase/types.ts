@@ -121,6 +121,7 @@ export interface FileRecord {
   fiscal_year: number | null
   doc_status: DocStatus
   due_date: string | null
+  tags: string[]
   created_at: string
 }
 
