@@ -176,3 +176,12 @@
 - Build verificado.
 
 **Cierre de Capítulo 4 (Portal del Cliente)**: 6 de 7 puntos completos y verificados en producción (notificaciones, solicitudes, tareas, actividad reciente, página de inicio, perfil de empresa); el punto 7 queda parcialmente resuelto con una mejora honesta y acotada, más una iniciativa grande documentada para el constructor de dashboards real.
+
+## 2026-07-15 — Flujo de Fondos interactivo (primer dashboard real con datos reales)
+
+- feat: la pestaña "Flujo de Fondos" (Fase 2) ahora tiene selector de rango de período (desde/hasta) conectado a la API real (que ya soportaba estos parámetros desde su creación, nunca expuestos en la UI).
+- feat: gráfico SVG real (sin dependencias externas) — barras de ingresos/egresos por mes + línea de saldo acumulado, con opacidad distinta para períodos reales vs. proyectados.
+- feat: exportar CSV del rango visible.
+- Reutiliza 100% datos reales de Contabilidad Interna del cliente (movimientos + presupuestos) — no es una maqueta ni un dato decorativo.
+- Distinto del visor de "dashboards HTML subidos" (que sigue existiendo sin cambios) — este es el primer dashboard **nativo e interactivo** de la plataforma.
+- Build verificado.

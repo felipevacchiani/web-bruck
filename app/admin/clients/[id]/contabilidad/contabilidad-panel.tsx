@@ -190,6 +190,11 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const [flData, setFlData] = useState<any[]>([])
   const [flSaldoInicial, setFlSaldoInicial] = useState(0)
   const [flLoaded, setFlLoaded] = useState(false)
+  const flNow = new Date()
+  const flDefDesde = new Date(flNow.getFullYear(), flNow.getMonth() - 3, 1)
+  const flDefHasta = new Date(flNow.getFullYear(), flNow.getMonth() + 3, 1)
+  const [flDesde, setFlDesde] = useState(`${flDefDesde.getFullYear()}-${String(flDefDesde.getMonth()+1).padStart(2,'0')}`)
+  const [flHasta, setFlHasta] = useState(`${flDefHasta.getFullYear()}-${String(flDefHasta.getMonth()+1).padStart(2,'0')}`)
 
   // Modal
   const [modal, setModal] = useState<{ type: string; item?: any } | null>(null)
@@ -405,13 +410,25 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   }
 
   const loadFlujo = useCallback(async () => {
-    const r = await fetch(`${base}/flujo-fondos`)
+    const r = await fetch(`${base}/flujo-fondos?desde=${flDesde}&hasta=${flHasta}`)
     if (!r.ok) { setFlData([]); setFlLoaded(true); return }
     const d = await r.json()
     setFlData(d.data || []); setFlSaldoInicial(d.saldoInicial || 0); setFlLoaded(true)
-  }, [base])
+  }, [base, flDesde, flHasta])
 
-  useEffect(() => { if (tab === 'flujo' && !flLoaded) loadFlujo() }, [tab, flLoaded, loadFlujo])
+  const exportFlujoCSV = () => {
+    const headers = ['Mes', 'Año', 'Ingresos', 'Egresos', 'Neto', 'Saldo', 'Origen']
+    const lines = [headers.join(';'), ...flData.map((r: any) =>
+      [MONTHS[r.mes-1], r.anio, r.ingresos, r.egresos, r.neto, r.saldo, r.origen === 'real' ? 'Real' : 'Proyectado'].join(';')
+    )]
+    const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url
+    a.download = `flujo-de-fondos_${flDesde}_${flHasta}.csv`
+    a.click(); URL.revokeObjectURL(url)
+  }
+
+  useEffect(() => { if (tab === 'flujo' && !flLoaded) loadFlujo() }, [tab, flLoaded, loadFlujo]) // eslint-disable-line
 
   const inlineSave = useCallback(async (id: string, fields: Record<string, unknown>) => {
     setRowSaving(s => ({ ...s, [id]: true }))
@@ -1322,9 +1339,67 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
           {/* ── FLUJO DE FONDOS ── */}
           {tab === 'flujo' && (
             <div>
-              <div style={{ color: '#71717a', fontSize: 12, marginBottom: 16 }}>
-                3 meses hacia atrás (real) y 3 hacia adelante (proyectado con Presupuestos) desde hoy. Saldo inicial del rango: <strong style={{ color: '#a1a1aa' }}>{fmt(flSaldoInicial)}</strong>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', marginBottom: 16, flexWrap: 'wrap' }}>
+                <div>
+                  <label style={LBL}>Desde</label>
+                  <input type="month" value={flDesde} onChange={e => setFlDesde(e.target.value)} style={{ ...INP, width: 150 }} />
+                </div>
+                <div>
+                  <label style={LBL}>Hasta</label>
+                  <input type="month" value={flHasta} onChange={e => setFlHasta(e.target.value)} style={{ ...INP, width: 150 }} />
+                </div>
+                <button onClick={() => loadFlujo()} style={BTN_P}>Aplicar</button>
+                {flData.length > 0 && <button onClick={exportFlujoCSV} style={BTN_S}>↓ Exportar CSV</button>}
               </div>
+
+              <div style={{ color: '#71717a', fontSize: 12, marginBottom: 16 }}>
+                Saldo inicial del rango: <strong style={{ color: '#a1a1aa' }}>{fmt(flSaldoInicial)}</strong>
+              </div>
+
+              {flData.length > 0 && (() => {
+                const W = 900, H = 220, padL = 60, padB = 30, padT = 10
+                const innerW = W - padL - 20, innerH = H - padT - padB
+                const barW = innerW / flData.length * 0.6
+                const step = innerW / flData.length
+                const maxAbs = Math.max(1, ...flData.map((r: any) => Math.max(Math.abs(r.ingresos), Math.abs(r.egresos))))
+                const saldos = flData.map((r: any) => r.saldo)
+                const minSaldo = Math.min(...saldos, 0), maxSaldo = Math.max(...saldos, 0)
+                const saldoRange = Math.max(1, maxSaldo - minSaldo)
+                const yBar = (v: number) => padT + innerH/2 - (v / maxAbs) * (innerH/2)
+                const ySaldo = (v: number) => padT + innerH - ((v - minSaldo) / saldoRange) * innerH
+                const linePoints = flData.map((r: any, i: number) => `${padL + step*i + step/2},${ySaldo(r.saldo)}`).join(' ')
+                return (
+                  <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '16px 8px', marginBottom: 16, overflowX: 'auto' }}>
+                    <svg width={W} height={H} style={{ display: 'block', minWidth: W }}>
+                      <line x1={padL} y1={padT + innerH/2} x2={padL + innerW} y2={padT + innerH/2} stroke="rgba(255,255,255,0.1)" strokeWidth={1} />
+                      {flData.map((r: any, i: number) => {
+                        const x = padL + step*i + (step-barW)/2
+                        const ingH = (r.ingresos / maxAbs) * (innerH/2)
+                        const egH = (r.egresos / maxAbs) * (innerH/2)
+                        const midY = padT + innerH/2
+                        return (
+                          <g key={i}>
+                            <rect x={x} y={midY-ingH} width={barW} height={ingH} fill="#34d399" opacity={r.origen==='real'?0.85:0.35} rx={2} />
+                            <rect x={x} y={midY} width={barW} height={egH} fill="#f87171" opacity={r.origen==='real'?0.85:0.35} rx={2} />
+                            <text x={padL+step*i+step/2} y={H-8} fill="#52525b" fontSize={10} textAnchor="middle">{MONTHS[r.mes-1].slice(0,3)}</text>
+                          </g>
+                        )
+                      })}
+                      <polyline points={linePoints} fill="none" stroke="#60a5fa" strokeWidth={2} />
+                      {flData.map((r: any, i: number) => (
+                        <circle key={i} cx={padL+step*i+step/2} cy={ySaldo(r.saldo)} r={3} fill="#60a5fa" />
+                      ))}
+                    </svg>
+                    <div style={{ display: 'flex', gap: 16, padding: '4px 16px 0', fontSize: 11, color: '#71717a' }}>
+                      <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#34d399', borderRadius: 2, marginRight: 4 }} />Ingresos</span>
+                      <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#f87171', borderRadius: 2, marginRight: 4 }} />Egresos</span>
+                      <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#60a5fa', borderRadius: '50%', marginRight: 4 }} />Saldo acumulado</span>
+                      <span style={{ marginLeft: 'auto' }}>Sólido = real · Traslúcido = proyectado</span>
+                    </div>
+                  </div>
+                )
+              })()}
+
               {!flData.length ? (
                 <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
                   <div style={{ color: '#52525b', fontSize: 13 }}>{flLoaded ? 'Sin datos para mostrar.' : 'Cargando…'}</div>
