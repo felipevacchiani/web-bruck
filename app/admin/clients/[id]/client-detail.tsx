@@ -496,7 +496,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                       <div key={i} style={{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:12, padding:14 }}>
                         <div className="cd-doc-grid">
                           <div>
-                            <label style={{ ...LBL, fontSize:10 }}>Etiqueta</label>
+                            <label style={{ ...LBL, fontSize:10 }}>Nombre del documento</label>
                             <input value={doc.label} onChange={e=>setDocLabel(i,e.target.value)} placeholder="Ej: Acuse, DJ, Pago, VEP" style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
                           </div>
                           <div>
