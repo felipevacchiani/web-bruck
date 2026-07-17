@@ -20,6 +20,15 @@ const fileIcon = (mime:string|null,name:string) => {
   return '📄'
 }
 
+function detectChartColumn(data: { headers: string[]; rows: string[][] } | null): { labelIdx: number; valueIdx: number } | null {
+  if (!data || !data.rows.length || data.headers.length < 2) return null
+  const isNumericCol = (i: number) => data.rows.every(r => r[i] !== undefined && r[i].trim() !== '' && !isNaN(Number(r[i].replace(/[.,](?=\d{3})/g, '').replace(',', '.'))))
+  const valueIdx = data.headers.findIndex((_, i) => i > 0 && isNumericCol(i))
+  if (valueIdx === -1) return null
+  return { labelIdx: 0, valueIdx }
+}
+const toNum = (s: string) => Number(s.replace(/[.,](?=\d{3})/g, '').replace(',', '.')) || 0
+
 export default function ClientDashboard({ profile, files }: Props) {
   const router = useRouter()
   const supabase = createClient()
@@ -73,13 +82,14 @@ export default function ClientDashboard({ profile, files }: Props) {
   const [sourceData, setSourceData] = useState<{ headers: string[]; rows: string[][] } | null>(null)
   const [sourceDataError, setSourceDataError] = useState('')
   const [loadingSourceData, setLoadingSourceData] = useState(false)
+  const [sourceView, setSourceView] = useState<'tabla'|'grafico'>('tabla')
 
   useEffect(() => {
     fetch('/api/client/data-sources').then(r=>r.ok?r.json():null).then(d=>{ if (d) setDataSources(d.data||[]) })
   }, [])
 
   const viewSource = async (source: any) => {
-    setViewingSource(source); setSourceData(null); setSourceDataError(''); setLoadingSourceData(true)
+    setViewingSource(source); setSourceData(null); setSourceDataError(''); setLoadingSourceData(true); setSourceView('tabla')
     const res = await fetch(`/api/client/data-sources/${source.id}`)
     const d = await res.json()
     setLoadingSourceData(false)
@@ -699,7 +709,18 @@ export default function ClientDashboard({ profile, files }: Props) {
                     <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:20, maxWidth:'90vw', width:900, maxHeight:'80vh', display:'flex', flexDirection:'column' }} onClick={e=>e.stopPropagation()}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
                         <div style={{ color:'white', fontSize:15, fontWeight:700 }}>📊 {viewingSource.name}</div>
-                        <button onClick={()=>setViewingSource(null)} style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>✕ Cerrar</button>
+                        <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                          {detectChartColumn(sourceData) && (
+                            <div style={{ display:'flex', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:8, padding:2 }}>
+                              {(['tabla','grafico'] as const).map(v => (
+                                <button key={v} onClick={()=>setSourceView(v)} style={{ padding:'5px 11px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:sourceView===v?'rgba(49,174,121,0.15)':'none', color:sourceView===v?'#31AE79':'#71717a' }}>
+                                  {v==='tabla'?'Tabla':'Gráfico'}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          <button onClick={()=>setViewingSource(null)} style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>✕ Cerrar</button>
+                        </div>
                       </div>
                       <div style={{ overflow:'auto', flex:1 }}>
                         {loadingSourceData ? (
@@ -707,6 +728,34 @@ export default function ClientDashboard({ profile, files }: Props) {
                         ) : sourceDataError ? (
                           <div style={{ color:'#f87171', fontSize:13, padding:24, textAlign:'center' }}>{sourceDataError}</div>
                         ) : sourceData && sourceData.rows.length > 0 ? (
+                          sourceView === 'grafico' && detectChartColumn(sourceData) ? (() => {
+                            const { labelIdx, valueIdx } = detectChartColumn(sourceData)!
+                            const values = sourceData.rows.map(r => toNum(r[valueIdx]))
+                            const maxV = Math.max(1, ...values.map(v => Math.abs(v)))
+                            const W = 860, barGap = 10
+                            const barW = Math.max(8, Math.min(48, (W - 40) / sourceData.rows.length - barGap))
+                            const H = 260, padB = 40, padT = 10
+                            return (
+                              <div>
+                                <svg width={W} height={H} style={{ display:'block' }}>
+                                  <line x1={20} y1={H-padB} x2={W-20} y2={H-padB} stroke="rgba(255,255,255,0.1)" />
+                                  {values.map((v, i) => {
+                                    const h = (Math.abs(v) / maxV) * (H - padB - padT)
+                                    const x = 20 + i * (barW + barGap)
+                                    return (
+                                      <g key={i}>
+                                        <rect x={x} y={H-padB-h} width={barW} height={h} fill="#31AE79" rx={2} />
+                                        <text x={x+barW/2} y={H-padB+14} fill="#52525b" fontSize={9} textAnchor="middle">
+                                          {(sourceData.rows[i][labelIdx]||'').slice(0,8)}
+                                        </text>
+                                      </g>
+                                    )
+                                  })}
+                                </svg>
+                                <div style={{ color:'#52525b', fontSize:11, marginTop:4 }}>{sourceData.headers[labelIdx]} vs. {sourceData.headers[valueIdx]}</div>
+                              </div>
+                            )
+                          })() : (
                           <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
                             <thead>
                               <tr>
@@ -725,6 +774,7 @@ export default function ClientDashboard({ profile, files }: Props) {
                               ))}
                             </tbody>
                           </table>
+                          )
                         ) : (
                           <div style={{ color:'#52525b', fontSize:13, padding:24, textAlign:'center' }}>Sin filas de datos.</div>
                         )}

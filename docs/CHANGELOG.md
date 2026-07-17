@@ -1,5 +1,13 @@
 # Changelog — BRUCK APP
 
+## 2026-07-17 — Centro de Datos: gráfico real para fuentes de datos (Google Sheets)
+
+- feat: `detectChartColumn`/`toNum` (en `client-detail.tsx` y `client-dashboard.tsx`) detectan automáticamente una columna de etiqueta (primera) y una numérica en los datos leídos en vivo de un Google Sheet.
+- feat: toggle Tabla/Gráfico en el modal de visualización de una fuente de datos, tanto en la ficha de cliente del admin como en "Fuentes de datos" del portal del cliente — cuando se detecta una columna numérica, se puede alternar a un gráfico de barras SVG real (mismo patrón sin librerías externas usado en Flujo de Fondos).
+- Sin cambios de backend: sigue usando los mismos endpoints de lectura en vivo (`/api/admin/clients/[id]/data-sources/[sourceId]`, `/api/client/data-sources/[sourceId]`).
+- Typecheck: sin errores nuevos (los dos archivos tocados solo muestran errores preexistentes no relacionados, patrón `Set<T>` iteration). Build verificado.
+- Pendiente de confirmación del usuario: conectar un Sheet real de punta a punta y ver el gráfico en el navegador.
+
 ## 2026-07-14 — Fase 3: versionado inmutable de archivos (cierre de Fase 3)
 
 - feat: migración `bruck-migration-v15.sql` agrega `version`, `is_current`, `previous_version_id` a `files`.

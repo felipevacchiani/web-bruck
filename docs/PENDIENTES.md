@@ -33,9 +33,10 @@ _Última actualización: 2026-07-14_
 ## Centro de Datos (iniciado 2026-07-15)
 
 - [x] Google Sheets público (link compartido) como fuente de datos — leído en vivo, mostrado como tabla.
+- [x] Vincular una fuente de datos a un gráfico (2026-07-17): si se detecta una columna de texto (primera) y una numérica, se ofrece alternar Tabla/Gráfico con barras SVG reales sobre los datos leídos en vivo del Sheet. Implementado tanto en la ficha de cliente (admin) como en "Fuentes de datos" del portal del cliente.
 - [ ] Google Sheets privados vía OAuth (requiere que el usuario configure credenciales en Google Cloud Console primero).
 - [ ] Excel/CSV subido directamente, conexión a bases de datos externas, APIs, ERP — sin caso de uso real todavía.
-- [ ] Vincular una fuente de datos a un widget/gráfico del dashboard (hoy solo se ve como tabla cruda).
+- [ ] Gráficos de línea/torta u otros tipos, selección manual de qué columnas graficar (hoy la detección es automática: primera columna como etiqueta, primera columna numérica como valor).
 
 ## Capítulo 4 — Portal del Cliente (mayormente cerrado 2026-07-15)
 
