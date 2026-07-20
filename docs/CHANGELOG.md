@@ -1,5 +1,13 @@
 # Changelog — BRUCK APP
 
+## 2026-07-17 — Rediseño de identidad BRUCK: Fase B (Login + Portal del Cliente)
+
+- feat: `app/login/page.tsx` y `app/reset-password/page.tsx` reescritos con la combinación clara de la guía (fondo crema `#F3EFE5`, tarjeta blanca, texto oscuro `#121714`, botón verde con texto oscuro y bordes pill en vez de 12px).
+- feat: `app/dashboard/client-dashboard.tsx` (portal del cliente completo: home, informes, solicitudes, tareas, actividad, mi empresa, fuentes de datos) migrado a la misma paleta clara — sidebar pasó de negro sólido a blanco cálido `#F8F7F2` con borde sutil, texto/bordes remapeados de la escala oscura (`rgba(255,255,255,X)`, grises claros) a la escala clara (`rgba(18,23,20,X)`, grises oscuros de la guía).
+- Mapeo de colores aplicado (ver `lib/ui/theme.ts` para los tokens): `#71717a`→`#4E5651`, `#52525b`→`#858C87`, `#a1a1aa`→`#4E5651`, `#d4d4d8`→`#121714`, `#3f3f46`→`#858C87`, fondos/bordes `rgba(255,255,255,*)`→`rgba(18,23,20,*)` equivalentes, `#0d0d0d`/`#080808`→blanco/crema. El verde `#31AE79` y los colores de estado (amarillo/rojo/azul/verde de acento) se mantuvieron sin cambios.
+- **Gap conocido, no resuelto en esta fase:** las pestañas de "Contabilidad Interna" dentro del portal del cliente (Dashboard, Movimientos, Bancos, etc.) siguen renderizando con la paleta oscura anterior — reutilizan `contabilidad-panel.tsx`, que es un componente **compartido con la ficha de cliente del admin** (Fase C). Reskinearlo ahora hubiera mezclado el alcance de las dos fases; queda para la Fase C, momento en que se actualiza una sola vez y beneficia a ambos lados.
+- Build y typecheck verificados, sin errores nuevos.
+
 ## 2026-07-17 — Rediseño de identidad BRUCK: Fase A (tokens + tipografía base)
 
 - feat: instalada tipografía Geist Sans/Geist Mono (paquete `geist`) vía `app/layout.tsx`.
