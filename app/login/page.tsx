@@ -82,7 +82,7 @@ function LoginForm() {
         .login-hero {
           flex: 1 1 50%;
           position: relative;
-          background: url('/login-hero.png') center/cover no-repeat, #0E241D;
+          background: url('/login-hero.png') 85% center/cover no-repeat, #0E241D;
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
