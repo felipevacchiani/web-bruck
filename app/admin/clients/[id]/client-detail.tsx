@@ -33,6 +33,11 @@ function detectChartColumn(data: { headers: string[]; rows: string[][] } | null)
 }
 
 const toNum = (s: string) => Number(s.replace(/[.,](?=\d{3})/g, '').replace(',', '.')) || 0
+function withGid(url: string, gid: string): string {
+  if (!gid.trim()) return url
+  const cleaned = url.replace(/([?#&])gid=\d+&?/, '$1').replace(/[?#&]$/, '')
+  return `${cleaned}#gid=${gid.trim()}`
+}
 
 const daysUntilDue = (due: string | null): number | null => {
   if (!due) return null
@@ -166,7 +171,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const [tasks, setTasks] = useState<any[]>([])
   const [dataSources, setDataSources] = useState<any[]>([])
   const [showNewSource, setShowNewSource] = useState(false)
-  const [sourceForm, setSourceForm] = useState({ name: '', url: '' })
+  const [sourceForm, setSourceForm] = useState({ name: '', url: '', gid: '' })
   const [savingSource, setSavingSource] = useState(false)
   const [sourceError, setSourceError] = useState('')
   const [viewingSource, setViewingSource] = useState<any>(null)
@@ -185,13 +190,14 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const submitSource = async (e: React.FormEvent) => {
     e.preventDefault()
     setSavingSource(true); setSourceError('')
+    const url = withGid(sourceForm.url, sourceForm.gid)
     const res = await fetch(`/api/admin/clients/${client.id}/data-sources`, {
-      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(sourceForm),
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name: sourceForm.name, url }),
     })
     const d = await res.json()
     setSavingSource(false)
     if (!res.ok) { setSourceError(d.error || 'Error al conectar la fuente'); return }
-    setShowNewSource(false); setSourceForm({ name:'', url:'' }); loadDataSources()
+    setShowNewSource(false); setSourceForm({ name:'', url:'', gid:'' }); loadDataSources()
   }
 
   const deleteSource = async (sourceId: string) => {
@@ -813,9 +819,14 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     <label style={LBL}>Nombre</label>
                     <input required value={sourceForm.name} onChange={e=>setSourceForm(f=>({...f,name:e.target.value}))} placeholder="Ej: Presupuesto anual 2026" style={INP} />
                   </div>
-                  <div style={{ marginBottom:20 }}>
+                  <div style={{ marginBottom:14 }}>
                     <label style={LBL}>URL del Google Sheet</label>
                     <input required value={sourceForm.url} onChange={e=>setSourceForm(f=>({...f,url:e.target.value}))} placeholder="https://docs.google.com/spreadsheets/d/…" style={INP} />
+                  </div>
+                  <div style={{ marginBottom:20 }}>
+                    <label style={LBL}>Hoja (opcional)</label>
+                    <input value={sourceForm.gid} onChange={e=>setSourceForm(f=>({...f,gid:e.target.value}))} placeholder="Dejar vacío = primera hoja. O pegar el gid de la pestaña" style={INP} />
+                    <div style={{ color:'#52525b', fontSize:11, marginTop:5 }}>Si el Sheet tiene varias hojas: hacé clic en la pestaña deseada dentro de Google Sheets, mirá el número que aparece después de "gid=" en la URL, y pegalo acá. Cada hoja se conecta como una fuente de datos separada.</div>
                   </div>
                   <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
                     <button type="button" onClick={()=>{setShowNewSource(false);setSourceError('')}} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
@@ -830,7 +841,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
 
           {viewingSource && (
             <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.8)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={()=>setViewingSource(null)}>
-              <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:20, maxWidth:'90vw', width:900, maxHeight:'80vh', display:'flex', flexDirection:'column' }} onClick={e=>e.stopPropagation()}>
+              <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:20, width:'95vw', maxWidth:1500, height:'88vh', display:'flex', flexDirection:'column' }} onClick={e=>e.stopPropagation()}>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
                   <div style={{ color:'white', fontSize:15, fontWeight:700 }}>📊 {viewingSource.name}</div>
                   <div style={{ display:'flex', gap:8, alignItems:'center' }}>
@@ -856,12 +867,12 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                       const { labelIdx, valueIdx } = detectChartColumn(sourceData)!
                       const values = sourceData.rows.map(r => toNum(r[valueIdx]))
                       const maxV = Math.max(1, ...values.map(v => Math.abs(v)))
-                      const W = 860, barGap = 10
-                      const barW = Math.max(8, Math.min(48, (W - 40) / sourceData.rows.length - barGap))
-                      const H = 260, padB = 40, padT = 10
+                      const W = 1400, barGap = 16
+                      const barW = Math.max(8, Math.min(90, (W - 40) / sourceData.rows.length - barGap))
+                      const H = 560, padB = 60, padT = 20
                       return (
-                        <div>
-                          <svg width={W} height={H} style={{ display:'block' }}>
+                        <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
+                          <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display:'block', width:'100%', flex:1, minHeight:0 }}>
                             <line x1={20} y1={H-padB} x2={W-20} y2={H-padB} stroke="rgba(255,255,255,0.1)" />
                             {values.map((v, i) => {
                               const h = (Math.abs(v) / maxV) * (H - padB - padT)
@@ -869,14 +880,17 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                               return (
                                 <g key={i}>
                                   <rect x={x} y={H-padB-h} width={barW} height={h} fill="#31AE79" rx={2} />
-                                  <text x={x+barW/2} y={H-padB+14} fill="#52525b" fontSize={9} textAnchor="middle">
-                                    {(sourceData.rows[i][labelIdx]||'').slice(0,8)}
+                                  <text x={x+barW/2} y={H-padB+22} fill="#52525b" fontSize={14} textAnchor="middle">
+                                    {(sourceData.rows[i][labelIdx]||'').slice(0,12)}
+                                  </text>
+                                  <text x={x+barW/2} y={H-padB-h-8} fill="#a1a1aa" fontSize={13} textAnchor="middle">
+                                    {sourceData.rows[i][valueIdx]}
                                   </text>
                                 </g>
                               )
                             })}
                           </svg>
-                          <div style={{ color:'#52525b', fontSize:11, marginTop:4 }}>{sourceData.headers[labelIdx]} vs. {sourceData.headers[valueIdx]}</div>
+                          <div style={{ color:'#52525b', fontSize:11, marginTop:8 }}>{sourceData.headers[labelIdx]} vs. {sourceData.headers[valueIdx]}</div>
                         </div>
                       )
                     })() : (

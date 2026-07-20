@@ -706,7 +706,7 @@ export default function ClientDashboard({ profile, files }: Props) {
 
                 {viewingSource && (
                   <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.8)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={()=>setViewingSource(null)}>
-                    <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:20, maxWidth:'90vw', width:900, maxHeight:'80vh', display:'flex', flexDirection:'column' }} onClick={e=>e.stopPropagation()}>
+                    <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:20, width:'95vw', maxWidth:1500, height:'88vh', display:'flex', flexDirection:'column' }} onClick={e=>e.stopPropagation()}>
                       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
                         <div style={{ color:'white', fontSize:15, fontWeight:700 }}>📊 {viewingSource.name}</div>
                         <div style={{ display:'flex', gap:8, alignItems:'center' }}>
@@ -732,12 +732,12 @@ export default function ClientDashboard({ profile, files }: Props) {
                             const { labelIdx, valueIdx } = detectChartColumn(sourceData)!
                             const values = sourceData.rows.map(r => toNum(r[valueIdx]))
                             const maxV = Math.max(1, ...values.map(v => Math.abs(v)))
-                            const W = 860, barGap = 10
-                            const barW = Math.max(8, Math.min(48, (W - 40) / sourceData.rows.length - barGap))
-                            const H = 260, padB = 40, padT = 10
+                            const W = 1400, barGap = 16
+                            const barW = Math.max(8, Math.min(90, (W - 40) / sourceData.rows.length - barGap))
+                            const H = 560, padB = 60, padT = 20
                             return (
-                              <div>
-                                <svg width={W} height={H} style={{ display:'block' }}>
+                              <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
+                                <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display:'block', width:'100%', flex:1, minHeight:0 }}>
                                   <line x1={20} y1={H-padB} x2={W-20} y2={H-padB} stroke="rgba(255,255,255,0.1)" />
                                   {values.map((v, i) => {
                                     const h = (Math.abs(v) / maxV) * (H - padB - padT)
@@ -745,14 +745,17 @@ export default function ClientDashboard({ profile, files }: Props) {
                                     return (
                                       <g key={i}>
                                         <rect x={x} y={H-padB-h} width={barW} height={h} fill="#31AE79" rx={2} />
-                                        <text x={x+barW/2} y={H-padB+14} fill="#52525b" fontSize={9} textAnchor="middle">
-                                          {(sourceData.rows[i][labelIdx]||'').slice(0,8)}
+                                        <text x={x+barW/2} y={H-padB+22} fill="#52525b" fontSize={14} textAnchor="middle">
+                                          {(sourceData.rows[i][labelIdx]||'').slice(0,12)}
+                                        </text>
+                                        <text x={x+barW/2} y={H-padB-h-8} fill="#a1a1aa" fontSize={13} textAnchor="middle">
+                                          {sourceData.rows[i][valueIdx]}
                                         </text>
                                       </g>
                                     )
                                   })}
                                 </svg>
-                                <div style={{ color:'#52525b', fontSize:11, marginTop:4 }}>{sourceData.headers[labelIdx]} vs. {sourceData.headers[valueIdx]}</div>
+                                <div style={{ color:'#52525b', fontSize:11, marginTop:8 }}>{sourceData.headers[labelIdx]} vs. {sourceData.headers[valueIdx]}</div>
                               </div>
                             )
                           })() : (

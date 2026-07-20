@@ -1,5 +1,11 @@
 # Changelog — BRUCK APP
 
+## 2026-07-17 — Fuentes de datos: selección de hoja + modal a pantalla completa
+
+- feat: campo opcional "Hoja" al conectar un Google Sheet (`sourceForm.gid`) — permite pegar el gid de una pestaña específica del spreadsheet sin tener que copiar la URL completa de esa pestaña. Cada hoja se conecta como una fuente de datos independiente (mismo modelo de datos, sin migración: el gid se agrega al `url` guardado vía `withGid()`).
+- fix/mejora: el modal de visualización (tabla/gráfico) ahora ocupa 95vw × 88vh en vez de un ancho fijo de 900px — el usuario reportó que el gráfico se veía chico. El SVG usa `viewBox` + `preserveAspectRatio="none"` para escalar con el contenedor.
+- Build y typecheck verificados, sin errores nuevos.
+
 ## 2026-07-17 — Centro de Datos: gráfico real para fuentes de datos (Google Sheets)
 
 - feat: `detectChartColumn`/`toNum` (en `client-detail.tsx` y `client-dashboard.tsx`) detectan automáticamente una columna de etiqueta (primera) y una numérica en los datos leídos en vivo de un Google Sheet.
