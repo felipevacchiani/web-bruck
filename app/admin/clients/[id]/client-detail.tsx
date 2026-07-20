@@ -321,6 +321,80 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
     setSourceData(d)
   }
 
+  const [reports, setReports] = useState<any[]>([])
+  const [showNewReport, setShowNewReport] = useState(false)
+  const [reportForm, setReportForm] = useState({ title: '', client_display_name: '', source_type: 'google_sheet' as 'google_sheet'|'word_docx', url: '' })
+  const reportFileRef = useRef<HTMLInputElement>(null)
+  const [savingReport, setSavingReport] = useState(false)
+  const [reportError, setReportError] = useState('')
+  const [viewingReport, setViewingReport] = useState<any>(null)
+  const [reportDraft, setReportDraft] = useState({ title: '', client_display_name: '' })
+  const [savingReportEdit, setSavingReportEdit] = useState(false)
+  const [regeneratingReport, setRegeneratingReport] = useState(false)
+
+  const loadReports = () => {
+    fetch(`/api/admin/clients/${client.id}/custom-reports`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setReports(data.data || []) })
+  }
+  useEffect(() => { loadReports() }, [client.id])
+
+  const submitReport = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingReport(true); setReportError('')
+    const fd = new FormData()
+    fd.set('title', reportForm.title)
+    fd.set('client_display_name', reportForm.client_display_name)
+    fd.set('source_type', reportForm.source_type)
+    if (reportForm.source_type === 'google_sheet') {
+      fd.set('url', reportForm.url)
+    } else if (reportFileRef.current?.files?.[0]) {
+      fd.set('file', reportFileRef.current.files[0])
+    } else {
+      setSavingReport(false); setReportError('Seleccioná un archivo .docx'); return
+    }
+    const res = await fetch(`/api/admin/clients/${client.id}/custom-reports`, { method: 'POST', body: fd })
+    const d = await res.json()
+    setSavingReport(false)
+    if (!res.ok) { setReportError(d.error || 'Error al generar el informe'); return }
+    setShowNewReport(false)
+    setReportForm({ title: '', client_display_name: '', source_type: 'google_sheet', url: '' })
+    if (reportFileRef.current) reportFileRef.current.value = ''
+    loadReports()
+    viewReport(d.data)
+  }
+
+  const viewReport = async (r: any) => {
+    setViewingReport(r); setReportDraft({ title: r.title, client_display_name: r.client_display_name || '' })
+    const res = await fetch(`/api/admin/clients/${client.id}/custom-reports/${r.id}`)
+    const d = await res.json()
+    if (res.ok) setViewingReport(d.data)
+  }
+
+  const saveReportEdit = async (extra?: Record<string, any>) => {
+    if (!viewingReport) return
+    setSavingReportEdit(true)
+    const res = await fetch(`/api/admin/clients/${client.id}/custom-reports/${viewingReport.id}`, {
+      method: 'PATCH', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ title: reportDraft.title, client_display_name: reportDraft.client_display_name, ...extra }),
+    })
+    const d = await res.json()
+    setSavingReportEdit(false)
+    if (res.ok) { setViewingReport(d.data); loadReports() }
+  }
+
+  const regenerateReport = async () => {
+    setRegeneratingReport(true)
+    await saveReportEdit({ regenerate: true })
+    setRegeneratingReport(false)
+  }
+
+  const deleteReport = async (reportId: string) => {
+    if (!confirm('¿Eliminar este informe?')) return
+    await fetch(`/api/admin/clients/${client.id}/custom-reports/${reportId}`, { method: 'DELETE' })
+    loadReports()
+  }
+
   const saveChartCfg = async () => {
     if (!chartCfgDraft || !viewingSource) return
     setSavingChartCfg(true)
@@ -594,7 +668,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
       <main style={{ maxWidth:1000, margin:'0 auto' }}>
         <div className="cd-pad">
 
-          <div style={{ background:'rgba(18,23,20,0.5)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:18, overflow:'hidden', marginBottom:24 }}>
+          <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.16)', borderRadius:18, overflow:'hidden', marginBottom:24, boxShadow:'0 1px 3px rgba(18,23,20,0.05)' }}>
             <div style={{ padding:'20px 20px' }}>
               <div className="cd-client-top">
                 <div style={{ display:'flex', alignItems:'center', gap:14, minWidth:0 }}>
@@ -671,7 +745,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
           </div>
 
           {companyProfile && (
-            <div style={{ background:'rgba(18,23,20,0.5)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+            <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.16)', borderRadius:18, padding:'16px 20px', marginBottom:24, boxShadow:'0 1px 3px rgba(18,23,20,0.05)' }}>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: showCompanyProfile ? 16 : 0 }}>
                 <span style={{ color:'#121714', fontSize:13, fontWeight:600 }}>Perfil de la empresa</span>
                 <button onClick={()=>setShowCompanyProfile(s=>!s)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>
@@ -720,7 +794,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
             </div>
           )}
 
-          <div style={{ background:'rgba(18,23,20,0.5)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+          <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.16)', borderRadius:18, padding:'16px 20px', marginBottom:24, boxShadow:'0 1px 3px rgba(18,23,20,0.05)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: companyUsers.length ? 12 : 0 }}>
               <span style={{ color:'#121714', fontSize:13, fontWeight:600 }}>Usuarios de esta empresa</span>
               <button onClick={()=>setShowInvite(true)} style={{ background:'none', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>+ Invitar usuario</button>
@@ -779,7 +853,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
             </div>
           )}
 
-          <div style={{ background:'rgba(18,23,20,0.5)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+          <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.16)', borderRadius:18, padding:'16px 20px', marginBottom:24, boxShadow:'0 1px 3px rgba(18,23,20,0.05)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: requests.length ? 12 : 0 }}>
               <span style={{ color:'#121714', fontSize:13, fontWeight:600 }}>Solicitudes</span>
               <button onClick={()=>setShowNewRequest(true)} style={{ background:'none', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>+ Nueva solicitud</button>
@@ -850,7 +924,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
             </div>
           )}
 
-          <div style={{ background:'rgba(18,23,20,0.5)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+          <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.16)', borderRadius:18, padding:'16px 20px', marginBottom:24, boxShadow:'0 1px 3px rgba(18,23,20,0.05)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: tasks.length ? 12 : 0 }}>
               <span style={{ color:'#121714', fontSize:13, fontWeight:600 }}>Tareas</span>
               <button onClick={()=>setShowNewTask(true)} style={{ background:'none', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>+ Nueva tarea</button>
@@ -909,7 +983,109 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
             </div>
           )}
 
-          <div style={{ background:'rgba(18,23,20,0.5)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+          <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.16)', borderRadius:18, padding:'16px 20px', marginBottom:24, boxShadow:'0 1px 3px rgba(18,23,20,0.05)' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: reports.length ? 12 : 0 }}>
+              <div>
+                <span style={{ color:'#121714', fontSize:13, fontWeight:600 }}>Informes personalizados</span>
+                <div style={{ color:'#858C87', fontSize:11, marginTop:2 }}>Generá un informe HTML con el diseño BRUCK a partir de un Google Sheet o un Word</div>
+              </div>
+              <button onClick={()=>setShowNewReport(true)} style={{ background:'none', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer', whiteSpace:'nowrap' }}>+ Crear informe</button>
+            </div>
+            {reports.length > 0 && (
+              <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                {reports.map(r => (
+                  <div key={r.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 0' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <span style={{ color:'#121714', fontSize:13 }}>{r.source_type==='word_docx'?'📄':'📊'} {r.title}</span>
+                      <span style={{ fontSize:10, padding:'2px 8px', borderRadius:6, background: r.status==='publicado'?'rgba(49,174,121,0.12)':'rgba(217,173,91,0.15)', color: r.status==='publicado'?'#31AE79':'#b8862f', fontWeight:600 }}>{r.status==='publicado'?'Publicado':'Borrador'}</span>
+                    </div>
+                    <div style={{ display:'flex', gap:6 }}>
+                      <button onClick={()=>viewReport(r)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:11, padding:'4px 10px', borderRadius:7, cursor:'pointer' }}>Ver</button>
+                      <button onClick={()=>deleteReport(r.id)} style={{ background:'none', border:'1px solid rgba(239,68,68,0.15)', color:'#f87171', fontSize:11, padding:'4px 10px', borderRadius:7, cursor:'pointer' }}>Eliminar</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {showNewReport && (
+            <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
+              <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.14)', borderRadius:16, padding:24, maxWidth:460, width:'100%' }}>
+                <div style={{ color:'#121714', fontSize:16, fontWeight:700, marginBottom:6 }}>Crear informe personalizado</div>
+                <div style={{ color:'#4E5651', fontSize:12, marginBottom:18 }}>Se genera un HTML con el diseño de BRUCK. Vas a poder revisarlo antes de publicarlo.</div>
+                {reportError && <div style={{ background:'rgba(239,68,68,0.09)', border:'1px solid rgba(239,68,68,0.22)', borderRadius:10, padding:'9px 12px', marginBottom:14, color:'#f87171', fontSize:13 }}>{reportError}</div>}
+                <form onSubmit={submitReport}>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Título del informe</label>
+                    <input required value={reportForm.title} onChange={e=>setReportForm(f=>({...f,title:e.target.value}))} placeholder="Ej: Informe ejecutivo Q1 2026" style={INP} />
+                  </div>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Nombre del cliente (opcional)</label>
+                    <input value={reportForm.client_display_name} onChange={e=>setReportForm(f=>({...f,client_display_name:e.target.value}))} placeholder={client.full_name || ''} style={INP} />
+                  </div>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={LBL}>Fuente</label>
+                    <div style={{ display:'flex', gap:8 }}>
+                      {(['google_sheet','word_docx'] as const).map(t => (
+                        <button key={t} type="button" onClick={()=>setReportForm(f=>({...f,source_type:t}))}
+                          style={{ flex:1, padding:'10px 12px', borderRadius:10, border:reportForm.source_type===t?'1px solid rgba(49,174,121,0.4)':'1px solid rgba(18,23,20,0.12)', background:reportForm.source_type===t?'rgba(49,174,121,0.1)':'rgba(18,23,20,0.05)', color:reportForm.source_type===t?'#31AE79':'#4E5651', cursor:'pointer', fontSize:12, fontWeight:500 }}>
+                          {t==='google_sheet'?'📊 Google Sheet':'📄 Word (.docx)'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {reportForm.source_type === 'google_sheet' ? (
+                    <div style={{ marginBottom:20 }}>
+                      <label style={LBL}>URL del Google Sheet</label>
+                      <input required value={reportForm.url} onChange={e=>setReportForm(f=>({...f,url:e.target.value}))} placeholder="https://docs.google.com/spreadsheets/d/…" style={INP} />
+                    </div>
+                  ) : (
+                    <div style={{ marginBottom:20 }}>
+                      <label style={LBL}>Archivo Word (.docx)</label>
+                      <input ref={reportFileRef} type="file" accept=".docx" required style={INP} />
+                    </div>
+                  )}
+                  <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+                    <button type="button" onClick={()=>{setShowNewReport(false);setReportError('')}} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
+                    <button type="submit" disabled={savingReport} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingReport?0.6:1 }}>
+                      {savingReport?'Generando…':'Generar informe'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {viewingReport && (
+            <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.8)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={()=>setViewingReport(null)}>
+              <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.14)', borderRadius:16, padding:20, width:'95vw', maxWidth:1100, height:'88vh', display:'flex', flexDirection:'column' }} onClick={e=>e.stopPropagation()}>
+                <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:14, gap:12, flexWrap:'wrap' }}>
+                  <div style={{ display:'flex', gap:10, flexWrap:'wrap', flex:1, minWidth:260 }}>
+                    <input value={reportDraft.title} onChange={e=>setReportDraft(d=>({...d,title:e.target.value}))} placeholder="Título" style={{ ...INP, width:220 }} />
+                    <input value={reportDraft.client_display_name} onChange={e=>setReportDraft(d=>({...d,client_display_name:e.target.value}))} placeholder="Nombre del cliente" style={{ ...INP, width:200 }} />
+                    <button onClick={()=>saveReportEdit()} disabled={savingReportEdit} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:12, padding:'0 14px', borderRadius:9, cursor:'pointer' }}>{savingReportEdit?'Guardando…':'Guardar cambios'}</button>
+                    {viewingReport.source_type === 'google_sheet' && (
+                      <button onClick={regenerateReport} disabled={regeneratingReport} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:12, padding:'0 14px', borderRadius:9, cursor:'pointer' }}>{regeneratingReport?'Regenerando…':'↻ Regenerar desde el Sheet'}</button>
+                    )}
+                  </div>
+                  <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                    {viewingReport.status === 'publicado' ? (
+                      <button onClick={()=>saveReportEdit({ status:'borrador' })} style={{ background:'none', border:'1px solid rgba(217,173,91,0.4)', color:'#b8862f', fontSize:12, padding:'7px 14px', borderRadius:9, cursor:'pointer' }}>Pasar a borrador</button>
+                    ) : (
+                      <button onClick={()=>saveReportEdit({ status:'publicado' })} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:12, padding:'7px 14px', borderRadius:9, border:'none', cursor:'pointer' }}>Publicar</button>
+                    )}
+                    <button onClick={()=>setViewingReport(null)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:13, padding:'7px 14px', borderRadius:8, cursor:'pointer' }}>✕ Cerrar</button>
+                  </div>
+                </div>
+                <div style={{ flex:1, borderRadius:12, overflow:'hidden', border:'1px solid rgba(18,23,20,0.10)' }}>
+                  <iframe srcDoc={viewingReport.html_content} style={{ width:'100%', height:'100%', border:'none', background:'#fff' }} sandbox="" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.16)', borderRadius:18, padding:'16px 20px', marginBottom:24, boxShadow:'0 1px 3px rgba(18,23,20,0.05)' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: dataSources.length ? 12 : 0 }}>
               <span style={{ color:'#121714', fontSize:13, fontWeight:600 }}>Fuentes de datos</span>
               <button onClick={()=>setShowNewSource(true)} style={{ background:'none', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>+ Conectar Google Sheet</button>

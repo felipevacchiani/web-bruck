@@ -34,9 +34,20 @@ _Última actualización: 2026-07-14_
 
 - [x] Google Sheets público (link compartido) como fuente de datos — leído en vivo, mostrado como tabla.
 - [x] Vincular una fuente de datos a un gráfico (2026-07-17): si se detecta una columna de texto (primera) y una numérica, se ofrece alternar Tabla/Gráfico con barras SVG reales sobre los datos leídos en vivo del Sheet. Implementado tanto en la ficha de cliente (admin) como en "Fuentes de datos" del portal del cliente.
+- [x] Gráfico configurable (2026-07-17): tipo (barras/línea/torta) y columnas de etiqueta/valor elegibles por el admin, en vez de solo detección automática.
 - [ ] Google Sheets privados vía OAuth (requiere que el usuario configure credenciales en Google Cloud Console primero).
 - [ ] Excel/CSV subido directamente, conexión a bases de datos externas, APIs, ERP — sin caso de uso real todavía.
-- [ ] Gráficos de línea/torta u otros tipos, selección manual de qué columnas graficar (hoy la detección es automática: primera columna como etiqueta, primera columna numérica como valor).
+
+## Informes personalizados (iniciado 2026-07-20)
+
+Módulo nuevo y separado de "Fuentes de datos" — genera un informe HTML con el diseño BRUCK a partir de un Google Sheet o un documento Word, con borrador/publicado y vista previa antes de mostrarlo al cliente. Sin IA: el Word se procesa con `mammoth` (parser determinístico de .docx) y el HTML se envuelve en una plantilla fija (`lib/report-template.ts`).
+
+- [x] Crear informe desde Google Sheet (tabla) o desde archivo .docx (títulos, párrafos, listas, tablas, imágenes embebidas).
+- [x] Vista previa en modal (iframe sandboxed) antes de publicar; editar título y nombre del cliente sin regenerar todo el contenido.
+- [x] Borrador/publicado — el cliente solo ve los publicados, en "Informes personalizados" dentro del grupo "Informes" del sidebar.
+- [x] Regenerar contenido desde el Sheet origen (relee datos en vivo). Para Word no hay "regenerar": no se guarda el .docx original, solo el HTML resultante — si el documento cambia, hay que crear un informe nuevo.
+- [ ] Editar textos puntuales del HTML generado desde la vista previa (hoy solo título/nombre de cliente; el criterio de aceptación pide poder "editar textos puntuales" del cuerpo, no implementado).
+- [ ] Detección/corrección "inteligente" de jerarquía visual más allá del mapeo de estilos de Word (Title/Heading 1-3) — cualquier mejora más allá de esto entraría en terreno de IA, fuera de alcance por regla del proyecto salvo indicación expresa.
 
 ## Capítulo 4 — Portal del Cliente (mayormente cerrado 2026-07-15)
 

@@ -1,5 +1,17 @@
 # Changelog — BRUCK APP
 
+## 2026-07-20 — Informes personalizados (Google Sheets / Word → HTML con diseño BRUCK)
+
+- feat: migración `bruck-migration-v24.sql` crea `custom_reports` (organization_id, company_id, created_by, title, client_display_name, source_type, source_ref, html_content, status borrador/publicado, published_at). RLS: admin todo vía `is_admin()`, cliente solo lee sus publicados.
+- feat: `lib/word-to-html.ts` — parsea un `.docx` a HTML semántico con `mammoth` (títulos, párrafos, listas, tablas, imágenes embebidas como data URI), sin IA, mapeo determinístico de estilos de Word.
+- feat: `lib/report-template.ts` — envuelve el contenido parseado (de Word o de un Google Sheet) en una plantilla HTML con la identidad visual BRUCK (header con degradado verde oscuro, tipografía, tablas, responsive).
+- feat: `POST /api/admin/clients/[id]/custom-reports` (crear, acepta Sheet o archivo .docx), `PATCH .../[reportId]` (editar título/nombre de cliente, regenerar desde el Sheet origen, publicar/despublicar), `GET/DELETE` correspondientes. Lado cliente: `GET /api/client/custom-reports` y `[reportId]` (solo lectura, solo publicados).
+- feat: sección "Informes personalizados" en la ficha de cliente del admin (crear informe eligiendo Sheet o Word, vista previa en iframe, editar título/cliente, regenerar, publicar/despronunciar, eliminar) y en el portal del cliente, dentro del grupo "Informes" del sidebar (solo lectura, lista de informes publicados).
+- Decisión de arquitectura: módulo nuevo y separado de "Fuentes de datos" (que sigue existiendo tal cual, para lectura en vivo de Sheets como tabla/gráfico) — confirmado con el usuario en vez de evolucionar `data_sources`, porque la funcionalidad (Word, HTML generado una vez, borrador/publicado, vista previa) es sustancialmente distinta.
+- fix (de paso): varias tarjetas de `client-detail.tsx` y el header standalone de `contabilidad-panel.tsx` tenían un fondo oscuro semitransparente (`rgba(18,23,20,0.5)`) que había quedado mal convertido en la Fase C del rediseño — corregido a fondo blanco con sombra leve, consistente con el resto del panel.
+- Build y typecheck verificados, sin errores nuevos.
+- Pendiente de que el usuario corra `bruck-migration-v24.sql` en Supabase antes de probar.
+
 ## 2026-07-17 — Rediseño de identidad BRUCK: Fase D (resto de páginas admin) — cierre del rediseño
 
 - feat: migrados a la paleta clara los últimos 7 archivos con estilos hardcodeados: `app/admin/page.tsx` (dashboard principal), `app/admin/organizaciones/organizaciones-panel.tsx`, `app/admin/auditoria/page.tsx`, `app/admin/alertas/page.tsx`, `app/admin/reportes/page.tsx`, `app/admin/clients/new/page.tsx` (alta de cliente) y `app/view/[id]/file-viewer.tsx` (visor de documentos).

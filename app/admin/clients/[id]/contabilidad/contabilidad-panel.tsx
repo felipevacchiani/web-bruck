@@ -648,7 +648,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
       {/* Tabs horizontales — solo cuando NO está embebido */}
       {!onBack && (
-        <div style={{ borderBottom: '1px solid rgba(18,23,20,0.08)', background: 'rgba(18,23,20,0.5)' }}>
+        <div style={{ borderBottom: '1px solid rgba(18,23,20,0.08)', background: 'rgba(243,239,229,0.92)' }}>
           <div className="tab-cont" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', gap: 0 }}>
             {TABS.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)} style={{ background: 'none', border: 'none', borderBottom: tab === t.id ? '2px solid #31AE79' : '2px solid transparent', color: tab === t.id ? '#31AE79' : '#4E5651', fontSize: 13, fontWeight: tab === t.id ? 600 : 400, padding: '12px 16px', cursor: 'pointer', whiteSpace: 'nowrap', marginBottom: -1 }}>

@@ -275,6 +275,27 @@ export interface DataSource {
   updated_at: string
 }
 
+// ── Informes personalizados (Google Sheets / Word -> HTML con diseño BRUCK) ─
+
+export type ReportSourceType = 'google_sheet' | 'word_docx'
+export type ReportStatus = 'borrador' | 'publicado'
+
+export interface CustomReport {
+  id: string
+  organization_id: string
+  company_id: string
+  created_by: string | null
+  title: string
+  client_display_name: string | null
+  source_type: ReportSourceType
+  source_ref: string | null
+  html_content: string
+  status: ReportStatus
+  created_at: string
+  updated_at: string
+  published_at: string | null
+}
+
 // ── Centro de tareas (Portal del Cliente) ──────────────────────────────────
 
 export type TaskStatus = 'pendiente' | 'en_proceso' | 'finalizada' | 'no_aplica'
@@ -351,6 +372,7 @@ export type Database = {
       requests: { Row: ClientRequest; Insert: Partial<ClientRequest>; Update: Partial<ClientRequest> }
       tasks: { Row: ClientTask; Insert: Partial<ClientTask>; Update: Partial<ClientTask> }
       data_sources: { Row: DataSource; Insert: Partial<DataSource>; Update: Partial<DataSource> }
+      custom_reports: { Row: CustomReport; Insert: Partial<CustomReport>; Update: Partial<CustomReport> }
       profiles:   { Row: Profile;    Insert: Partial<Profile>;    Update: Partial<Profile>    }
       files:      { Row: FileRecord; Insert: Partial<FileRecord>; Update: Partial<FileRecord> }
       audit_logs: { Row: AuditLog;   Insert: Partial<AuditLog>;  Update: Partial<AuditLog>  }
