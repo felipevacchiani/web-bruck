@@ -1,5 +1,12 @@
 # Changelog — BRUCK APP
 
+## 2026-07-20 — Informes personalizados: plantilla HTML mucho más "pro"
+
+- feat: `lib/report-template.ts` rediseñado — página "papel" blanca centrada con sombra sobre fondo gris cálido (efecto documento), header con degradado verde oscuro + glow radial + logo BRUCK, tablas presentadas como tarjetas con encabezado degradado y filas alternadas, imágenes con sombra, footer con marca.
+- feat: índice de contenidos automático — se generan anchors (`id`) sobre los `<h1>`/`<h2>` reales del documento y se arma un menú "Contenido" con links, solo cuando hay 2 o más secciones (no se inventa texto, se reutiliza el de los propios títulos).
+- Verificado generando un informe de muestra con `tsx` y revisándolo como Artifact antes de aplicar el cambio.
+- Build y typecheck verificados, sin errores nuevos.
+
 ## 2026-07-20 — Informes personalizados (Google Sheets / Word → HTML con diseño BRUCK)
 
 - feat: migración `bruck-migration-v24.sql` crea `custom_reports` (organization_id, company_id, created_by, title, client_display_name, source_type, source_ref, html_content, status borrador/publicado, published_at). RLS: admin todo vía `is_admin()`, cliente solo lee sus publicados.
