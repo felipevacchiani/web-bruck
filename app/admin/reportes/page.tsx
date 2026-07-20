@@ -53,10 +53,10 @@ export default function ReportesPage() {
   }
 
   const select: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.1)',
+    background: 'rgba(18,23,20,0.04)',
+    border: '1px solid rgba(18,23,20,0.14)',
     borderRadius: 10,
-    color: 'white',
+    color: '#121714',
     fontSize: 13,
     padding: '10px 14px',
     width: '100%',
@@ -65,43 +65,43 @@ export default function ReportesPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080808' }}>
+    <div style={{ minHeight: '100vh', background: '#F3EFE5' }}>
       <style>{`
         .page-pad { padding: 32px 24px; }
         select option { background: #111; color: white; }
         @media(max-width:640px){ .page-pad { padding: 20px 14px; } }
       `}</style>
 
-      <header style={{ position: 'sticky', top: 0, zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,10,10,0.97)', backdropFilter: 'blur(12px)' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 10, borderBottom: '1px solid rgba(18,23,20,0.08)', background: 'rgba(243,239,229,0.92)', backdropFilter: 'blur(12px)' }}>
         <div style={{ maxWidth: 700, margin: '0 auto', padding: '0 24px', height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
               <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg,rgba(49,174,121,0.2),rgba(49,174,121,0.08))', border: '1px solid rgba(49,174,121,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ color: '#31AE79', fontWeight: 900, fontSize: 13 }}>B</span>
               </div>
-              <span style={{ color: 'white', fontWeight: 900, letterSpacing: '0.2em', fontSize: 13 }}>BRUCK</span>
+              <span style={{ color: '#121714', fontWeight: 900, letterSpacing: '0.2em', fontSize: 13 }}>BRUCK</span>
             </Link>
-            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
-            <span style={{ color: '#52525b', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Reportes</span>
+            <div style={{ width: 1, height: 16, background: 'rgba(18,23,20,0.14)' }} />
+            <span style={{ color: '#858C87', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Reportes</span>
           </div>
           <form action="/api/auth/logout" method="POST">
-            <button style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#71717a', fontSize: 12, padding: '6px 12px', borderRadius: 8, cursor: 'pointer' }}>Salir</button>
+            <button style={{ background: 'rgba(18,23,20,0.04)', border: '1px solid rgba(18,23,20,0.12)', color: '#4E5651', fontSize: 12, padding: '6px 12px', borderRadius: 8, cursor: 'pointer' }}>Salir</button>
           </form>
         </div>
       </header>
 
       <main style={{ maxWidth: 700, margin: '0 auto' }}>
         <div className="page-pad">
-          <div style={{ color: 'white', fontSize: 17, fontWeight: 600, marginBottom: 6 }}>Exportar reporte</div>
-          <div style={{ color: '#71717a', fontSize: 13, marginBottom: 28 }}>
+          <div style={{ color: '#121714', fontSize: 17, fontWeight: 600, marginBottom: 6 }}>Exportar reporte</div>
+          <div style={{ color: '#4E5651', fontSize: 13, marginBottom: 28 }}>
             Generá un archivo CSV con el detalle de los documentos. Usá los filtros para acotar los resultados.
           </div>
 
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '24px 20px' }}>
+          <div style={{ background: '#FFFFFF', border: '1px solid rgba(18,23,20,0.16)', borderRadius: 16, padding: '24px 20px', boxShadow: '0 1px 3px rgba(18,23,20,0.05)' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
 
               <div style={{ gridColumn: '1 / -1' }}>
-                <label style={{ color: '#71717a', fontSize: 12, display: 'block', marginBottom: 6 }}>Cliente</label>
+                <label style={{ color: '#4E5651', fontSize: 12, display: 'block', marginBottom: 6 }}>Cliente</label>
                 <select style={select} value={clientId} onChange={e => setClientId(e.target.value)}>
                   <option value="">Todos los clientes</option>
                   {clients.map(c => (
@@ -113,7 +113,7 @@ export default function ReportesPage() {
               </div>
 
               <div>
-                <label style={{ color: '#71717a', fontSize: 12, display: 'block', marginBottom: 6 }}>Categoría</label>
+                <label style={{ color: '#4E5651', fontSize: 12, display: 'block', marginBottom: 6 }}>Categoría</label>
                 <select style={select} value={category} onChange={e => setCategory(e.target.value)}>
                   <option value="">Todas</option>
                   {FILE_CATEGORIES.map(c => (
@@ -123,7 +123,7 @@ export default function ReportesPage() {
               </div>
 
               <div>
-                <label style={{ color: '#71717a', fontSize: 12, display: 'block', marginBottom: 6 }}>Estado</label>
+                <label style={{ color: '#4E5651', fontSize: 12, display: 'block', marginBottom: 6 }}>Estado</label>
                 <select style={select} value={status} onChange={e => setStatus(e.target.value)}>
                   <option value="">Todos</option>
                   {DOC_STATUSES.map(s => (
@@ -133,7 +133,7 @@ export default function ReportesPage() {
               </div>
 
               <div>
-                <label style={{ color: '#71717a', fontSize: 12, display: 'block', marginBottom: 6 }}>Año fiscal</label>
+                <label style={{ color: '#4E5651', fontSize: 12, display: 'block', marginBottom: 6 }}>Año fiscal</label>
                 <select style={select} value={fiscalYear} onChange={e => setFiscalYear(e.target.value)}>
                   <option value="">Todos</option>
                   {FISCAL_YEARS.map(y => (
@@ -144,13 +144,13 @@ export default function ReportesPage() {
 
             </div>
 
-            <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid rgba(18,23,20,0.08)', display: 'flex', justifyContent: 'flex-end' }}>
               <button
                 onClick={handleExport}
                 disabled={loading}
                 style={{
                   background: loading ? 'rgba(49,174,121,0.4)' : 'linear-gradient(135deg,#31AE79,#27a06d)',
-                  color: 'white', fontWeight: 600, fontSize: 13,
+                  color: '#121714', fontWeight: 600, fontSize: 13,
                   padding: '10px 20px', borderRadius: 10, border: 'none',
                   cursor: loading ? 'not-allowed' : 'pointer',
                   display: 'flex', alignItems: 'center', gap: 8,
@@ -168,7 +168,7 @@ export default function ReportesPage() {
           {/* Info */}
           <div style={{ marginTop: 24, background: 'rgba(49,174,121,0.05)', border: '1px solid rgba(49,174,121,0.12)', borderRadius: 12, padding: '14px 16px' }}>
             <div style={{ color: '#31AE79', fontSize: 12, fontWeight: 600, marginBottom: 6 }}>El reporte incluye</div>
-            <div style={{ color: '#71717a', fontSize: 12, lineHeight: 1.7 }}>
+            <div style={{ color: '#4E5651', fontSize: 12, lineHeight: 1.7 }}>
               Nombre del documento · Título del grupo · Cliente y empresa · Categoría · Estado · Período fiscal · Fecha de vencimiento · Tamaño · Fecha de carga
             </div>
           </div>

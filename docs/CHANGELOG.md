@@ -1,5 +1,12 @@
 # Changelog — BRUCK APP
 
+## 2026-07-17 — Rediseño de identidad BRUCK: Fase D (resto de páginas admin) — cierre del rediseño
+
+- feat: migrados a la paleta clara los últimos 7 archivos con estilos hardcodeados: `app/admin/page.tsx` (dashboard principal), `app/admin/organizaciones/organizaciones-panel.tsx`, `app/admin/auditoria/page.tsx`, `app/admin/alertas/page.tsx`, `app/admin/reportes/page.tsx`, `app/admin/clients/new/page.tsx` (alta de cliente) y `app/view/[id]/file-viewer.tsx` (visor de documentos).
+- Mismo mapeo de tokens y mismo ajuste de contraste (tarjetas a fondo blanco sólido + sombra leve, bordes más definidos) aplicado en las fases B y C.
+- **Con esto se cierra el rediseño de identidad BRUCK**: todas las pantallas del portal (cliente y admin) usan ahora la combinación clara de la guía de marca (fondo crema, tarjetas blancas, texto oscuro, verde `#31AE79` como acento) y tipografía Geist. Quedan fuera de alcance, sin pedido explícito: dark mode real (alternable), y refinamientos puntuales de espaciado/tipografía a escala completa de la guía (tamaños de título de portada, hero, etc. — no aplican a un panel interno de gestión).
+- Build y typecheck verificados en las 4 fases, sin errores nuevos (solo baseline preexistente documentado en `PENDIENTES.md`).
+
 ## 2026-07-17 — Login: layout split-screen con foto real de oficina BRUCK
 
 - feat: `app/login/page.tsx` rediseñado como split-screen (mockup provisto por el usuario): panel izquierdo con foto real de la oficina BRUCK (`public/login-hero.png`) + overlay oscuro + titular "Optimizamos tu trabajo." y tagline; panel derecho con el formulario de login sobre fondo crema, sin tarjeta flotante. En mobile (`max-width:860px`) el panel de la foto se oculta y solo queda el formulario.

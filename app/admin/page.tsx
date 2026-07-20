@@ -84,7 +84,7 @@ export default async function AdminPage() {
   }).length
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080808' }}>
+    <div style={{ minHeight: '100vh', background: '#F3EFE5' }}>
       <style>{`
         .stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 20px; }
         .stats-grid-2 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 28px; }
@@ -109,21 +109,21 @@ export default async function AdminPage() {
         }
       `}</style>
 
-      <header style={{ position: 'sticky', top: 0, zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,10,10,0.97)', backdropFilter: 'blur(12px)' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 10, borderBottom: '1px solid rgba(18,23,20,0.08)', background: 'rgba(243,239,229,0.92)', backdropFilter: 'blur(12px)' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div className="header-pad" style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg,rgba(49,174,121,0.2),rgba(49,174,121,0.08))', border: '1px solid rgba(49,174,121,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ color: '#31AE79', fontWeight: 900, fontSize: 13 }}>B</span>
               </div>
-              <span style={{ color: 'white', fontWeight: 900, letterSpacing: '0.2em', fontSize: 13 }}>BRUCK</span>
+              <span style={{ color: '#121714', fontWeight: 900, letterSpacing: '0.2em', fontSize: 13 }}>BRUCK</span>
               <div className="admin-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
-                <span style={{ color: '#52525b', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Panel Admin</span>
+                <div style={{ width: 1, height: 16, background: 'rgba(18,23,20,0.14)' }} />
+                <span style={{ color: '#858C87', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Panel Admin</span>
               </div>
             </div>
             <form action="/api/auth/logout" method="POST">
-              <button style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#71717a', fontSize: 12, padding: '6px 12px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button style={{ background: 'rgba(18,23,20,0.04)', border: '1px solid rgba(18,23,20,0.12)', color: '#4E5651', fontSize: 12, padding: '6px 12px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2H2v8h2.5M8 8.5L11 6 8 3.5M11 6H4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 Salir
               </button>
@@ -147,9 +147,9 @@ export default async function AdminPage() {
               <Link key={n.href} href={n.href} style={{
                 fontSize: 12, fontWeight: 500, padding: '7px 14px', borderRadius: 9,
                 textDecoration: 'none',
-                background: n.active ? 'linear-gradient(135deg,rgba(49,174,121,0.15),rgba(49,174,121,0.06))' : 'rgba(255,255,255,0.03)',
-                border: n.active ? '1px solid rgba(49,174,121,0.3)' : '1px solid rgba(255,255,255,0.08)',
-                color: n.active ? '#31AE79' : '#71717a',
+                background: n.active ? 'linear-gradient(135deg,rgba(49,174,121,0.15),rgba(49,174,121,0.06))' : 'rgba(18,23,20,0.05)',
+                border: n.active ? '1px solid rgba(49,174,121,0.3)' : '1px solid rgba(18,23,20,0.12)',
+                color: n.active ? '#31AE79' : '#4E5651',
               }}>
                 {n.label}
               </Link>
@@ -163,10 +163,10 @@ export default async function AdminPage() {
               { label: 'Activos',          value: activeCount,  icon: '✅', extra: '' },
               { label: 'Archivos subidos', value: totalFiles,   icon: '📄', extra: 'stat-last' },
             ].map(s => (
-              <div key={s.label} className={s.extra} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div key={s.label} className={s.extra} style={{ background: '#FFFFFF', border: '1px solid rgba(18,23,20,0.16)', borderRadius: 16, padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(18,23,20,0.05)' }}>
                 <div>
-                  <div style={{ color: '#71717a', fontSize: 12, marginBottom: 4 }}>{s.label}</div>
-                  <div style={{ color: 'white', fontSize: 26, fontWeight: 700 }}>{s.value}</div>
+                  <div style={{ color: '#4E5651', fontSize: 12, marginBottom: 4 }}>{s.label}</div>
+                  <div style={{ color: '#121714', fontSize: 26, fontWeight: 700 }}>{s.value}</div>
                 </div>
                 <span style={{ fontSize: 26, opacity: 0.5 }}>{s.icon}</span>
               </div>
@@ -181,7 +181,7 @@ export default async function AdminPage() {
               { label: 'Vencidos',    value: overdueDocs,  color: '#f87171', bg: 'rgba(239,68,68,0.06)',   border: 'rgba(239,68,68,0.15)', extra: 'stat-last'   },
             ].map(s => (
               <div key={s.label} className={(s as any).extra || ''} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 14, padding: '14px 18px' }}>
-                <div style={{ color: '#71717a', fontSize: 11, marginBottom: 4 }}>{s.label}</div>
+                <div style={{ color: '#4E5651', fontSize: 11, marginBottom: 4 }}>{s.label}</div>
                 <div style={{ color: s.color, fontSize: 22, fontWeight: 700 }}>{s.value}</div>
               </div>
             ))}
@@ -199,7 +199,7 @@ export default async function AdminPage() {
                       {overdueDocs > 0 && soonDocs > 0 ? ' · ' : ''}
                       {soonDocs > 0 ? `${soonDocs} vence${soonDocs!==1?'n':''} esta semana` : ''}
                     </div>
-                    <div style={{ color: '#71717a', fontSize: 12, marginTop: 2 }}>Ver panel de alertas →</div>
+                    <div style={{ color: '#4E5651', fontSize: 12, marginTop: 2 }}>Ver panel de alertas →</div>
                   </div>
                 </div>
               </div>
@@ -211,53 +211,53 @@ export default async function AdminPage() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, gap: 12 }}>
                 <div>
-                  <div style={{ color: 'white', fontSize: 15, fontWeight: 600 }}>Clientes</div>
-                  <div style={{ color: '#71717a', fontSize: 12, marginTop: 2 }}>{list.length} registrado{list.length !== 1 ? 's' : ''}</div>
+                  <div style={{ color: '#121714', fontSize: 15, fontWeight: 600 }}>Clientes</div>
+                  <div style={{ color: '#4E5651', fontSize: 12, marginTop: 2 }}>{list.length} registrado{list.length !== 1 ? 's' : ''}</div>
                 </div>
-                <Link href="/admin/clients/new" style={{ background: 'linear-gradient(135deg,#31AE79,#27a06d)', color: 'white', fontWeight: 600, fontSize: 12, padding: '8px 14px', borderRadius: 9, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 5, boxShadow: '0 4px 16px rgba(49,174,121,0.28)', whiteSpace: 'nowrap' }}>
+                <Link href="/admin/clients/new" style={{ background: 'linear-gradient(135deg,#31AE79,#27a06d)', color: '#121714', fontWeight: 600, fontSize: 12, padding: '8px 14px', borderRadius: 9, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 5, boxShadow: '0 4px 16px rgba(49,174,121,0.28)', whiteSpace: 'nowrap' }}>
                   <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                   Nuevo
                 </Link>
               </div>
 
               {list.length === 0 ? (
-                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '40px 24px', textAlign: 'center' }}>
+                <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '40px 24px', textAlign: 'center' }}>
                   <div style={{ fontSize: 32, marginBottom: 10, opacity: 0.3 }}>👥</div>
-                  <div style={{ color: '#a1a1aa', fontWeight: 500, fontSize: 14 }}>No hay clientes todavía</div>
+                  <div style={{ color: '#4E5651', fontWeight: 500, fontSize: 14 }}>No hay clientes todavía</div>
                   <Link href="/admin/clients/new" style={{ color: '#31AE79', fontSize: 13, textDecoration: 'none', display: 'inline-block', marginTop: 8 }}>Crear el primero →</Link>
                 </div>
               ) : (
                 <>
-                  <div className="client-table-wrap" style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }}>
+                  <div className="client-table-wrap" style={{ border: '1px solid rgba(18,23,20,0.10)', borderRadius: 14, overflow: 'hidden' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
-                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+                        <tr style={{ borderBottom: '1px solid rgba(18,23,20,0.08)', background: 'rgba(18,23,20,0.05)' }}>
                           {['Cliente','Empresa','Email','Archivos','Estado',''].map((h,i) => (
-                            <th key={i} style={{ textAlign:'left', color:'#52525b', fontSize:11, letterSpacing:'0.08em', textTransform:'uppercase', padding:'10px 16px', fontWeight:500 }}>{h}</th>
+                            <th key={i} style={{ textAlign:'left', color:'#858C87', fontSize:11, letterSpacing:'0.08em', textTransform:'uppercase', padding:'10px 16px', fontWeight:500 }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
                         {list.map((client: any, i: number) => (
-                          <tr key={client.id} style={{ borderBottom: i===list.length-1?'none':'1px solid rgba(255,255,255,0.04)' }}>
+                          <tr key={client.id} style={{ borderBottom: i===list.length-1?'none':'1px solid rgba(18,23,20,0.04)' }}>
                             <td style={{ padding:'12px 16px' }}>
                               <div style={{ display:'flex', alignItems:'center', gap:9 }}>
                                 <div style={{ width:30, height:30, borderRadius:8, background:'rgba(49,174,121,0.1)', border:'1px solid rgba(49,174,121,0.15)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                                   <span style={{ color:'#31AE79', fontWeight:700, fontSize:12 }}>{(client.full_name||client.email).charAt(0).toUpperCase()}</span>
                                 </div>
-                                <span style={{ color:'white', fontSize:13, fontWeight:500 }}>{client.full_name||'—'}</span>
+                                <span style={{ color:'#121714', fontSize:13, fontWeight:500 }}>{client.full_name||'—'}</span>
                               </div>
                             </td>
-                            <td style={{ padding:'12px 16px', color:'#71717a', fontSize:12 }}>{client.company||'—'}</td>
-                            <td style={{ padding:'12px 16px', color:'#71717a', fontSize:12 }}>{client.email}</td>
-                            <td style={{ padding:'12px 16px', color:'#71717a', fontSize:12 }}>{client.file_count}</td>
+                            <td style={{ padding:'12px 16px', color:'#4E5651', fontSize:12 }}>{client.company||'—'}</td>
+                            <td style={{ padding:'12px 16px', color:'#4E5651', fontSize:12 }}>{client.email}</td>
+                            <td style={{ padding:'12px 16px', color:'#4E5651', fontSize:12 }}>{client.file_count}</td>
                             <td style={{ padding:'12px 16px' }}>
-                              <span style={{ fontSize:11, fontWeight:500, padding:'3px 9px', borderRadius:20, background:client.active?'rgba(52,211,153,0.08)':'rgba(255,255,255,0.04)', border:client.active?'1px solid rgba(52,211,153,0.2)':'1px solid rgba(255,255,255,0.08)', color:client.active?'#34d399':'#71717a' }}>
+                              <span style={{ fontSize:11, fontWeight:500, padding:'3px 9px', borderRadius:20, background:client.active?'rgba(52,211,153,0.08)':'rgba(18,23,20,0.04)', border:client.active?'1px solid rgba(52,211,153,0.2)':'1px solid rgba(18,23,20,0.12)', color:client.active?'#34d399':'#4E5651' }}>
                                 {client.active?'Activo':'Inactivo'}
                               </span>
                             </td>
                             <td style={{ padding:'12px 16px', textAlign:'right' }}>
-                              <Link href={`/admin/clients/${client.id}`} style={{ color:'#71717a', fontSize:12, textDecoration:'none', border:'1px solid rgba(255,255,255,0.08)', padding:'5px 11px', borderRadius:7, display:'inline-block' }}>Ver →</Link>
+                              <Link href={`/admin/clients/${client.id}`} style={{ color:'#4E5651', fontSize:12, textDecoration:'none', border:'1px solid rgba(18,23,20,0.12)', padding:'5px 11px', borderRadius:7, display:'inline-block' }}>Ver →</Link>
                             </td>
                           </tr>
                         ))}
@@ -267,20 +267,20 @@ export default async function AdminPage() {
 
                   <div className="client-cards-wrap">
                     {list.map((client: any) => (
-                      <Link key={client.id} href={`/admin/clients/${client.id}`} style={{ textDecoration:'none', background:'rgba(255,255,255,0.025)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:13, padding:'13px 15px', display:'block' }}>
+                      <Link key={client.id} href={`/admin/clients/${client.id}`} style={{ textDecoration:'none', background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.16)', borderRadius:13, padding:'13px 15px', display:'block', boxShadow:'0 1px 3px rgba(18,23,20,0.05)' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
                           <div style={{ width:40, height:40, borderRadius:11, background:'rgba(49,174,121,0.1)', border:'1px solid rgba(49,174,121,0.15)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                             <span style={{ color:'#31AE79', fontWeight:700, fontSize:15 }}>{(client.full_name||client.email).charAt(0).toUpperCase()}</span>
                           </div>
                           <div style={{ flex:1, minWidth:0 }}>
-                            <div style={{ color:'white', fontSize:14, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{client.full_name||'Sin nombre'}</div>
-                            <div style={{ color:'#71717a', fontSize:12, marginTop:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{client.company||client.email}</div>
+                            <div style={{ color:'#121714', fontSize:14, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{client.full_name||'Sin nombre'}</div>
+                            <div style={{ color:'#4E5651', fontSize:12, marginTop:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{client.company||client.email}</div>
                           </div>
                           <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:5, flexShrink:0 }}>
-                            <span style={{ fontSize:11, fontWeight:500, padding:'2px 8px', borderRadius:20, background:client.active?'rgba(52,211,153,0.08)':'rgba(255,255,255,0.04)', border:client.active?'1px solid rgba(52,211,153,0.2)':'1px solid rgba(255,255,255,0.08)', color:client.active?'#34d399':'#71717a' }}>
+                            <span style={{ fontSize:11, fontWeight:500, padding:'2px 8px', borderRadius:20, background:client.active?'rgba(52,211,153,0.08)':'rgba(18,23,20,0.04)', border:client.active?'1px solid rgba(52,211,153,0.2)':'1px solid rgba(18,23,20,0.12)', color:client.active?'#34d399':'#4E5651' }}>
                               {client.active?'Activo':'Inactivo'}
                             </span>
-                            <span style={{ color:'#52525b', fontSize:11 }}>{client.file_count} archivo{client.file_count!==1?'s':''}</span>
+                            <span style={{ color:'#858C87', fontSize:11 }}>{client.file_count} archivo{client.file_count!==1?'s':''}</span>
                           </div>
                         </div>
                       </Link>
@@ -292,36 +292,36 @@ export default async function AdminPage() {
 
             {/* Actividad reciente */}
             <div>
-              <div style={{ color: 'white', fontSize: 15, fontWeight: 600, marginBottom: 14 }}>Actividad reciente</div>
+              <div style={{ color: '#121714', fontSize: 15, fontWeight: 600, marginBottom: 14 }}>Actividad reciente</div>
               {!recentAudit?.length ? (
-                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '32px 20px', textAlign: 'center' }}>
+                <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '32px 20px', textAlign: 'center' }}>
                   <div style={{ fontSize: 28, marginBottom: 10, opacity: 0.3 }}>📋</div>
-                  <div style={{ color: '#71717a', fontSize: 13 }}>Sin actividad registrada</div>
+                  <div style={{ color: '#4E5651', fontSize: 13 }}>Sin actividad registrada</div>
                 </div>
               ) : (
-                <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }}>
+                <div style={{ border: '1px solid rgba(18,23,20,0.10)', borderRadius: 14, overflow: 'hidden' }}>
                   {recentAudit.map((log: any, i: number) => {
-                    const color = ACTION_COLORS[log.action as AuditAction] ?? '#71717a'
+                    const color = ACTION_COLORS[log.action as AuditAction] ?? '#4E5651'
                     const details = log.details || {}
                     return (
-                      <div key={log.id} style={{ padding: '11px 14px', borderBottom: i===recentAudit.length-1?'none':'1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                      <div key={log.id} style={{ padding: '11px 14px', borderBottom: i===recentAudit.length-1?'none':'1px solid rgba(18,23,20,0.04)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                         <div style={{ width: 7, height: 7, borderRadius: '50%', background: color, marginTop: 5, flexShrink: 0 }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ color: '#a1a1aa', fontSize: 12, fontWeight: 500 }}>
+                          <div style={{ color: '#4E5651', fontSize: 12, fontWeight: 500 }}>
                             {AUDIT_ACTION_LABELS[log.action as AuditAction] ?? log.action}
                           </div>
                           {(details.name || details.email) && (
-                            <div style={{ color: '#52525b', fontSize: 11, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ color: '#858C87', fontSize: 11, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {details.name || details.email}
                             </div>
                           )}
-                          <div style={{ color: '#3f3f46', fontSize: 11, marginTop: 2 }}>{formatDatetime(log.created_at)}</div>
+                          <div style={{ color: '#858C87', fontSize: 11, marginTop: 2 }}>{formatDatetime(log.created_at)}</div>
                         </div>
                       </div>
                     )
                   })}
-                  <div style={{ padding: '10px 14px', borderTop: '1px solid rgba(255,255,255,0.04)', textAlign: 'center' }}>
-                    <Link href="/admin/auditoria" style={{ color: '#52525b', fontSize: 12, textDecoration: 'none' }}>Ver todo →</Link>
+                  <div style={{ padding: '10px 14px', borderTop: '1px solid rgba(18,23,20,0.04)', textAlign: 'center' }}>
+                    <Link href="/admin/auditoria" style={{ color: '#858C87', fontSize: 12, textDecoration: 'none' }}>Ver todo →</Link>
                   </div>
                 </div>
               )}
