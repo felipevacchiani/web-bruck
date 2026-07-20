@@ -1,5 +1,14 @@
 # Changelog — BRUCK APP
 
+## 2026-07-17 — Rediseño de identidad BRUCK: Fase C (Panel del Admin)
+
+- feat: `app/admin/clients/[id]/contabilidad/contabilidad-panel.tsx` (205 colores, compartido entre la ficha de cliente del admin y la pestaña "Contabilidad" del portal del cliente) y `app/admin/clients/[id]/client-detail.tsx` (ficha de cliente completa: archivos, solicitudes, tareas, usuarios, perfil de empresa, fuentes de datos) migrados a la paleta clara de la guía, mismo mapeo de tokens que la Fase B.
+- fix: al migrar `contabilidad-panel.tsx` se resuelve también el gap que había quedado abierto en la Fase B — las pestañas de Contabilidad Interna dentro del portal del cliente ("Movimientos", "Bancos", etc.) ahora se ven en tema claro porque reutilizan este mismo componente.
+- Constantes compartidas `INP`/`SEL`/`LBL`/`BTN_P`/`BTN_S` actualizadas en ambos archivos: inputs blancos con borde sutil, botón primario verde con texto oscuro y bordes pill (era `borderRadius:9`), botón secundario con fondo gris clarísimo.
+- Tarjetas con fondo casi transparente (pensadas para resaltar sobre fondo negro) pasaron a fondo blanco sólido + sombra leve + borde más definido, mismo ajuste de contraste aplicado en la Fase B tras el feedback del usuario.
+- Build y typecheck verificados, sin errores nuevos (solo los preexistentes de baseline: `Set<T>` iteration en `client-detail.tsx` y un error de tipos en `contabilidad-panel.tsx` no relacionado con este cambio).
+- Pendiente: Fase D (resto de páginas admin — dashboard principal, organizaciones, auditoría, alertas, reportes, alta de cliente, visor de archivos).
+
 ## 2026-07-17 — Rediseño de identidad BRUCK: Fase B (Login + Portal del Cliente)
 
 - feat: `app/login/page.tsx` y `app/reset-password/page.tsx` reescritos con la combinación clara de la guía (fondo crema `#F3EFE5`, tarjeta blanca, texto oscuro `#121714`, botón verde con texto oscuro y bordes pill en vez de 12px).

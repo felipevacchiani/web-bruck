@@ -133,11 +133,11 @@ function autoClassifyRows(rows: CSVRow[], contables: any[]): CSVRow[] {
   })
 }
 
-const INP: React.CSSProperties = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', outline: 'none', width: '100%', color: 'white', fontSize: 13, borderRadius: 9, padding: '9px 12px', boxSizing: 'border-box' }
-const SEL: React.CSSProperties = { ...{ appearance: 'none' } as any, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', outline: 'none', width: '100%', color: 'white', fontSize: 13, borderRadius: 9, padding: '9px 12px', boxSizing: 'border-box' }
-const LBL: React.CSSProperties = { color: '#a1a1aa', fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'block', marginBottom: 5 }
-const BTN_P: React.CSSProperties = { background: 'linear-gradient(135deg,#31AE79,#27a06d)', color: 'white', fontWeight: 600, fontSize: 13, padding: '9px 16px', borderRadius: 9, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
-const BTN_S: React.CSSProperties = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#71717a', fontSize: 12, padding: '7px 13px', borderRadius: 8, cursor: 'pointer' }
+const INP: React.CSSProperties = { background: '#FFFFFF', border: '1px solid rgba(18,23,20,0.14)', outline: 'none', width: '100%', color: '#121714', fontSize: 13, borderRadius: 9, padding: '9px 12px', boxSizing: 'border-box' }
+const SEL: React.CSSProperties = { ...{ appearance: 'none' } as any, background: '#FFFFFF', border: '1px solid rgba(18,23,20,0.14)', outline: 'none', width: '100%', color: '#121714', fontSize: 13, borderRadius: 9, padding: '9px 12px', boxSizing: 'border-box' }
+const LBL: React.CSSProperties = { color: '#4E5651', fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'block', marginBottom: 5 }
+const BTN_P: React.CSSProperties = { background: 'linear-gradient(135deg,#31AE79,#27a06d)', color: '#07120D', fontWeight: 600, fontSize: 13, padding: '9px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
+const BTN_S: React.CSSProperties = { background: 'rgba(18,23,20,0.04)', border: '1px solid rgba(18,23,20,0.14)', color: '#4E5651', fontSize: 12, padding: '7px 13px', borderRadius: 999, cursor: 'pointer' }
 
 export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBaseProp, backHref, backLabel, defaultTab, onBack }: Props) {
   const base = apiBaseProp ?? `/api/admin/ci/${clientId}`
@@ -616,7 +616,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const bSaldoDebito = bMovs.reduce((s, m) => s + (m.debito || 0), 0)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080808' }}>
+    <div style={{ minHeight: '100vh', background: '#F3EFE5' }}>
       <style>{`
         select option { background: #111; }
         .page-pad { padding: 24px; }
@@ -627,7 +627,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
       {/* Header — solo cuando NO está embebido en el portal */}
       {!onBack && (
-        <header style={{ position: 'sticky', top: 0, zIndex: 10, borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,10,10,0.97)', backdropFilter: 'blur(12px)' }}>
+        <header style={{ position: 'sticky', top: 0, zIndex: 10, borderBottom: '1px solid rgba(18,23,20,0.08)', background: 'rgba(243,239,229,0.92)', backdropFilter: 'blur(12px)' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
               <Link href="/admin" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -635,12 +635,12 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                   <span style={{ color: '#31AE79', fontWeight: 900, fontSize: 12 }}>B</span>
                 </div>
               </Link>
-              <Link href={backHref ?? `/admin/clients/${clientId}`} style={{ color: '#52525b', fontSize: 12, textDecoration: 'none' }}>← {backLabel ?? clientName}</Link>
-              <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.1)' }} />
+              <Link href={backHref ?? `/admin/clients/${clientId}`} style={{ color: '#858C87', fontSize: 12, textDecoration: 'none' }}>← {backLabel ?? clientName}</Link>
+              <div style={{ width: 1, height: 14, background: 'rgba(18,23,20,0.14)' }} />
               <span style={{ color: '#31AE79', fontSize: 12, fontWeight: 600 }}>Contabilidad Interna</span>
             </div>
             <form action="/api/auth/logout" method="POST">
-              <button style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#71717a', fontSize: 12, padding: '5px 11px', borderRadius: 8, cursor: 'pointer' }}>Salir</button>
+              <button style={{ background: 'rgba(18,23,20,0.04)', border: '1px solid rgba(18,23,20,0.12)', color: '#4E5651', fontSize: 12, padding: '5px 11px', borderRadius: 8, cursor: 'pointer' }}>Salir</button>
             </form>
           </div>
         </header>
@@ -648,10 +648,10 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
       {/* Tabs horizontales — solo cuando NO está embebido */}
       {!onBack && (
-        <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(10,10,10,0.7)' }}>
+        <div style={{ borderBottom: '1px solid rgba(18,23,20,0.08)', background: 'rgba(18,23,20,0.5)' }}>
           <div className="tab-cont" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', gap: 0 }}>
             {TABS.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)} style={{ background: 'none', border: 'none', borderBottom: tab === t.id ? '2px solid #31AE79' : '2px solid transparent', color: tab === t.id ? '#31AE79' : '#71717a', fontSize: 13, fontWeight: tab === t.id ? 600 : 400, padding: '12px 16px', cursor: 'pointer', whiteSpace: 'nowrap', marginBottom: -1 }}>
+              <button key={t.id} onClick={() => setTab(t.id)} style={{ background: 'none', border: 'none', borderBottom: tab === t.id ? '2px solid #31AE79' : '2px solid transparent', color: tab === t.id ? '#31AE79' : '#4E5651', fontSize: 13, fontWeight: tab === t.id ? 600 : 400, padding: '12px 16px', cursor: 'pointer', whiteSpace: 'nowrap', marginBottom: -1 }}>
                 {t.label}
               </button>
             ))}
@@ -666,12 +666,12 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
           {tab === 'dashboard' && (
             <div>
               {/* Selector de cuenta + mes/año */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 16, borderBottom: '1px solid rgba(18,23,20,0.08)' }}>
                 {/* Tabs de cuentas — usa `cuentas` state (cargado al montar) */}
                 <div style={{ display: 'flex', flex: 1, overflowX: 'auto' }}>
                   {[{ id: '', nombre: 'Todas' }, ...cuentas].map((c: any) => (
                     <button key={c.id} onClick={() => setDashCuenta(c.id)}
-                      style={{ background: 'none', border: 'none', borderBottom: dashCuenta === c.id ? '2px solid #31AE79' : '2px solid transparent', color: dashCuenta === c.id ? '#31AE79' : '#71717a', fontSize: 13, fontWeight: dashCuenta === c.id ? 600 : 400, padding: '10px 14px', cursor: 'pointer', whiteSpace: 'nowrap', marginBottom: -1 }}>
+                      style={{ background: 'none', border: 'none', borderBottom: dashCuenta === c.id ? '2px solid #31AE79' : '2px solid transparent', color: dashCuenta === c.id ? '#31AE79' : '#4E5651', fontSize: 13, fontWeight: dashCuenta === c.id ? 600 : 400, padding: '10px 14px', cursor: 'pointer', whiteSpace: 'nowrap', marginBottom: -1 }}>
                       {c.nombre}
                     </button>
                   ))}
@@ -688,7 +688,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
               </div>
 
               {!dashboard ? (
-                <div style={{ color: '#52525b', fontSize: 13, textAlign: 'center', padding: 48 }}>Cargando...</div>
+                <div style={{ color: '#858C87', fontSize: 13, textAlign: 'center', padding: 48 }}>Cargando...</div>
               ) : (
                 <>
                   {/* KPIs — una sola fila con 8 cards compactas */}
@@ -697,14 +697,14 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                       { label: 'Ingresos', value: fmt(dashboard.ingresosMes || 0), color: '#34d399' },
                       { label: 'Egresos', value: fmt(dashboard.egresosMes || 0), color: '#f87171' },
                       { label: 'Saldo período', value: fmt(dashboard.saldoMes || 0), color: (dashboard.saldoMes||0) >= 0 ? '#34d399' : '#f87171' },
-                      { label: 'Movimientos', value: String(dashboard.totalMovs || 0), color: 'white' },
+                      { label: 'Movimientos', value: String(dashboard.totalMovs || 0), color: '#121714' },
                       { label: 'Conciliados', value: String(dashboard.conciliados || 0), color: '#34d399' },
                       { label: 'Pendientes', value: String(dashboard.pendientes || 0), color: '#facc15' },
                       { label: 'Sin Factura', value: String(dashboard.sinFactura || 0), color: '#fb923c' },
                       { label: 'Saldo total', value: fmt(dashboard.saldoActual || 0), color: (dashboard.saldoActual||0) >= 0 ? '#60a5fa' : '#f87171' },
                     ].map(s => (
-                      <div key={s.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '10px 12px' }}>
-                        <div style={{ color: '#52525b', fontSize: 9, marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</div>
+                      <div key={s.label} style={{ background: '#FFFFFF', border: '1px solid rgba(18,23,20,0.16)', borderRadius: 10, padding: '10px 12px', boxShadow: '0 1px 3px rgba(18,23,20,0.05)' }}>
+                        <div style={{ color: '#858C87', fontSize: 9, marginBottom: 4, letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</div>
                         <div style={{ color: s.color, fontSize: 14, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.value}</div>
                       </div>
                     ))}
@@ -712,20 +712,20 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
                   {/* Resumen por Rubro */}
                   {dashboard.resumenRubros?.length > 0 ? (
-                    <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }}>
-                      <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', color: '#a1a1aa', fontSize: 13, fontWeight: 600 }}>Resumen por Rubro</div>
+                    <div style={{ border: '1px solid rgba(18,23,20,0.10)', borderRadius: 14, overflow: 'hidden' }}>
+                      <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(18,23,20,0.08)', color: '#4E5651', fontSize: 13, fontWeight: 600 }}>Resumen por Rubro</div>
                       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                          <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
+                          <tr style={{ background: 'rgba(18,23,20,0.04)' }}>
                             {['Rubro', 'Ingresos', 'Egresos', 'Neto'].map(h => (
-                              <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '8px 14px', fontWeight: 500 }}>{h}</th>
+                              <th key={h} style={{ textAlign: 'left', color: '#858C87', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '8px 14px', fontWeight: 500 }}>{h}</th>
                             ))}
                           </tr>
                         </thead>
                         <tbody>
                           {dashboard.resumenRubros.map((r: any, i: number) => (
-                            <tr key={i} style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-                              <td style={{ padding: '10px 14px', color: 'white', fontSize: 13 }}>{r.nombre}</td>
+                            <tr key={i} style={{ borderTop: '1px solid rgba(18,23,20,0.04)' }}>
+                              <td style={{ padding: '10px 14px', color: '#121714', fontSize: 13 }}>{r.nombre}</td>
                               <td style={{ padding: '10px 14px', color: '#34d399', fontSize: 13 }}>{fmt(r.credito)}</td>
                               <td style={{ padding: '10px 14px', color: '#f87171', fontSize: 13 }}>{fmt(r.debito)}</td>
                               <td style={{ padding: '10px 14px', color: r.credito - r.debito >= 0 ? '#34d399' : '#f87171', fontSize: 13, fontWeight: 600 }}>{fmt(r.credito - r.debito)}</td>
@@ -735,8 +735,8 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                       </table>
                     </div>
                   ) : (
-                    <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '40px', textAlign: 'center' }}>
-                      <div style={{ color: '#52525b', fontSize: 13 }}>Sin movimientos clasificados por rubro en este período.</div>
+                    <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '40px', textAlign: 'center' }}>
+                      <div style={{ color: '#858C87', fontSize: 13 }}>Sin movimientos clasificados por rubro en este período.</div>
                     </div>
                   )}
                 </>
@@ -748,18 +748,18 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
           {tab === 'movimientos' && (
             <div>
               {/* Filtros */}
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '12px 14px', marginBottom: 16 }}>
+              <div style={{ background: '#FFFFFF', border: '1px solid rgba(18,23,20,0.16)', borderRadius: 12, padding: '12px 14px', marginBottom: 16, boxShadow: '0 1px 3px rgba(18,23,20,0.05)' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr 2fr', gap: 8, marginBottom: 8 }}>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Desde</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Desde</div>
                     <input type="date" value={fDesde} onChange={e => setFDesde(e.target.value)} style={{ ...INP, fontSize: 12, padding: '7px 10px', colorScheme: 'dark' }} />
                   </div>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Hasta</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Hasta</div>
                     <input type="date" value={fHasta} onChange={e => setFHasta(e.target.value)} style={{ ...INP, fontSize: 12, padding: '7px 10px', colorScheme: 'dark' }} />
                   </div>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Origen</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Origen</div>
                     <select value={fOrigen} onChange={e => setFOrigen(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
                       <option value="banco">Banco</option>
@@ -767,34 +767,34 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                     </select>
                   </div>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Estado</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Estado</div>
                     <select value={fEstado} onChange={e => setFEstado(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
                       {CI_MOV_ESTADOS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Rubro</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Rubro</div>
                     <select value={fRubro} onChange={e => setFRubro(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
                       {rubros.map((r: any) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
                     </select>
                   </div>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Cta. Contable</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Cta. Contable</div>
                     <select value={fContable} onChange={e => setFContable(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todas</option>
                       {contables.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                     </select>
                   </div>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Buscar</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Buscar</div>
                     <input placeholder="Descripción..." value={fQ} onChange={e => setFQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && loadMovs(1)} style={{ ...INP, fontSize: 12, padding: '7px 10px' }} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Cuenta Bancaria</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Cuenta Bancaria</div>
                     <select value={fCuenta} onChange={e => setFCuenta(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px', minWidth: 200 }}>
                       <option value="">Todas las cuentas</option>
                       {cuentas.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}{c.banco ? ` — ${c.banco}` : ''}</option>)}
@@ -802,7 +802,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                   </div>
                   <div style={{ flex: 1 }} />
                   {(fDesde || fHasta || fOrigen || fEstado || fRubro || fContable || fQ || fCuenta) && (
-                    <button onClick={() => { setFDesde(''); setFHasta(''); setFOrigen(''); setFEstado(''); setFRubro(''); setFContable(''); setFQ(''); setFCuenta('') }} style={{ ...BTN_S, fontSize: 11, color: '#52525b' }}>✕ Limpiar</button>
+                    <button onClick={() => { setFDesde(''); setFHasta(''); setFOrigen(''); setFEstado(''); setFRubro(''); setFContable(''); setFQ(''); setFCuenta('') }} style={{ ...BTN_S, fontSize: 11, color: '#858C87' }}>✕ Limpiar</button>
                   )}
                   <button onClick={() => exportMovs()} style={{ ...BTN_S, color: '#34d399', border: '1px solid rgba(52,211,153,0.3)', fontSize: 12 }}>↓ Exportar</button>
                   <button onClick={() => loadMovs(1)} style={{ ...BTN_P, fontSize: 12, padding: '7px 16px' }}>Aplicar</button>
@@ -810,37 +810,37 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <div style={{ color: '#52525b', fontSize: 12 }}>{movCount} movimiento{movCount !== 1 ? 's' : ''}</div>
+                <div style={{ color: '#858C87', fontSize: 12 }}>{movCount} movimiento{movCount !== 1 ? 's' : ''}</div>
                 <button onClick={() => openModal('mov')} style={BTN_P}><span>+</span> Nuevo movimiento</button>
               </div>
               {!movs.length ? (
-                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
-                  <div style={{ color: '#52525b', fontSize: 13 }}>No hay movimientos registrados.</div>
+                <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
+                  <div style={{ color: '#858C87', fontSize: 13 }}>No hay movimientos registrados.</div>
                 </div>
               ) : (
-                <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }}>
+                <div style={{ border: '1px solid rgba(18,23,20,0.10)', borderRadius: 14, overflow: 'hidden' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                      <tr style={{ background: 'rgba(18,23,20,0.04)', borderBottom: '1px solid rgba(18,23,20,0.08)' }}>
                         {['Fecha', 'Descripción', 'Monto', 'Cuenta', 'Factura', 'Comentario', 'Est.', ''].map(h => (
-                          <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '7px 8px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                          <th key={h} style={{ textAlign: 'left', color: '#858C87', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '7px 8px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {movs.map((m: any, i: number) => (
-                        <tr key={m.id} style={{ borderTop: i ? '1px solid rgba(255,255,255,0.04)' : undefined }}>
-                          <td style={{ padding: '6px 8px', color: '#a1a1aa', fontSize: 11, whiteSpace: 'nowrap' }}>{fmtDate(m.fecha)}</td>
+                        <tr key={m.id} style={{ borderTop: i ? '1px solid rgba(18,23,20,0.04)' : undefined }}>
+                          <td style={{ padding: '6px 8px', color: '#4E5651', fontSize: 11, whiteSpace: 'nowrap' }}>{fmtDate(m.fecha)}</td>
                           <td style={{ padding: '6px 8px', maxWidth: 200 }}>
-                            <div style={{ color: 'white', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descripcion}</div>
+                            <div style={{ color: '#121714', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descripcion}</div>
                           </td>
                           <td style={{ padding: '6px 8px', whiteSpace: 'nowrap' }}>
                             {m.debito > 0
-                              ? <span style={{ color: '#f87171', fontSize: 11, fontWeight: 600 }}>{fmt(m.debito)} <span style={{ color: '#52525b', fontWeight: 400, fontSize: 10 }}>Déb</span></span>
-                              : <span style={{ color: '#34d399', fontSize: 11, fontWeight: 600 }}>{fmt(m.credito)} <span style={{ color: '#52525b', fontWeight: 400, fontSize: 10 }}>Créd</span></span>
+                              ? <span style={{ color: '#f87171', fontSize: 11, fontWeight: 600 }}>{fmt(m.debito)} <span style={{ color: '#858C87', fontWeight: 400, fontSize: 10 }}>Déb</span></span>
+                              : <span style={{ color: '#34d399', fontSize: 11, fontWeight: 600 }}>{fmt(m.credito)} <span style={{ color: '#858C87', fontWeight: 400, fontSize: 10 }}>Créd</span></span>
                             }
                           </td>
-                          <td style={{ padding: '6px 8px', color: '#71717a', fontSize: 11, whiteSpace: 'nowrap' }}>{m.cuenta_bancaria?.nombre || '—'}</td>
+                          <td style={{ padding: '6px 8px', color: '#4E5651', fontSize: 11, whiteSpace: 'nowrap' }}>{m.cuenta_bancaria?.nombre || '—'}</td>
                           <td style={{ padding: '6px 8px', textAlign: 'center' }}>
                             <input
                               type="checkbox"
@@ -859,8 +859,8 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                               onChange={e => setRowEdits(s => ({ ...s, [m.id]: { ...s[m.id], comentario: e.target.value } }))}
                               onBlur={e => inlineSave(m.id, { comentario: e.target.value })}
                               placeholder="Agregar comentario"
-                              style={{ ...INP, fontSize: 11, padding: '3px 6px', background: 'transparent', border: '1px solid transparent', color: '#a1a1aa' }}
-                              onFocus={e => { e.target.style.borderColor = 'rgba(255,255,255,0.15)'; e.target.style.background = 'rgba(255,255,255,0.04)' }}
+                              style={{ ...INP, fontSize: 11, padding: '3px 6px', background: 'transparent', border: '1px solid transparent', color: '#4E5651' }}
+                              onFocus={e => { e.target.style.borderColor = 'rgba(18,23,20,0.18)'; e.target.style.background = 'rgba(18,23,20,0.04)' }}
                             />
                           </td>
                           <td style={{ padding: '6px 8px', textAlign: 'center' }}>
@@ -881,7 +881,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
               {movPages > 1 && (
                 <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 16 }}>
                   {movPage > 1 && <button onClick={() => { setMovPage(p => p - 1); loadMovs(movPage - 1) }} style={BTN_S}>← Anterior</button>}
-                  <span style={{ color: '#52525b', fontSize: 12, alignSelf: 'center' }}>Pág {movPage} / {movPages}</span>
+                  <span style={{ color: '#858C87', fontSize: 12, alignSelf: 'center' }}>Pág {movPage} / {movPages}</span>
                   {movPage < movPages && <button onClick={() => { setMovPage(p => p + 1); loadMovs(movPage + 1) }} style={BTN_S}>Siguiente →</button>}
                 </div>
               )}
@@ -894,38 +894,38 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
               <input ref={csvRef} type="file" accept=".csv,.txt,.tsv,.xlsx,.xls" style={{ display: 'none' }} onChange={handleCSVFile} />
 
               {/* Filtros */}
-              <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '12px 14px', marginBottom: 16 }}>
+              <div style={{ background: '#FFFFFF', border: '1px solid rgba(18,23,20,0.16)', borderRadius: 12, padding: '12px 14px', marginBottom: 16, boxShadow: '0 1px 3px rgba(18,23,20,0.05)' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr auto', gap: 8, alignItems: 'end' }}>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Cuenta</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Cuenta</div>
                     <select value={bCuenta} onChange={e => setBCuenta(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todas...</option>
                       {cuentas.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}{c.banco ? ` — ${c.banco}` : ''}</option>)}
                     </select>
                   </div>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Mes</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Mes</div>
                     <select value={bMes} onChange={e => setBMes(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
                       {MONTHS.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
                     </select>
                   </div>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Año</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Año</div>
                     <select value={bAnio} onChange={e => setBAnio(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
                       {[2026, 2025, 2024, 2023].map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
                   </div>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Estado</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Estado</div>
                     <select value={bEstado} onChange={e => setBEstado(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
                       {CI_MOV_ESTADOS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Tipo</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Tipo</div>
                     <select value={bTipo} onChange={e => setBTipo(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
                       <option value="ingreso">Ingreso</option>
@@ -934,7 +934,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                     </select>
                   </div>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Factura</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Factura</div>
                     <select value={bFactura} onChange={e => setBFactura(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
                       <option value="true">Con</option>
@@ -942,7 +942,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                     </select>
                   </div>
                   <div>
-                    <div style={{ color: '#52525b', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Rubro</div>
+                    <div style={{ color: '#858C87', fontSize: 9, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Rubro</div>
                     <select value={bRubro} onChange={e => setBRubro(e.target.value)} style={{ ...SEL, fontSize: 12, padding: '7px 10px' }}>
                       <option value="">Todos</option>
                       {rubros.map((r: any) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
@@ -953,10 +953,10 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
               </div>
 
               {!bCuenta ? (
-                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '60px', textAlign: 'center' }}>
+                <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '60px', textAlign: 'center' }}>
                   <div style={{ fontSize: 32, marginBottom: 12 }}>🏦</div>
-                  <div style={{ color: '#52525b', fontSize: 14, marginBottom: 6 }}>Seleccioná una cuenta bancaria para ver sus movimientos</div>
-                  <div style={{ color: '#3f3f46', fontSize: 12 }}>Usá el selector de arriba</div>
+                  <div style={{ color: '#858C87', fontSize: 14, marginBottom: 6 }}>Seleccioná una cuenta bancaria para ver sus movimientos</div>
+                  <div style={{ color: '#858C87', fontSize: 12 }}>Usá el selector de arriba</div>
                 </div>
               ) : (
                 <>
@@ -964,15 +964,15 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                   {bCuentaObj && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 12, marginBottom: 20 }}>
                       {[
-                        { label: 'Saldo inicial', value: fmt(bCuentaObj.saldo_inicial || 0), color: 'white' },
+                        { label: 'Saldo inicial', value: fmt(bCuentaObj.saldo_inicial || 0), color: '#121714' },
                         { label: 'Disponible', value: fmt(bCuentaObj.disponible || 0), color: '#60a5fa' },
                         { label: 'Total créditos', value: fmt(bSaldoCredito), color: '#34d399' },
                         { label: 'Total débitos', value: fmt(bSaldoDebito), color: '#f87171' },
-                        { label: 'Movimientos', value: bMovCount, color: 'white' },
+                        { label: 'Movimientos', value: bMovCount, color: '#121714' },
                         { label: 'Pendientes', value: bMovs.filter(m => m.estado === 'pendiente').length, color: '#facc15' },
                       ].map(s => (
-                        <div key={s.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px' }}>
-                          <div style={{ color: '#71717a', fontSize: 11, marginBottom: 4 }}>{s.label}</div>
+                        <div key={s.label} style={{ background: '#FFFFFF', border: '1px solid rgba(18,23,20,0.16)', borderRadius: 12, padding: '14px 16px', boxShadow: '0 1px 3px rgba(18,23,20,0.05)' }}>
+                          <div style={{ color: '#4E5651', fontSize: 11, marginBottom: 4 }}>{s.label}</div>
                           <div style={{ color: s.color, fontSize: 17, fontWeight: 700 }}>{s.value}</div>
                         </div>
                       ))}
@@ -993,27 +993,27 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                     )}
                   </div>
 
-                  <div style={{ color: '#52525b', fontSize: 12, marginBottom: 10 }}>{bMovCount} movimiento{bMovCount !== 1 ? 's' : ''}</div>
+                  <div style={{ color: '#858C87', fontSize: 12, marginBottom: 10 }}>{bMovCount} movimiento{bMovCount !== 1 ? 's' : ''}</div>
 
                   {!bMovs.length ? (
-                    <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '40px', textAlign: 'center' }}>
-                      <div style={{ color: '#52525b', fontSize: 13 }}>No hay movimientos para esta cuenta en el período seleccionado.</div>
+                    <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '40px', textAlign: 'center' }}>
+                      <div style={{ color: '#858C87', fontSize: 13 }}>No hay movimientos para esta cuenta en el período seleccionado.</div>
                     </div>
                   ) : (
-                    <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }}>
+                    <div style={{ border: '1px solid rgba(18,23,20,0.10)', borderRadius: 14, overflow: 'hidden' }}>
                       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                          <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                          <tr style={{ background: 'rgba(18,23,20,0.04)', borderBottom: '1px solid rgba(18,23,20,0.08)' }}>
                             {['Fecha', 'Descripción', 'Débito', 'Crédito', 'Estado', 'C.Contable', ''].map(h => (
-                              <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '9px 12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                              <th key={h} style={{ textAlign: 'left', color: '#858C87', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '9px 12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                             ))}
                           </tr>
                         </thead>
                         <tbody>
                           {bMovs.map((m: any, i: number) => (
-                            <tr key={m.id} style={{ borderTop: i ? '1px solid rgba(255,255,255,0.04)' : undefined }}>
-                              <td style={{ padding: '10px 12px', color: '#a1a1aa', fontSize: 12, whiteSpace: 'nowrap' }}>{fmtDate(m.fecha)}</td>
-                              <td style={{ padding: '10px 12px', color: 'white', fontSize: 12, maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descripcion}</td>
+                            <tr key={m.id} style={{ borderTop: i ? '1px solid rgba(18,23,20,0.04)' : undefined }}>
+                              <td style={{ padding: '10px 12px', color: '#4E5651', fontSize: 12, whiteSpace: 'nowrap' }}>{fmtDate(m.fecha)}</td>
+                              <td style={{ padding: '10px 12px', color: '#121714', fontSize: 12, maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.descripcion}</td>
                               <td style={{ padding: '10px 12px', color: '#f87171', fontSize: 12, whiteSpace: 'nowrap' }}>{m.debito > 0 ? fmt(m.debito) : '—'}</td>
                               <td style={{ padding: '10px 12px', color: '#34d399', fontSize: 12, whiteSpace: 'nowrap' }}>{m.credito > 0 ? fmt(m.credito) : '—'}</td>
                               <td style={{ padding: '10px 12px' }}>
@@ -1021,7 +1021,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                                   {CI_MOV_ESTADOS.find(e => e.value === m.estado)?.label || m.estado}
                                 </span>
                               </td>
-                              <td style={{ padding: '10px 12px', color: '#71717a', fontSize: 11, whiteSpace: 'nowrap' }}>{m.cuenta_contable?.nombre || '—'}</td>
+                              <td style={{ padding: '10px 12px', color: '#4E5651', fontSize: 11, whiteSpace: 'nowrap' }}>{m.cuenta_contable?.nombre || '—'}</td>
                               <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
                                 <div style={{ display: 'flex', gap: 5 }}>
                                   <button onClick={() => openModal('clasificar', m)} style={{ ...BTN_S, fontSize: 11, padding: '4px 9px', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.2)' }}>Clasificar</button>
@@ -1044,7 +1044,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                   {bMovPages > 1 && (
                     <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 16 }}>
                       {bMovPage > 1 && <button onClick={() => { setBMovPage(p => p - 1); loadBankMovs(bMovPage - 1) }} style={BTN_S}>← Anterior</button>}
-                      <span style={{ color: '#52525b', fontSize: 12, alignSelf: 'center' }}>Pág {bMovPage} / {bMovPages}</span>
+                      <span style={{ color: '#858C87', fontSize: 12, alignSelf: 'center' }}>Pág {bMovPage} / {bMovPages}</span>
                       {bMovPage < bMovPages && <button onClick={() => { setBMovPage(p => p + 1); loadBankMovs(bMovPage + 1) }} style={BTN_S}>Siguiente →</button>}
                     </div>
                   )}
@@ -1060,29 +1060,29 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                 <button onClick={() => openModal('cuenta')} style={BTN_P}>+ Nueva cuenta</button>
               </div>
               {!cuentas.length ? (
-                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
-                  <div style={{ color: '#52525b', fontSize: 13 }}>No hay cuentas bancarias cargadas.</div>
+                <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
+                  <div style={{ color: '#858C87', fontSize: 13 }}>No hay cuentas bancarias cargadas.</div>
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 12 }}>
                   {cuentas.map((c: any) => (
-                    <div key={c.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '16px 18px' }}>
+                    <div key={c.id} style={{ background: '#FFFFFF', border: '1px solid rgba(18,23,20,0.16)', borderRadius: 14, padding: '16px 18px', boxShadow: '0 1px 3px rgba(18,23,20,0.05)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                        <div style={{ color: 'white', fontSize: 14, fontWeight: 600 }}>{c.nombre}</div>
+                        <div style={{ color: '#121714', fontSize: 14, fontWeight: 600 }}>{c.nombre}</div>
                         <div style={{ display: 'flex', gap: 5 }}>
                           <button onClick={() => openModal('cuenta', c)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px' }}>✎</button>
                           <button onClick={() => apiDelete('cuentas-bancarias', c.id)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px', color: '#f87171' }}>✕</button>
                         </div>
                       </div>
-                      <div style={{ color: '#71717a', fontSize: 12, marginBottom: 4 }}>{c.banco || '—'} · {c.numero_cuenta || 'sin número'}</div>
-                      <div style={{ color: '#52525b', fontSize: 11, marginBottom: 12 }}>{c.tipo}</div>
+                      <div style={{ color: '#4E5651', fontSize: 12, marginBottom: 4 }}>{c.banco || '—'} · {c.numero_cuenta || 'sin número'}</div>
+                      <div style={{ color: '#858C87', fontSize: 11, marginBottom: 12 }}>{c.tipo}</div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                         <div>
-                          <div style={{ color: '#3f3f46', fontSize: 10, marginBottom: 2 }}>Saldo inicial</div>
-                          <div style={{ color: '#a1a1aa', fontSize: 15, fontWeight: 600 }}>{fmt(c.saldo_inicial || 0)}</div>
+                          <div style={{ color: '#858C87', fontSize: 10, marginBottom: 2 }}>Saldo inicial</div>
+                          <div style={{ color: '#4E5651', fontSize: 15, fontWeight: 600 }}>{fmt(c.saldo_inicial || 0)}</div>
                         </div>
                         <div>
-                          <div style={{ color: '#3f3f46', fontSize: 10, marginBottom: 2 }}>Disponible</div>
+                          <div style={{ color: '#858C87', fontSize: 10, marginBottom: 2 }}>Disponible</div>
                           <div style={{ color: '#60a5fa', fontSize: 15, fontWeight: 700 }}>{fmt(c.disponible || 0)}</div>
                         </div>
                       </div>
@@ -1100,16 +1100,16 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                 <button onClick={() => openModal('contable')} style={BTN_P}>+ Nueva cuenta contable</button>
               </div>
               {!contables.length ? (
-                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
-                  <div style={{ color: '#52525b', fontSize: 13 }}>No hay cuentas contables cargadas.</div>
+                <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
+                  <div style={{ color: '#858C87', fontSize: 13 }}>No hay cuentas contables cargadas.</div>
                 </div>
               ) : (
-                <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, overflow: 'hidden' }}>
+                <div style={{ border: '1px solid rgba(18,23,20,0.10)', borderRadius: 14, overflow: 'hidden' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                      <tr style={{ background: 'rgba(18,23,20,0.04)', borderBottom: '1px solid rgba(18,23,20,0.08)' }}>
                         {['Nombre', 'Tipo', 'Rubro', 'Keywords', ''].map(h => (
-                          <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '9px 14px', fontWeight: 500 }}>{h}</th>
+                          <th key={h} style={{ textAlign: 'left', color: '#858C87', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '9px 14px', fontWeight: 500 }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -1118,13 +1118,13 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                         let kw: string[] = []
                         try { kw = JSON.parse(c.keywords || '[]') } catch {}
                         return (
-                          <tr key={c.id} style={{ borderTop: i ? '1px solid rgba(255,255,255,0.04)' : undefined }}>
-                            <td style={{ padding: '10px 14px', color: 'white', fontSize: 13 }}>{c.nombre}</td>
+                          <tr key={c.id} style={{ borderTop: i ? '1px solid rgba(18,23,20,0.04)' : undefined }}>
+                            <td style={{ padding: '10px 14px', color: '#121714', fontSize: 13 }}>{c.nombre}</td>
                             <td style={{ padding: '10px 14px' }}>
                               <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: c.tipo === 'ingreso' ? 'rgba(52,211,153,0.08)' : 'rgba(248,113,113,0.08)', color: c.tipo === 'ingreso' ? '#34d399' : '#f87171' }}>{c.tipo}</span>
                             </td>
-                            <td style={{ padding: '10px 14px', color: '#71717a', fontSize: 12 }}>{c.rubro?.nombre || '—'}</td>
-                            <td style={{ padding: '10px 14px', color: '#52525b', fontSize: 11, maxWidth: 200 }}>
+                            <td style={{ padding: '10px 14px', color: '#4E5651', fontSize: 12 }}>{c.rubro?.nombre || '—'}</td>
+                            <td style={{ padding: '10px 14px', color: '#858C87', fontSize: 11, maxWidth: 200 }}>
                               {kw.slice(0, 3).join(', ')}{kw.length > 3 ? ` +${kw.length - 3}` : ''}
                             </td>
                             <td style={{ padding: '10px 14px' }}>
@@ -1150,14 +1150,14 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                 <button onClick={() => openModal('rubro')} style={BTN_P}>+ Nuevo rubro</button>
               </div>
               {!rubros.length ? (
-                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
-                  <div style={{ color: '#52525b', fontSize: 13 }}>No hay rubros creados.</div>
+                <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
+                  <div style={{ color: '#858C87', fontSize: 13 }}>No hay rubros creados.</div>
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 10 }}>
                   {rubros.map((r: any) => (
-                    <div key={r.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ color: 'white', fontSize: 13, fontWeight: 600 }}>{r.nombre}</div>
+                    <div key={r.id} style={{ background: '#FFFFFF', border: '1px solid rgba(18,23,20,0.16)', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(18,23,20,0.05)' }}>
+                      <div style={{ color: '#121714', fontSize: 13, fontWeight: 600 }}>{r.nombre}</div>
                       <div style={{ display: 'flex', gap: 5 }}>
                         <button onClick={() => openModal('rubro', r)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px' }}>✎</button>
                         <button onClick={() => apiDelete('rubros', r.id)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px', color: '#f87171' }}>✕</button>
@@ -1195,38 +1195,38 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
               </div>
 
               {!cCuenta ? (
-                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
-                  <div style={{ color: '#52525b', fontSize: 13 }}>Elegí una cuenta bancaria para ver o cerrar su conciliación.</div>
+                <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
+                  <div style={{ color: '#858C87', fontSize: 13 }}>Elegí una cuenta bancaria para ver o cerrar su conciliación.</div>
                 </div>
               ) : cPeriodo && (
-                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: 20, marginBottom: 24 }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid rgba(18,23,20,0.16)', borderRadius: 14, padding: 20, marginBottom: 24, boxShadow: '0 1px 3px rgba(18,23,20,0.05)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                    <span style={{ color: 'white', fontSize: 14, fontWeight: 600 }}>{MONTHS[cMes - 1]} {cAnio}</span>
+                    <span style={{ color: '#121714', fontSize: 14, fontWeight: 600 }}>{MONTHS[cMes - 1]} {cAnio}</span>
                     {cPeriodo.existing ? (
                       <span style={{ fontSize: 11, fontWeight: 500, padding: '3px 10px', borderRadius: 20, ...(() => { const s = CI_CONCILIACION_ESTADOS.find(e => e.value === cPeriodo.existing.estado); return s ? { background: s.bg, border: `1px solid ${s.border}`, color: s.color } : {} })() }}>
                         {CI_CONCILIACION_ESTADOS.find(e => e.value === cPeriodo.existing.estado)?.label}
                       </span>
                     ) : (
-                      <span style={{ fontSize: 11, color: '#52525b' }}>Sin cerrar</span>
+                      <span style={{ fontSize: 11, color: '#858C87' }}>Sin cerrar</span>
                     )}
                   </div>
 
                   <div className="cd-3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 16 }}>
                     <div>
                       <label style={LBL}>Saldo apertura</label>
-                      <div style={{ color: '#a1a1aa', fontSize: 15, fontWeight: 600, padding: '9px 0' }}>{fmt(cPeriodo.sugerido?.saldo_apertura ?? 0)}</div>
+                      <div style={{ color: '#4E5651', fontSize: 15, fontWeight: 600, padding: '9px 0' }}>{fmt(cPeriodo.sugerido?.saldo_apertura ?? 0)}</div>
                     </div>
                     <div>
                       <label style={LBL}>Saldo cierre {cPeriodo.existing ? '' : '(sugerido, editable)'}</label>
                       {cPeriodo.existing ? (
-                        <div style={{ color: 'white', fontSize: 15, fontWeight: 600, padding: '9px 0' }}>{fmt(cPeriodo.existing.saldo_cierre)}</div>
+                        <div style={{ color: '#121714', fontSize: 15, fontWeight: 600, padding: '9px 0' }}>{fmt(cPeriodo.existing.saldo_cierre)}</div>
                       ) : (
                         <input type="number" step="0.01" value={cSaldoCierre} onChange={e => setCSaldoCierre(e.target.value)} style={INP} />
                       )}
                     </div>
                     <div>
                       <label style={LBL}>Movimientos del período</label>
-                      <div style={{ color: '#a1a1aa', fontSize: 15, fontWeight: 600, padding: '9px 0' }}>
+                      <div style={{ color: '#4E5651', fontSize: 15, fontWeight: 600, padding: '9px 0' }}>
                         {cPeriodo.sugerido?.movimientos_count ?? 0}
                         {(cPeriodo.sugerido?.movimientos_pendientes ?? 0) > 0 && (
                           <span style={{ color: '#facc15', fontSize: 12, fontWeight: 500, marginLeft: 8 }}>({cPeriodo.sugerido.movimientos_pendientes} pendientes)</span>
@@ -1238,7 +1238,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                   <div style={{ marginBottom: 16 }}>
                     <label style={LBL}>Observaciones</label>
                     {cPeriodo.existing ? (
-                      <div style={{ color: '#a1a1aa', fontSize: 13 }}>{cPeriodo.existing.observaciones || '—'}</div>
+                      <div style={{ color: '#4E5651', fontSize: 13 }}>{cPeriodo.existing.observaciones || '—'}</div>
                     ) : (
                       <textarea value={cObservaciones} onChange={e => setCObservaciones(e.target.value)} rows={2} style={{ ...INP, resize: 'vertical' }} placeholder="Notas sobre esta conciliación (opcional)" />
                     )}
@@ -1260,14 +1260,14 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
               {cCuenta && cHistorial.length > 0 && (
                 <div>
-                  <div style={{ color: '#52525b', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Historial</div>
-                  <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ color: '#858C87', fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Historial</div>
+                  <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 12, overflow: 'hidden' }}>
                     {cHistorial.map((c: any, i: number) => {
                       const s = CI_CONCILIACION_ESTADOS.find(e => e.value === c.estado)
                       return (
-                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderTop: i ? '1px solid rgba(255,255,255,0.05)' : undefined }}>
-                          <span style={{ color: '#d4d4d8', fontSize: 13 }}>{MONTHS[c.mes - 1]} {c.anio}</span>
-                          <span style={{ color: '#71717a', fontSize: 12 }}>{fmt(c.saldo_apertura)} → {fmt(c.saldo_cierre)}</span>
+                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderTop: i ? '1px solid rgba(18,23,20,0.06)' : undefined }}>
+                          <span style={{ color: '#121714', fontSize: 13 }}>{MONTHS[c.mes - 1]} {c.anio}</span>
+                          <span style={{ color: '#4E5651', fontSize: 12 }}>{fmt(c.saldo_apertura)} → {fmt(c.saldo_cierre)}</span>
                           <span style={{ fontSize: 11, fontWeight: 500, padding: '2px 9px', borderRadius: 20, background: s?.bg, border: `1px solid ${s?.border}`, color: s?.color }}>{s?.label}</span>
                         </div>
                       )
@@ -1297,14 +1297,14 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
               </div>
 
               {!pData.length ? (
-                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
-                  <div style={{ color: '#52525b', fontSize: 13 }}>No hay rubros activos para presupuestar.</div>
+                <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
+                  <div style={{ color: '#858C87', fontSize: 13 }}>No hay rubros activos para presupuestar.</div>
                 </div>
               ) : (
-                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'hidden' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 8, padding: '9px 16px', background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 8, padding: '9px 16px', background: 'rgba(18,23,20,0.05)', borderBottom: '1px solid rgba(18,23,20,0.10)' }}>
                     {['Rubro', 'Presupuestado', 'Ejecutado', 'Desvío', ''].map(h => (
-                      <span key={h} style={{ color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</span>
+                      <span key={h} style={{ color: '#858C87', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</span>
                     ))}
                   </div>
                   {pData.map((row: any, i: number) => {
@@ -1314,18 +1314,18 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                     const montoNum = parseFloat(draft) || 0
                     const desvio = ejecutado - montoNum
                     const desvioBueno = cat === 'egreso' ? desvio <= 0 : desvio >= 0
-                    const desvioColor = montoNum === 0 ? '#52525b' : (desvioBueno ? '#34d399' : '#f87171')
+                    const desvioColor = montoNum === 0 ? '#858C87' : (desvioBueno ? '#34d399' : '#f87171')
                     const dirty = draft !== String(row.presupuesto?.monto ?? 0)
                     return (
-                      <div key={row.rubro.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 8, alignItems: 'center', padding: '8px 16px', borderTop: i ? '1px solid rgba(255,255,255,0.05)' : undefined }}>
-                        <span style={{ color: 'white', fontSize: 13 }}>{row.rubro.nombre}</span>
+                      <div key={row.rubro.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 8, alignItems: 'center', padding: '8px 16px', borderTop: i ? '1px solid rgba(18,23,20,0.06)' : undefined }}>
+                        <span style={{ color: '#121714', fontSize: 13 }}>{row.rubro.nombre}</span>
                         <input type="number" step="0.01" value={draft}
                           onChange={e => setPDrafts(d => ({ ...d, [row.rubro.id]: e.target.value }))}
                           style={{ ...INP, fontSize: 12, padding: '6px 9px' }} />
-                        <span style={{ color: '#a1a1aa', fontSize: 13 }}>{fmt(ejecutado)}</span>
+                        <span style={{ color: '#4E5651', fontSize: 13 }}>{fmt(ejecutado)}</span>
                         <span style={{ color: desvioColor, fontSize: 13, fontWeight: 600 }}>{montoNum === 0 ? '—' : fmt(desvio)}</span>
                         <button onClick={() => savePresupuesto(row.rubro.id, draft)} disabled={!dirty || pSavingId === row.rubro.id}
-                          style={{ ...BTN_S, fontSize: 11, padding: '5px 11px', opacity: dirty ? 1 : 0.4, color: dirty ? '#31AE79' : '#52525b', border: dirty ? '1px solid rgba(49,174,121,0.3)' : BTN_S.border }}>
+                          style={{ ...BTN_S, fontSize: 11, padding: '5px 11px', opacity: dirty ? 1 : 0.4, color: dirty ? '#31AE79' : '#858C87', border: dirty ? '1px solid rgba(49,174,121,0.3)' : BTN_S.border }}>
                           {pSavingId === row.rubro.id ? '…' : 'Guardar'}
                         </button>
                       </div>
@@ -1352,8 +1352,8 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                 {flData.length > 0 && <button onClick={exportFlujoCSV} style={BTN_S}>↓ Exportar CSV</button>}
               </div>
 
-              <div style={{ color: '#71717a', fontSize: 12, marginBottom: 16 }}>
-                Saldo inicial del rango: <strong style={{ color: '#a1a1aa' }}>{fmt(flSaldoInicial)}</strong>
+              <div style={{ color: '#4E5651', fontSize: 12, marginBottom: 16 }}>
+                Saldo inicial del rango: <strong style={{ color: '#4E5651' }}>{fmt(flSaldoInicial)}</strong>
               </div>
 
               {flData.length > 0 && (() => {
@@ -1369,9 +1369,9 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                 const ySaldo = (v: number) => padT + innerH - ((v - minSaldo) / saldoRange) * innerH
                 const linePoints = flData.map((r: any, i: number) => `${padL + step*i + step/2},${ySaldo(r.saldo)}`).join(' ')
                 return (
-                  <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '16px 8px', marginBottom: 16, overflowX: 'auto' }}>
+                  <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '16px 8px', marginBottom: 16, overflowX: 'auto' }}>
                     <svg width={W} height={H} style={{ display: 'block', minWidth: W }}>
-                      <line x1={padL} y1={padT + innerH/2} x2={padL + innerW} y2={padT + innerH/2} stroke="rgba(255,255,255,0.1)" strokeWidth={1} />
+                      <line x1={padL} y1={padT + innerH/2} x2={padL + innerW} y2={padT + innerH/2} stroke="rgba(18,23,20,0.14)" strokeWidth={1} />
                       {flData.map((r: any, i: number) => {
                         const x = padL + step*i + (step-barW)/2
                         const ingH = (r.ingresos / maxAbs) * (innerH/2)
@@ -1390,7 +1390,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                         <circle key={i} cx={padL+step*i+step/2} cy={ySaldo(r.saldo)} r={3} fill="#60a5fa" />
                       ))}
                     </svg>
-                    <div style={{ display: 'flex', gap: 16, padding: '4px 16px 0', fontSize: 11, color: '#71717a' }}>
+                    <div style={{ display: 'flex', gap: 16, padding: '4px 16px 0', fontSize: 11, color: '#4E5651' }}>
                       <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#34d399', borderRadius: 2, marginRight: 4 }} />Ingresos</span>
                       <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#f87171', borderRadius: 2, marginRight: 4 }} />Egresos</span>
                       <span><span style={{ display: 'inline-block', width: 8, height: 8, background: '#60a5fa', borderRadius: '50%', marginRight: 4 }} />Saldo acumulado</span>
@@ -1401,23 +1401,23 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
               })()}
 
               {!flData.length ? (
-                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
-                  <div style={{ color: '#52525b', fontSize: 13 }}>{flLoaded ? 'Sin datos para mostrar.' : 'Cargando…'}</div>
+                <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
+                  <div style={{ color: '#858C87', fontSize: 13 }}>{flLoaded ? 'Sin datos para mostrar.' : 'Cargando…'}</div>
                 </div>
               ) : (
-                <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, overflow: 'hidden' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr auto', gap: 8, padding: '9px 16px', background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr auto', gap: 8, padding: '9px 16px', background: 'rgba(18,23,20,0.05)', borderBottom: '1px solid rgba(18,23,20,0.10)' }}>
                     {['Mes', 'Ingresos', 'Egresos', 'Neto', 'Saldo', ''].map(h => (
-                      <span key={h} style={{ color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</span>
+                      <span key={h} style={{ color: '#858C87', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</span>
                     ))}
                   </div>
                   {flData.map((row: any, i: number) => (
-                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr auto', gap: 8, alignItems: 'center', padding: '9px 16px', borderTop: i ? '1px solid rgba(255,255,255,0.05)' : undefined }}>
-                      <span style={{ color: 'white', fontSize: 13 }}>{MONTHS[row.mes - 1]} {row.anio}</span>
+                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr 1fr auto', gap: 8, alignItems: 'center', padding: '9px 16px', borderTop: i ? '1px solid rgba(18,23,20,0.06)' : undefined }}>
+                      <span style={{ color: '#121714', fontSize: 13 }}>{MONTHS[row.mes - 1]} {row.anio}</span>
                       <span style={{ color: '#34d399', fontSize: 13 }}>{fmt(row.ingresos)}</span>
                       <span style={{ color: '#f87171', fontSize: 13 }}>{fmt(row.egresos)}</span>
                       <span style={{ color: row.neto >= 0 ? '#34d399' : '#f87171', fontSize: 13, fontWeight: 600 }}>{fmt(row.neto)}</span>
-                      <span style={{ color: row.saldo >= 0 ? '#a1a1aa' : '#f87171', fontSize: 13, fontWeight: 600 }}>{fmt(row.saldo)}</span>
+                      <span style={{ color: row.saldo >= 0 ? '#4E5651' : '#f87171', fontSize: 13, fontWeight: 600 }}>{fmt(row.saldo)}</span>
                       <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.05em', ...(row.origen === 'real' ? { background: 'rgba(96,165,250,0.1)', border: '1px solid rgba(96,165,250,0.25)', color: '#60a5fa' } : { background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.2)', color: '#facc15' }) }}>
                         {row.origen === 'real' ? 'Real' : 'Proyectado'}
                       </span>
@@ -1433,17 +1433,17 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
       {/* ══ MODAL MOVIMIENTO — pantalla completa ══ */}
       {modal && modal.type === 'mov' && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', background: '#080808' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', background: '#F3EFE5' }}>
           {/* Header del modal */}
-          <div style={{ background: '#0d0d0d', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 52, flexShrink: 0 }}>
+          <div style={{ background: '#FFFFFF', borderBottom: '1px solid rgba(18,23,20,0.12)', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 52, flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-              <span style={{ color: 'white', fontSize: 15, fontWeight: 700, marginRight: 24 }}>
+              <span style={{ color: '#121714', fontSize: 15, fontWeight: 700, marginRight: 24 }}>
                 {modal.item?.id ? 'Editar movimiento' : 'Nuevo movimiento'}
               </span>
               {!modal.item?.id && (
                 <>
-                  <button onClick={() => { setMovModalMode('manual'); setBulkResult(null) }} style={{ background: 'none', border: 'none', borderBottom: movModalMode === 'manual' ? '2px solid #31AE79' : '2px solid transparent', color: movModalMode === 'manual' ? '#31AE79' : '#71717a', fontSize: 13, fontWeight: movModalMode === 'manual' ? 600 : 400, padding: '14px 16px', cursor: 'pointer', marginBottom: -1 }}>Manual</button>
-                  <button onClick={() => { setMovModalMode('masiva'); setBulkResult(null) }} style={{ background: 'none', border: 'none', borderBottom: movModalMode === 'masiva' ? '2px solid #31AE79' : '2px solid transparent', color: movModalMode === 'masiva' ? '#31AE79' : '#71717a', fontSize: 13, fontWeight: movModalMode === 'masiva' ? 600 : 400, padding: '14px 16px', cursor: 'pointer', marginBottom: -1 }}>Carga masiva</button>
+                  <button onClick={() => { setMovModalMode('manual'); setBulkResult(null) }} style={{ background: 'none', border: 'none', borderBottom: movModalMode === 'manual' ? '2px solid #31AE79' : '2px solid transparent', color: movModalMode === 'manual' ? '#31AE79' : '#4E5651', fontSize: 13, fontWeight: movModalMode === 'manual' ? 600 : 400, padding: '14px 16px', cursor: 'pointer', marginBottom: -1 }}>Manual</button>
+                  <button onClick={() => { setMovModalMode('masiva'); setBulkResult(null) }} style={{ background: 'none', border: 'none', borderBottom: movModalMode === 'masiva' ? '2px solid #31AE79' : '2px solid transparent', color: movModalMode === 'masiva' ? '#31AE79' : '#4E5651', fontSize: 13, fontWeight: movModalMode === 'masiva' ? 600 : 400, padding: '14px 16px', cursor: 'pointer', marginBottom: -1 }}>Carga masiva</button>
                 </>
               )}
             </div>
@@ -1464,12 +1464,12 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                 </div>
 
                 {/* Grilla */}
-                <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, overflow: 'hidden', marginBottom: 16 }}>
+                <div style={{ border: '1px solid rgba(18,23,20,0.12)', borderRadius: 12, overflow: 'hidden', marginBottom: 16 }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                      <tr style={{ background: 'rgba(18,23,20,0.05)', borderBottom: '1px solid rgba(18,23,20,0.10)' }}>
                         {['#', 'Fecha', 'Importe', 'Cta. Contable', 'Fac.', 'Descripción', ''].map(h => (
-                          <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '9px 10px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
+                          <th key={h} style={{ textAlign: 'left', color: '#858C87', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '9px 10px', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -1477,10 +1477,10 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                       {gridRows.map((row, i) => {
                         const ctb = contables.find((c: any) => c.id === row.cuenta_contable_id)
                         const ingLabel = ctb ? (ctb.tipo === 'ingreso' ? 'Ing' : ctb.tipo === 'gasto' ? 'Eg' : '~') : null
-                        const ingColor = ctb ? (ctb.tipo === 'ingreso' ? '#34d399' : ctb.tipo === 'gasto' ? '#f87171' : '#71717a') : null
+                        const ingColor = ctb ? (ctb.tipo === 'ingreso' ? '#34d399' : ctb.tipo === 'gasto' ? '#f87171' : '#4E5651') : null
                         return (
-                          <tr key={i} style={{ borderTop: i ? '1px solid rgba(255,255,255,0.05)' : undefined }}>
-                            <td style={{ padding: '7px 10px', color: '#52525b', fontSize: 12, width: 28 }}>{i + 1}</td>
+                          <tr key={i} style={{ borderTop: i ? '1px solid rgba(18,23,20,0.06)' : undefined }}>
+                            <td style={{ padding: '7px 10px', color: '#858C87', fontSize: 12, width: 28 }}>{i + 1}</td>
                             <td style={{ padding: '5px 6px', width: 140 }}>
                               <input type="date" value={row.fecha} onChange={e => updateGridRow(i, 'fecha', e.target.value)}
                                 style={{ ...INP, padding: '5px 8px', fontSize: 12 }} />
@@ -1544,9 +1544,9 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
               <div style={{ maxWidth: 960, margin: '0 auto' }}>
                 <div style={{ marginBottom: 20, padding: '14px 18px', background: 'rgba(49,174,121,0.06)', border: '1px solid rgba(49,174,121,0.15)', borderRadius: 12 }}>
                   <div style={{ color: '#31AE79', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Formato esperado</div>
-                  <div style={{ color: '#71717a', fontSize: 13 }}>Copiá y pegá desde Excel o Google Sheets. Cuatro columnas separadas por tabulación:</div>
-                  <div style={{ color: '#a1a1aa', fontSize: 12, fontFamily: 'monospace', marginTop: 8, padding: '8px 12px', background: 'rgba(0,0,0,0.3)', borderRadius: 8 }}>Fecha{'\t'}Descripción{'\t'}Cuenta Contable{'\t'}Monto</div>
-                  <div style={{ color: '#52525b', fontSize: 11, marginTop: 8 }}>El signo del movimiento (débito/crédito) se determina automáticamente por el tipo de la cuenta contable.</div>
+                  <div style={{ color: '#4E5651', fontSize: 13 }}>Copiá y pegá desde Excel o Google Sheets. Cuatro columnas separadas por tabulación:</div>
+                  <div style={{ color: '#4E5651', fontSize: 12, fontFamily: 'monospace', marginTop: 8, padding: '8px 12px', background: 'rgba(0,0,0,0.3)', borderRadius: 8 }}>Fecha{'\t'}Descripción{'\t'}Cuenta Contable{'\t'}Monto</div>
+                  <div style={{ color: '#858C87', fontSize: 11, marginTop: 8 }}>El signo del movimiento (débito/crédito) se determina automáticamente por el tipo de la cuenta contable.</div>
                 </div>
 
                 <div style={{ marginBottom: 14 }}>
@@ -1567,26 +1567,26 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                 {parsedRows.length > 0 && (
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                      <span style={{ color: '#a1a1aa', fontSize: 13, fontWeight: 600 }}>Vista previa</span>
+                      <span style={{ color: '#4E5651', fontSize: 13, fontWeight: 600 }}>Vista previa</span>
                       <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 6, background: 'rgba(52,211,153,0.1)', color: '#34d399' }}>{parsedRows.filter(r => !r.error).length} válidos</span>
                       {parsedRows.filter(r => r.error).length > 0 && <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 6, background: 'rgba(239,68,68,0.1)', color: '#f87171' }}>{parsedRows.filter(r => r.error).length} con error</span>}
                     </div>
-                    <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, overflow: 'auto', marginBottom: 20, maxHeight: 380 }}>
+                    <div style={{ border: '1px solid rgba(18,23,20,0.10)', borderRadius: 12, overflow: 'auto', marginBottom: 20, maxHeight: 380 }}>
                       <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 640 }}>
                         <thead>
-                          <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
+                          <tr style={{ background: 'rgba(18,23,20,0.05)' }}>
                             {['#', 'Fecha', 'Descripción', 'Cuenta Contable', 'Monto', 'Tipo', 'Estado'].map(h => (
-                              <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '8px 12px', fontWeight: 500 }}>{h}</th>
+                              <th key={h} style={{ textAlign: 'left', color: '#858C87', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '8px 12px', fontWeight: 500 }}>{h}</th>
                             ))}
                           </tr>
                         </thead>
                         <tbody>
                           {parsedRows.map((r, i) => (
-                            <tr key={i} style={{ borderTop: '1px solid rgba(255,255,255,0.04)', background: r.error ? 'rgba(239,68,68,0.04)' : undefined }}>
-                              <td style={{ padding: '8px 12px', color: '#3f3f46', fontSize: 11 }}>{i + 1}</td>
-                              <td style={{ padding: '8px 12px', color: '#a1a1aa', fontSize: 12 }}>{r.fecha || '—'}</td>
-                              <td style={{ padding: '8px 12px', color: 'white', fontSize: 12, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.descripcion || '—'}</td>
-                              <td style={{ padding: '8px 12px', color: r.cuenta_contable_id ? '#a1a1aa' : '#f87171', fontSize: 12 }}>{r.cuentaName || '—'}</td>
+                            <tr key={i} style={{ borderTop: '1px solid rgba(18,23,20,0.04)', background: r.error ? 'rgba(239,68,68,0.04)' : undefined }}>
+                              <td style={{ padding: '8px 12px', color: '#858C87', fontSize: 11 }}>{i + 1}</td>
+                              <td style={{ padding: '8px 12px', color: '#4E5651', fontSize: 12 }}>{r.fecha || '—'}</td>
+                              <td style={{ padding: '8px 12px', color: '#121714', fontSize: 12, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.descripcion || '—'}</td>
+                              <td style={{ padding: '8px 12px', color: r.cuenta_contable_id ? '#4E5651' : '#f87171', fontSize: 12 }}>{r.cuentaName || '—'}</td>
                               <td style={{ padding: '8px 12px', fontSize: 12, fontWeight: 600, color: r.credito > 0 ? '#34d399' : '#f87171' }}>{r.credito > 0 ? `+${fmt(r.credito)}` : r.debito > 0 ? `-${fmt(r.debito)}` : fmt(r.monto)}</td>
                               <td style={{ padding: '8px 12px' }}>
                                 <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 5, background: r.tipo_movimiento === 'ingreso' ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)', color: r.tipo_movimiento === 'ingreso' ? '#34d399' : '#f87171' }}>{r.tipo_movimiento}</span>
@@ -1601,7 +1601,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                     </div>
 
                     {bulkResult && (
-                      <div style={{ padding: '10px 16px', borderRadius: 10, background: bulkResult.errors > 0 ? 'rgba(239,68,68,0.08)' : 'rgba(52,211,153,0.08)', border: `1px solid ${bulkResult.errors > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(52,211,153,0.2)'}`, marginBottom: 16, fontSize: 13, color: 'white' }}>
+                      <div style={{ padding: '10px 16px', borderRadius: 10, background: bulkResult.errors > 0 ? 'rgba(239,68,68,0.08)' : 'rgba(52,211,153,0.08)', border: `1px solid ${bulkResult.errors > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(52,211,153,0.2)'}`, marginBottom: 16, fontSize: 13, color: '#121714' }}>
                         ✓ {bulkResult.saved} guardados{bulkResult.errors > 0 ? `, ${bulkResult.errors} con error` : ' correctamente'}
                       </div>
                     )}
@@ -1622,18 +1622,18 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
       {/* ══ MODAL BANCO — carga masiva / importación CSV ══ */}
       {bBulkModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', background: '#080808' }}>
-          <div style={{ background: '#0d0d0d', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 52, flexShrink: 0 }}>
-            <span style={{ color: 'white', fontSize: 15, fontWeight: 700 }}>🏦 Carga masiva bancaria — {bCuentaObj?.nombre}</span>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', background: '#F3EFE5' }}>
+          <div style={{ background: '#FFFFFF', borderBottom: '1px solid rgba(18,23,20,0.12)', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 52, flexShrink: 0 }}>
+            <span style={{ color: '#121714', fontSize: 15, fontWeight: 700 }}>🏦 Carga masiva bancaria — {bCuentaObj?.nombre}</span>
             <button onClick={() => setBBulkModal(false)} style={{ ...BTN_S, fontSize: 13 }}>✕ Cerrar</button>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '32px 24px' }}>
             <div style={{ maxWidth: 960, margin: '0 auto' }}>
               <div style={{ marginBottom: 20, padding: '14px 18px', background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.15)', borderRadius: 12 }}>
                 <div style={{ color: '#60a5fa', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Formato de importación</div>
-                <div style={{ color: '#71717a', fontSize: 13 }}>Pegá desde tu extracto bancario (Excel/Sheets) o importá un archivo CSV. Formatos aceptados:</div>
-                <div style={{ color: '#a1a1aa', fontSize: 12, fontFamily: 'monospace', marginTop: 8, padding: '6px 12px', background: 'rgba(0,0,0,0.3)', borderRadius: 8 }}>Fecha{'\t'}Descripción{'\t'}Débito{'\t'}Crédito</div>
-                <div style={{ color: '#a1a1aa', fontSize: 12, fontFamily: 'monospace', marginTop: 4, padding: '6px 12px', background: 'rgba(0,0,0,0.3)', borderRadius: 8 }}>Fecha{'\t'}Descripción{'\t'}Monto {'(positivo = crédito, negativo = débito)'}</div>
+                <div style={{ color: '#4E5651', fontSize: 13 }}>Pegá desde tu extracto bancario (Excel/Sheets) o importá un archivo CSV. Formatos aceptados:</div>
+                <div style={{ color: '#4E5651', fontSize: 12, fontFamily: 'monospace', marginTop: 8, padding: '6px 12px', background: 'rgba(0,0,0,0.3)', borderRadius: 8 }}>Fecha{'\t'}Descripción{'\t'}Débito{'\t'}Crédito</div>
+                <div style={{ color: '#4E5651', fontSize: 12, fontFamily: 'monospace', marginTop: 4, padding: '6px 12px', background: 'rgba(0,0,0,0.3)', borderRadius: 8 }}>Fecha{'\t'}Descripción{'\t'}Monto {'(positivo = crédito, negativo = débito)'}</div>
               </div>
 
               <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
@@ -1650,30 +1650,30 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
               {bParsedRows.length > 0 && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-                    <span style={{ color: '#a1a1aa', fontSize: 13, fontWeight: 600 }}>Vista previa</span>
+                    <span style={{ color: '#4E5651', fontSize: 13, fontWeight: 600 }}>Vista previa</span>
                     <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 6, background: 'rgba(52,211,153,0.1)', color: '#34d399' }}>{bParsedRows.filter(r => !r.error).length} válidos</span>
                     {bParsedRows.filter(r => r.autoClassified).length > 0 && <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 6, background: 'rgba(96,165,250,0.1)', color: '#60a5fa' }}>✓ {bParsedRows.filter(r => r.autoClassified).length} clasificados automáticamente</span>}
                     {bParsedRows.filter(r => r.error).length > 0 && <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 6, background: 'rgba(239,68,68,0.1)', color: '#f87171' }}>{bParsedRows.filter(r => r.error).length} con error</span>}
                   </div>
-                  <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, overflow: 'auto', marginBottom: 20, maxHeight: 380 }}>
+                  <div style={{ border: '1px solid rgba(18,23,20,0.10)', borderRadius: 12, overflow: 'auto', marginBottom: 20, maxHeight: 380 }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
                       <thead>
-                        <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
+                        <tr style={{ background: 'rgba(18,23,20,0.05)' }}>
                           {['#', 'Fecha', 'Descripción', 'Débito', 'Crédito', 'C.Contable', 'Estado'].map(h => (
-                            <th key={h} style={{ textAlign: 'left', color: '#52525b', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '8px 12px', fontWeight: 500 }}>{h}</th>
+                            <th key={h} style={{ textAlign: 'left', color: '#858C87', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '8px 12px', fontWeight: 500 }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
                         {bParsedRows.map((r, i) => (
-                          <tr key={i} style={{ borderTop: '1px solid rgba(255,255,255,0.04)', background: r.error ? 'rgba(239,68,68,0.04)' : undefined }}>
-                            <td style={{ padding: '8px 12px', color: '#3f3f46', fontSize: 11 }}>{i + 1}</td>
-                            <td style={{ padding: '8px 12px', color: '#a1a1aa', fontSize: 12, whiteSpace: 'nowrap' }}>{r.fecha || '—'}</td>
-                            <td style={{ padding: '8px 12px', color: 'white', fontSize: 12, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.descripcion || '—'}</td>
+                          <tr key={i} style={{ borderTop: '1px solid rgba(18,23,20,0.04)', background: r.error ? 'rgba(239,68,68,0.04)' : undefined }}>
+                            <td style={{ padding: '8px 12px', color: '#858C87', fontSize: 11 }}>{i + 1}</td>
+                            <td style={{ padding: '8px 12px', color: '#4E5651', fontSize: 12, whiteSpace: 'nowrap' }}>{r.fecha || '—'}</td>
+                            <td style={{ padding: '8px 12px', color: '#121714', fontSize: 12, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.descripcion || '—'}</td>
                             <td style={{ padding: '8px 12px', color: '#f87171', fontSize: 12, whiteSpace: 'nowrap' }}>{r.debito > 0 ? fmt(r.debito) : '—'}</td>
                             <td style={{ padding: '8px 12px', color: '#34d399', fontSize: 12, whiteSpace: 'nowrap' }}>{r.credito > 0 ? fmt(r.credito) : '—'}</td>
                             <td style={{ padding: '8px 12px', fontSize: 11 }}>
-                              {r.autoClassified ? <span style={{ color: '#60a5fa' }}>✓ {r.cuenta_contable_nombre}</span> : <span style={{ color: '#3f3f46' }}>—</span>}
+                              {r.autoClassified ? <span style={{ color: '#60a5fa' }}>✓ {r.cuenta_contable_nombre}</span> : <span style={{ color: '#858C87' }}>—</span>}
                             </td>
                             <td style={{ padding: '8px 12px', fontSize: 11 }}>
                               {r.error ? <span style={{ color: '#f87171' }}>⚠ {r.error}</span> : r.autoClassified ? <span style={{ color: '#34d399' }}>Conciliado</span> : <span style={{ color: '#facc15' }}>Pendiente</span>}
@@ -1685,7 +1685,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                   </div>
 
                   {bBulkResult && (
-                    <div style={{ padding: '10px 16px', borderRadius: 10, background: bBulkResult.errors > 0 ? 'rgba(239,68,68,0.08)' : 'rgba(52,211,153,0.08)', border: `1px solid ${bBulkResult.errors > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(52,211,153,0.2)'}`, marginBottom: 16, fontSize: 13, color: 'white' }}>
+                    <div style={{ padding: '10px 16px', borderRadius: 10, background: bBulkResult.errors > 0 ? 'rgba(239,68,68,0.08)' : 'rgba(52,211,153,0.08)', border: `1px solid ${bBulkResult.errors > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(52,211,153,0.2)'}`, marginBottom: 16, fontSize: 13, color: '#121714' }}>
                       ✓ {bBulkResult.saved} importados{bBulkResult.errors > 0 ? `, ${bBulkResult.errors} con error` : ' correctamente'}
                     </div>
                   )}
@@ -1706,12 +1706,12 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
       {/* ══ MODALES PEQUEÑOS: clasificar, cuenta, rubro, contable ══ */}
       {modal && modal.type !== 'mov' && (
         <div onClick={closeModal} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 18, padding: '24px', width: '100%', maxWidth: 500, maxHeight: '90vh', overflowY: 'auto' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: '#FFFFFF', border: '1px solid rgba(18,23,20,0.14)', borderRadius: 18, padding: '24px', width: '100%', maxWidth: 500, maxHeight: '90vh', overflowY: 'auto' }}>
 
             {modal.type === 'clasificar' && (
               <>
-                <div style={{ color: 'white', fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Clasificar movimiento</div>
-                <div style={{ color: '#71717a', fontSize: 13, marginBottom: 20 }}>{modal.item?.descripcion}</div>
+                <div style={{ color: '#121714', fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Clasificar movimiento</div>
+                <div style={{ color: '#4E5651', fontSize: 13, marginBottom: 20 }}>{modal.item?.descripcion}</div>
                 <div style={{ display: 'grid', gap: 14 }}>
                   <div><label style={LBL}>Cuenta Contable</label>
                     <select value={clasificarForm.cuenta_contable_id} onChange={e => setClasificarForm(f => ({ ...f, cuenta_contable_id: e.target.value }))} style={SEL}>
@@ -1739,7 +1739,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
             {modal.type === 'cuenta' && (
               <>
-                <div style={{ color: 'white', fontSize: 16, fontWeight: 700, marginBottom: 20 }}>{modal.item?.id ? 'Editar cuenta' : 'Nueva cuenta bancaria'}</div>
+                <div style={{ color: '#121714', fontSize: 16, fontWeight: 700, marginBottom: 20 }}>{modal.item?.id ? 'Editar cuenta' : 'Nueva cuenta bancaria'}</div>
                 <div style={{ display: 'grid', gap: 14 }}>
                   <div><label style={LBL}>Nombre *</label><input value={cuentaForm.nombre} onChange={e => setCuentaForm(f => ({ ...f, nombre: e.target.value }))} style={INP} placeholder="Ej: Cuenta corriente BNA" /></div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -1765,7 +1765,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
             {modal.type === 'rubro' && (
               <>
-                <div style={{ color: 'white', fontSize: 16, fontWeight: 700, marginBottom: 20 }}>{modal.item?.id ? 'Editar rubro' : 'Nuevo rubro'}</div>
+                <div style={{ color: '#121714', fontSize: 16, fontWeight: 700, marginBottom: 20 }}>{modal.item?.id ? 'Editar rubro' : 'Nuevo rubro'}</div>
                 <div style={{ display: 'grid', gap: 14 }}>
                   <div><label style={LBL}>Nombre *</label><input value={rubroForm.nombre} onChange={e => setRubroForm(f => ({ ...f, nombre: e.target.value }))} style={INP} placeholder="Ej: Servicios, Sueldos, Alquileres..." /></div>
                 </div>
@@ -1774,7 +1774,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
             {modal.type === 'contable' && (
               <>
-                <div style={{ color: 'white', fontSize: 16, fontWeight: 700, marginBottom: 20 }}>{modal.item?.id ? 'Editar cuenta contable' : 'Nueva cuenta contable'}</div>
+                <div style={{ color: '#121714', fontSize: 16, fontWeight: 700, marginBottom: 20 }}>{modal.item?.id ? 'Editar cuenta contable' : 'Nueva cuenta contable'}</div>
                 <div style={{ display: 'grid', gap: 14 }}>
                   <div><label style={LBL}>Nombre *</label><input value={contForm.nombre} onChange={e => setContForm(f => ({ ...f, nombre: e.target.value }))} style={INP} placeholder="Ej: Honorarios, Alquileres..." /></div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -1795,7 +1795,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                   <div>
                     <label style={LBL}>Keywords (separadas por coma)</label>
                     <input value={contForm.keywords} onChange={e => setContForm(f => ({ ...f, keywords: e.target.value }))} style={INP} placeholder="pago, honorario, factura..." />
-                    <div style={{ color: '#52525b', fontSize: 11, marginTop: 4 }}>Se usan para auto-clasificar movimientos</div>
+                    <div style={{ color: '#858C87', fontSize: 11, marginTop: 4 }}>Se usan para auto-clasificar movimientos</div>
                   </div>
                 </div>
               </>

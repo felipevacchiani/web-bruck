@@ -68,11 +68,11 @@ function ChartRender({ data, labelIdx, valueIdx, type }: { data: { headers: stri
     return (
       <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
         <svg viewBox={`0 0 ${W} ${H}`} style={{ display:'block', width:'100%', flex:1, minHeight:0 }}>
-          {slices.map((s,i) => <path key={i} d={s.path} fill={s.color} stroke="#0d0d0d" strokeWidth={2} />)}
+          {slices.map((s,i) => <path key={i} d={s.path} fill={s.color} stroke="#FFFFFF" strokeWidth={2} />)}
         </svg>
         <div style={{ display:'flex', flexWrap:'wrap', gap:12, justifyContent:'center', marginTop:8 }}>
           {labels.map((l,i) => (
-            <div key={i} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color:'#a1a1aa' }}>
+            <div key={i} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color:'#4E5651' }}>
               <span style={{ width:10, height:10, borderRadius:3, background:CHART_COLORS[i%CHART_COLORS.length], display:'inline-block' }} />
               {l} ({slices[i].pct}%)
             </div>
@@ -96,7 +96,7 @@ function ChartRender({ data, labelIdx, valueIdx, type }: { data: { headers: stri
     return (
       <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display:'block', width:'100%', flex:1, minHeight:0 }}>
-          <line x1={padL} y1={H-padB} x2={W-padR} y2={H-padB} stroke="rgba(255,255,255,0.1)" />
+          <line x1={padL} y1={H-padB} x2={W-padR} y2={H-padB} stroke="rgba(18,23,20,0.14)" />
           <path d={path} fill="none" stroke="#31AE79" strokeWidth={3} />
           {points.map((p,i) => (
             <g key={i}>
@@ -106,7 +106,7 @@ function ChartRender({ data, labelIdx, valueIdx, type }: { data: { headers: stri
             </g>
           ))}
         </svg>
-        <div style={{ color:'#52525b', fontSize:11, marginTop:8 }}>{data.headers[labelIdx]} vs. {data.headers[valueIdx]}</div>
+        <div style={{ color:'#858C87', fontSize:11, marginTop:8 }}>{data.headers[labelIdx]} vs. {data.headers[valueIdx]}</div>
       </div>
     )
   }
@@ -116,7 +116,7 @@ function ChartRender({ data, labelIdx, valueIdx, type }: { data: { headers: stri
   return (
     <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display:'block', width:'100%', flex:1, minHeight:0 }}>
-        <line x1={padL} y1={H-padB} x2={W-padR} y2={H-padB} stroke="rgba(255,255,255,0.1)" />
+        <line x1={padL} y1={H-padB} x2={W-padR} y2={H-padB} stroke="rgba(18,23,20,0.14)" />
         {values.map((v, i) => {
           const h = (Math.abs(v) / maxV) * (H - padB - padT)
           const x = padL + i * (barW + barGap)
@@ -129,7 +129,7 @@ function ChartRender({ data, labelIdx, valueIdx, type }: { data: { headers: stri
           )
         })}
       </svg>
-      <div style={{ color:'#52525b', fontSize:11, marginTop:8 }}>{data.headers[labelIdx]} vs. {data.headers[valueIdx]}</div>
+      <div style={{ color:'#858C87', fontSize:11, marginTop:8 }}>{data.headers[labelIdx]} vs. {data.headers[valueIdx]}</div>
     </div>
   )
 }
@@ -154,7 +154,7 @@ const DueBadge = ({ due }: { due: string | null }) => {
   if (days < 0)  return <span style={{ fontSize:11, padding:'2px 8px', borderRadius:6, background:'rgba(239,68,68,0.12)', border:'1px solid rgba(239,68,68,0.25)', color:'#f87171', fontWeight:600 }}>Vencido</span>
   if (days === 0) return <span style={{ fontSize:11, padding:'2px 8px', borderRadius:6, background:'rgba(239,68,68,0.12)', border:'1px solid rgba(239,68,68,0.25)', color:'#f87171', fontWeight:600 }}>Vence hoy</span>
   if (days <= 5)  return <span style={{ fontSize:11, padding:'2px 8px', borderRadius:6, background:'rgba(250,204,21,0.1)', border:'1px solid rgba(250,204,21,0.25)', color:'#facc15', fontWeight:600 }}>Vence en {days}d</span>
-  return <span style={{ fontSize:11, padding:'2px 8px', borderRadius:6, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', color:'#71717a' }}>{new Date(due!).toLocaleDateString('es-AR',{day:'2-digit',month:'short'})}</span>
+  return <span style={{ fontSize:11, padding:'2px 8px', borderRadius:6, background:'rgba(18,23,20,0.04)', border:'1px solid rgba(18,23,20,0.12)', color:'#4E5651' }}>{new Date(due!).toLocaleDateString('es-AR',{day:'2-digit',month:'short'})}</span>
 }
 
 const StatusBadge = ({ status, onClick }: { status: DocStatus; onClick?: () => void }) => {
@@ -169,9 +169,9 @@ const StatusBadge = ({ status, onClick }: { status: DocStatus; onClick?: () => v
   )
 }
 
-const INP: React.CSSProperties = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', outline:'none', width:'100%', color:'white', fontSize:13, borderRadius:9, padding:'9px 12px', boxSizing:'border-box', transition:'border-color 0.15s' }
-const LBL: React.CSSProperties = { color:'#a1a1aa', fontSize:11, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', display:'block', marginBottom:6 }
-const SEL: React.CSSProperties = { ...{} as any, background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', outline:'none', width:'100%', color:'white', fontSize:13, borderRadius:9, padding:'9px 12px', boxSizing:'border-box' as any }
+const INP: React.CSSProperties = { background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.14)', outline:'none', width:'100%', color:'#121714', fontSize:13, borderRadius:9, padding:'9px 12px', boxSizing:'border-box', transition:'border-color 0.15s' }
+const LBL: React.CSSProperties = { color:'#4E5651', fontSize:11, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', display:'block', marginBottom:6 }
+const SEL: React.CSSProperties = { ...{} as any, background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.14)', outline:'none', width:'100%', color:'#121714', fontSize:13, borderRadius:9, padding:'9px 12px', boxSizing:'border-box' as any }
 
 interface DocEntry { label: string; file: File|null }
 interface UF {
@@ -532,7 +532,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const urgentCount = files.filter(f => { const d = daysUntilDue(f.due_date); return d !== null && d <= 5 }).length
 
   return (
-    <div style={{ minHeight:'100vh', background:'#080808' }}>
+    <div style={{ minHeight:'100vh', background:'#F3EFE5' }}>
       <style>{`
         .cd-hpad { padding: 0 24px; }
         .cd-pad { padding: 28px 24px; }
@@ -568,16 +568,16 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
         select option { background: #1a1a1a; color: white; }
       `}</style>
 
-      <header style={{ position:'sticky', top:0, zIndex:10, borderBottom:'1px solid rgba(255,255,255,0.06)', background:'rgba(10,10,10,0.97)', backdropFilter:'blur(12px)' }}>
+      <header style={{ position:'sticky', top:0, zIndex:10, borderBottom:'1px solid rgba(18,23,20,0.08)', background:'rgba(243,239,229,0.92)', backdropFilter:'blur(12px)' }}>
         <div style={{ maxWidth:1000, margin:'0 auto' }}>
           <div className="cd-hpad" style={{ height:52, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-              <Link href="/admin" style={{ color:'#52525b', fontSize:13, textDecoration:'none', display:'flex', alignItems:'center', gap:5 }}>
+              <Link href="/admin" style={{ color:'#858C87', fontSize:13, textDecoration:'none', display:'flex', alignItems:'center', gap:5 }}>
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 2.5L4 6.5L8 10.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 Clientes
               </Link>
-              <span style={{ color:'#3f3f46' }}>/</span>
-              <span style={{ color:'#a1a1aa', fontSize:13, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:180 }}>{client.full_name||client.email}</span>
+              <span style={{ color:'#858C87' }}>/</span>
+              <span style={{ color:'#4E5651', fontSize:13, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:180 }}>{client.full_name||client.email}</span>
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:10 }}>
               {urgentCount > 0 && (
@@ -585,7 +585,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                   ⚠️ {urgentCount} venc.
                 </span>
               )}
-              <span style={{ color:'white', fontWeight:900, letterSpacing:'0.2em', fontSize:12 }}>BRUCK</span>
+              <span style={{ color:'#121714', fontWeight:900, letterSpacing:'0.2em', fontSize:12 }}>BRUCK</span>
             </div>
           </div>
         </div>
@@ -594,7 +594,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
       <main style={{ maxWidth:1000, margin:'0 auto' }}>
         <div className="cd-pad">
 
-          <div style={{ background:'rgba(14,14,14,0.8)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, overflow:'hidden', marginBottom:24 }}>
+          <div style={{ background:'rgba(18,23,20,0.5)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:18, overflow:'hidden', marginBottom:24 }}>
             <div style={{ padding:'20px 20px' }}>
               <div className="cd-client-top">
                 <div style={{ display:'flex', alignItems:'center', gap:14, minWidth:0 }}>
@@ -603,21 +603,21 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                   </div>
                   <div style={{ minWidth:0 }}>
                     <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-                      <span style={{ color:'white', fontSize:15, fontWeight:600 }}>{client.full_name||client.email}</span>
-                      <span style={{ fontSize:11, fontWeight:500, padding:'2px 9px', borderRadius:20, background:client.active?'rgba(52,211,153,0.08)':'rgba(255,255,255,0.04)', border:client.active?'1px solid rgba(52,211,153,0.2)':'1px solid rgba(255,255,255,0.08)', color:client.active?'#34d399':'#71717a', whiteSpace:'nowrap' }}>
+                      <span style={{ color:'#121714', fontSize:15, fontWeight:600 }}>{client.full_name||client.email}</span>
+                      <span style={{ fontSize:11, fontWeight:500, padding:'2px 9px', borderRadius:20, background:client.active?'rgba(52,211,153,0.08)':'rgba(18,23,20,0.04)', border:client.active?'1px solid rgba(52,211,153,0.2)':'1px solid rgba(18,23,20,0.12)', color:client.active?'#34d399':'#4E5651', whiteSpace:'nowrap' }}>
                         {client.active?'Activo':'Inactivo'}
                       </span>
                     </div>
-                    {client.company && <div style={{ color:'#71717a', fontSize:13, marginTop:2 }}>{client.company}</div>}
-                    <div style={{ color:'#52525b', fontSize:12, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{client.email}</div>
+                    {client.company && <div style={{ color:'#4E5651', fontSize:13, marginTop:2 }}>{client.company}</div>}
+                    <div style={{ color:'#858C87', fontSize:12, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{client.email}</div>
                     {permTemplates.length > 0 && (
                       <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:8 }}>
-                        <span style={{ color:'#52525b', fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em' }}>Permisos</span>
+                        <span style={{ color:'#858C87', fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em' }}>Permisos</span>
                         <select
                           value={currentTemplateId ?? ''}
                           disabled={savingPerm}
                           onChange={e => changeTemplate(e.target.value)}
-                          style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', outline:'none', color:'white', fontSize:12, borderRadius:7, padding:'4px 8px' }}
+                          style={{ background:'rgba(18,23,20,0.04)', border:'1px solid rgba(18,23,20,0.14)', outline:'none', color:'#121714', fontSize:12, borderRadius:7, padding:'4px 8px' }}
                           title={permTemplates.find(t => t.id === currentTemplateId)?.description ?? ''}
                         >
                           {permTemplates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -630,51 +630,51 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                   <Link href={`/admin/clients/${client.id}/contabilidad`} style={{ background:'linear-gradient(135deg,rgba(49,174,121,0.15),rgba(49,174,121,0.06))', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'7px 14px', borderRadius:8, cursor:'pointer', textDecoration:'none', display:'flex', alignItems:'center', gap:5, whiteSpace:'nowrap' }}>
                     📊 Contabilidad
                   </Link>
-                  <button onClick={()=>setEditing(!editing)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:12, padding:'7px 14px', borderRadius:8, cursor:'pointer' }}>Editar</button>
+                  <button onClick={()=>setEditing(!editing)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:12, padding:'7px 14px', borderRadius:8, cursor:'pointer' }}>Editar</button>
                   <button onClick={deleteClient} style={{ background:'none', border:'1px solid rgba(239,68,68,0.2)', color:'#f87171', fontSize:12, padding:'7px 14px', borderRadius:8, cursor:'pointer' }}>Eliminar</button>
                 </div>
               </div>
 
               {editing && (
-                <form onSubmit={updateClient} style={{ borderTop:'1px solid rgba(255,255,255,0.06)', paddingTop:20, marginTop:20 }}>
+                <form onSubmit={updateClient} style={{ borderTop:'1px solid rgba(18,23,20,0.08)', paddingTop:20, marginTop:20 }}>
                   <div className="cd-edit-grid">
                     <div>
                       <label style={LBL}>Nombre</label>
-                      <input value={clientForm.full_name} onChange={e=>setClientForm(f=>({...f,full_name:e.target.value}))} style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
+                      <input value={clientForm.full_name} onChange={e=>setClientForm(f=>({...f,full_name:e.target.value}))} style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(18,23,20,0.14)'} />
                     </div>
                     <div>
                       <label style={LBL}>Empresa</label>
-                      <input value={clientForm.company} onChange={e=>setClientForm(f=>({...f,company:e.target.value}))} style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
+                      <input value={clientForm.company} onChange={e=>setClientForm(f=>({...f,company:e.target.value}))} style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(18,23,20,0.14)'} />
                     </div>
                   </div>
                   <label style={{ display:'flex', alignItems:'center', gap:8, cursor:'pointer', marginBottom:16, width:'fit-content' }}>
                     <input type="checkbox" checked={clientForm.active} onChange={e=>setClientForm(f=>({...f,active:e.target.checked}))} style={{ accentColor:'#31AE79' }} />
-                    <span style={{ color:'#a1a1aa', fontSize:13 }}>Cuenta activa</span>
+                    <span style={{ color:'#4E5651', fontSize:13 }}>Cuenta activa</span>
                   </label>
                   <div style={{ display:'flex', gap:8 }}>
-                    <button type="submit" style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 20px', borderRadius:8, border:'none', cursor:'pointer' }}>Guardar</button>
-                    <button type="button" onClick={()=>setEditing(false)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 18px', borderRadius:8, cursor:'pointer' }}>Cancelar</button>
+                    <button type="submit" style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:13, padding:'9px 20px', borderRadius:8, border:'none', cursor:'pointer' }}>Guardar</button>
+                    <button type="button" onClick={()=>setEditing(false)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:13, padding:'9px 18px', borderRadius:8, cursor:'pointer' }}>Cancelar</button>
                   </div>
                 </form>
               )}
             </div>
 
-            <div className="stat-bar" style={{ borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(255,255,255,0.015)', padding:'10px 20px', display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
-              <span style={{ color:'#52525b', fontSize:12 }}>Total: <span style={{ color:'#a1a1aa', fontWeight:600 }}>{files.length}</span></span>
+            <div className="stat-bar" style={{ borderTop:'1px solid rgba(18,23,20,0.10)', background:'rgba(18,23,20,0.05)', padding:'10px 20px', display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
+              <span style={{ color:'#858C87', fontSize:12 }}>Total: <span style={{ color:'#4E5651', fontWeight:600 }}>{files.length}</span></span>
               {FILE_CATEGORIES.map(cat=>countBy(cat.value)>0&&(
-                <span key={cat.value} style={{ color:'#52525b', fontSize:12, display:'flex', alignItems:'center', gap:4 }}>
-                  <span>{cat.icon}</span><span style={{ color:'#71717a' }}>{cat.label}</span>
-                  <span style={{ color:'#a1a1aa', fontWeight:600 }}>({countBy(cat.value)})</span>
+                <span key={cat.value} style={{ color:'#858C87', fontSize:12, display:'flex', alignItems:'center', gap:4 }}>
+                  <span>{cat.icon}</span><span style={{ color:'#4E5651' }}>{cat.label}</span>
+                  <span style={{ color:'#4E5651', fontWeight:600 }}>({countBy(cat.value)})</span>
                 </span>
               ))}
             </div>
           </div>
 
           {companyProfile && (
-            <div style={{ background:'rgba(14,14,14,0.8)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+            <div style={{ background:'rgba(18,23,20,0.5)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: showCompanyProfile ? 16 : 0 }}>
-                <span style={{ color:'white', fontSize:13, fontWeight:600 }}>Perfil de la empresa</span>
-                <button onClick={()=>setShowCompanyProfile(s=>!s)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>
+                <span style={{ color:'#121714', fontSize:13, fontWeight:600 }}>Perfil de la empresa</span>
+                <button onClick={()=>setShowCompanyProfile(s=>!s)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>
                   {showCompanyProfile ? 'Ocultar' : 'Editar'}
                 </button>
               </div>
@@ -712,7 +712,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     <label style={LBL}>Información societaria</label>
                     <input value={companyForm.info_societaria||''} onChange={e=>setCompanyForm((f:any)=>({...f,info_societaria:e.target.value}))} placeholder="Ej: S.A., inscripta en..." style={INP} />
                   </div>
-                  <button type="submit" disabled={savingCompany} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingCompany?0.6:1 }}>
+                  <button type="submit" disabled={savingCompany} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingCompany?0.6:1 }}>
                     {savingCompany?'Guardando…':'Guardar'}
                   </button>
                 </form>
@@ -720,9 +720,9 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
             </div>
           )}
 
-          <div style={{ background:'rgba(14,14,14,0.8)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+          <div style={{ background:'rgba(18,23,20,0.5)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: companyUsers.length ? 12 : 0 }}>
-              <span style={{ color:'white', fontSize:13, fontWeight:600 }}>Usuarios de esta empresa</span>
+              <span style={{ color:'#121714', fontSize:13, fontWeight:600 }}>Usuarios de esta empresa</span>
               <button onClick={()=>setShowInvite(true)} style={{ background:'none', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>+ Invitar usuario</button>
             </div>
             {companyUsers.length > 0 && (
@@ -730,12 +730,12 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                 {companyUsers.map(u => (
                   <div key={u.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 0' }}>
                     <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                      <span style={{ color:'#d4d4d8', fontSize:13 }}>{u.full_name || u.email}</span>
-                      <span style={{ color:'#52525b', fontSize:12 }}>{u.email}</span>
+                      <span style={{ color:'#121714', fontSize:13 }}>{u.full_name || u.email}</span>
+                      <span style={{ color:'#858C87', fontSize:12 }}>{u.email}</span>
                       {!u.active && <span style={{ fontSize:10, color:'#f87171' }}>Inactivo</span>}
                     </div>
                     {u.permission_template_name && (
-                      <span style={{ fontSize:11, color:'#71717a', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', padding:'2px 9px', borderRadius:6 }}>{u.permission_template_name}</span>
+                      <span style={{ fontSize:11, color:'#4E5651', background:'rgba(18,23,20,0.04)', border:'1px solid rgba(18,23,20,0.12)', padding:'2px 9px', borderRadius:6 }}>{u.permission_template_name}</span>
                     )}
                   </div>
                 ))}
@@ -745,8 +745,8 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
 
           {showInvite && (
             <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
-              <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, maxWidth:420, width:'100%' }}>
-                <div style={{ color:'white', fontSize:16, fontWeight:700, marginBottom:18 }}>Invitar usuario a esta empresa</div>
+              <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.14)', borderRadius:16, padding:24, maxWidth:420, width:'100%' }}>
+                <div style={{ color:'#121714', fontSize:16, fontWeight:700, marginBottom:18 }}>Invitar usuario a esta empresa</div>
                 {inviteError && <div style={{ background:'rgba(239,68,68,0.09)', border:'1px solid rgba(239,68,68,0.22)', borderRadius:10, padding:'9px 12px', marginBottom:14, color:'#f87171', fontSize:13 }}>{inviteError}</div>}
                 <form onSubmit={submitInvite}>
                   <div style={{ marginBottom:14 }}>
@@ -769,8 +769,8 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     </select>
                   </div>
                   <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-                    <button type="button" onClick={()=>{setShowInvite(false);setInviteError('')}} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
-                    <button type="submit" disabled={invitingUser} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:invitingUser?0.6:1 }}>
+                    <button type="button" onClick={()=>{setShowInvite(false);setInviteError('')}} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
+                    <button type="submit" disabled={invitingUser} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:invitingUser?0.6:1 }}>
                       {invitingUser?'Invitando…':'Invitar'}
                     </button>
                   </div>
@@ -779,9 +779,9 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
             </div>
           )}
 
-          <div style={{ background:'rgba(14,14,14,0.8)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+          <div style={{ background:'rgba(18,23,20,0.5)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: requests.length ? 12 : 0 }}>
-              <span style={{ color:'white', fontSize:13, fontWeight:600 }}>Solicitudes</span>
+              <span style={{ color:'#121714', fontSize:13, fontWeight:600 }}>Solicitudes</span>
               <button onClick={()=>setShowNewRequest(true)} style={{ background:'none', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>+ Nueva solicitud</button>
             </div>
             {requests.length > 0 && (
@@ -789,8 +789,8 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                 {requests.map(r => (
                   <div key={r.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 0' }}>
                     <div>
-                      <span style={{ color:'#d4d4d8', fontSize:13 }}>{r.title}</span>
-                      {r.due_date && <span style={{ color:'#52525b', fontSize:11, marginLeft:8 }}>vence {new Date(r.due_date+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short'})}</span>}
+                      <span style={{ color:'#121714', fontSize:13 }}>{r.title}</span>
+                      {r.due_date && <span style={{ color:'#858C87', fontSize:11, marginLeft:8 }}>vence {new Date(r.due_date+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short'})}</span>}
                     </div>
                     <span style={{ fontSize:11, fontWeight:500, padding:'2px 9px', borderRadius:20, background:r.status==='completada'?'rgba(52,211,153,0.08)':'rgba(250,204,21,0.08)', border:r.status==='completada'?'1px solid rgba(52,211,153,0.2)':'1px solid rgba(250,204,21,0.2)', color:r.status==='completada'?'#34d399':'#facc15' }}>
                       {r.status==='completada'?'Completada':'Pendiente'}
@@ -803,8 +803,8 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
 
           {showNewRequest && (
             <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
-              <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, maxWidth:440, width:'100%' }}>
-                <div style={{ color:'white', fontSize:16, fontWeight:700, marginBottom:18 }}>Nueva solicitud</div>
+              <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.14)', borderRadius:16, padding:24, maxWidth:440, width:'100%' }}>
+                <div style={{ color:'#121714', fontSize:16, fontWeight:700, marginBottom:18 }}>Nueva solicitud</div>
                 {requestError && <div style={{ background:'rgba(239,68,68,0.09)', border:'1px solid rgba(239,68,68,0.22)', borderRadius:10, padding:'9px 12px', marginBottom:14, color:'#f87171', fontSize:13 }}>{requestError}</div>}
                 <form onSubmit={submitRequest}>
                   <div style={{ marginBottom:14 }}>
@@ -840,8 +840,8 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     <input type="date" value={requestForm.dueDate} onChange={e=>setRequestForm(f=>({...f,dueDate:e.target.value}))} style={INP} />
                   </div>
                   <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-                    <button type="button" onClick={()=>{setShowNewRequest(false);setRequestError('')}} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
-                    <button type="submit" disabled={savingRequest} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingRequest?0.6:1 }}>
+                    <button type="button" onClick={()=>{setShowNewRequest(false);setRequestError('')}} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
+                    <button type="submit" disabled={savingRequest} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingRequest?0.6:1 }}>
                       {savingRequest?'Creando…':'Crear solicitud'}
                     </button>
                   </div>
@@ -850,9 +850,9 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
             </div>
           )}
 
-          <div style={{ background:'rgba(14,14,14,0.8)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+          <div style={{ background:'rgba(18,23,20,0.5)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: tasks.length ? 12 : 0 }}>
-              <span style={{ color:'white', fontSize:13, fontWeight:600 }}>Tareas</span>
+              <span style={{ color:'#121714', fontSize:13, fontWeight:600 }}>Tareas</span>
               <button onClick={()=>setShowNewTask(true)} style={{ background:'none', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>+ Nueva tarea</button>
             </div>
             {tasks.length > 0 && (
@@ -862,8 +862,8 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                   return (
                     <div key={t.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 0' }}>
                       <div>
-                        <span style={{ color:'#d4d4d8', fontSize:13 }}>{t.title}</span>
-                        {t.assignee && <span style={{ color:'#52525b', fontSize:11, marginLeft:8 }}>{t.assignee.full_name || t.assignee.email}</span>}
+                        <span style={{ color:'#121714', fontSize:13 }}>{t.title}</span>
+                        {t.assignee && <span style={{ color:'#858C87', fontSize:11, marginLeft:8 }}>{t.assignee.full_name || t.assignee.email}</span>}
                       </div>
                       <span style={{ fontSize:11, fontWeight:500, padding:'2px 9px', borderRadius:20, background:s?.bg, border:`1px solid ${s?.border}`, color:s?.color }}>{s?.label}</span>
                     </div>
@@ -875,8 +875,8 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
 
           {showNewTask && (
             <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
-              <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, maxWidth:420, width:'100%' }}>
-                <div style={{ color:'white', fontSize:16, fontWeight:700, marginBottom:18 }}>Nueva tarea</div>
+              <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.14)', borderRadius:16, padding:24, maxWidth:420, width:'100%' }}>
+                <div style={{ color:'#121714', fontSize:16, fontWeight:700, marginBottom:18 }}>Nueva tarea</div>
                 {taskError && <div style={{ background:'rgba(239,68,68,0.09)', border:'1px solid rgba(239,68,68,0.22)', borderRadius:10, padding:'9px 12px', marginBottom:14, color:'#f87171', fontSize:13 }}>{taskError}</div>}
                 <form onSubmit={submitTask}>
                   <div style={{ marginBottom:14 }}>
@@ -899,8 +899,8 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     <input type="date" value={taskForm.due_date} onChange={e=>setTaskForm(f=>({...f,due_date:e.target.value}))} style={INP} />
                   </div>
                   <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-                    <button type="button" onClick={()=>{setShowNewTask(false);setTaskError('')}} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
-                    <button type="submit" disabled={savingTask} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingTask?0.6:1 }}>
+                    <button type="button" onClick={()=>{setShowNewTask(false);setTaskError('')}} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
+                    <button type="submit" disabled={savingTask} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingTask?0.6:1 }}>
                       {savingTask?'Creando…':'Crear tarea'}
                     </button>
                   </div>
@@ -909,18 +909,18 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
             </div>
           )}
 
-          <div style={{ background:'rgba(14,14,14,0.8)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
+          <div style={{ background:'rgba(18,23,20,0.5)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:18, padding:'16px 20px', marginBottom:24 }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: dataSources.length ? 12 : 0 }}>
-              <span style={{ color:'white', fontSize:13, fontWeight:600 }}>Fuentes de datos</span>
+              <span style={{ color:'#121714', fontSize:13, fontWeight:600 }}>Fuentes de datos</span>
               <button onClick={()=>setShowNewSource(true)} style={{ background:'none', border:'1px solid rgba(49,174,121,0.3)', color:'#31AE79', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>+ Conectar Google Sheet</button>
             </div>
             {dataSources.length > 0 && (
               <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
                 {dataSources.map(s => (
                   <div key={s.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 0' }}>
-                    <span style={{ color:'#d4d4d8', fontSize:13 }}>📊 {s.name}</span>
+                    <span style={{ color:'#121714', fontSize:13 }}>📊 {s.name}</span>
                     <div style={{ display:'flex', gap:6 }}>
-                      <button onClick={()=>viewSource(s)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:11, padding:'4px 10px', borderRadius:7, cursor:'pointer' }}>Ver</button>
+                      <button onClick={()=>viewSource(s)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:11, padding:'4px 10px', borderRadius:7, cursor:'pointer' }}>Ver</button>
                       <button onClick={()=>deleteSource(s.id)} style={{ background:'none', border:'1px solid rgba(239,68,68,0.15)', color:'#f87171', fontSize:11, padding:'4px 10px', borderRadius:7, cursor:'pointer' }}>Eliminar</button>
                     </div>
                   </div>
@@ -931,9 +931,9 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
 
           {showNewSource && (
             <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
-              <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, maxWidth:440, width:'100%' }}>
-                <div style={{ color:'white', fontSize:16, fontWeight:700, marginBottom:6 }}>Conectar Google Sheet</div>
-                <div style={{ color:'#71717a', fontSize:12, marginBottom:18 }}>El Sheet debe estar compartido como "Cualquiera con el link puede ver".</div>
+              <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.14)', borderRadius:16, padding:24, maxWidth:440, width:'100%' }}>
+                <div style={{ color:'#121714', fontSize:16, fontWeight:700, marginBottom:6 }}>Conectar Google Sheet</div>
+                <div style={{ color:'#4E5651', fontSize:12, marginBottom:18 }}>El Sheet debe estar compartido como "Cualquiera con el link puede ver".</div>
                 {sourceError && <div style={{ background:'rgba(239,68,68,0.09)', border:'1px solid rgba(239,68,68,0.22)', borderRadius:10, padding:'9px 12px', marginBottom:14, color:'#f87171', fontSize:13 }}>{sourceError}</div>}
                 <form onSubmit={submitSource}>
                   <div style={{ marginBottom:14 }}>
@@ -947,11 +947,11 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                   <div style={{ marginBottom:20 }}>
                     <label style={LBL}>Hoja (opcional)</label>
                     <input value={sourceForm.gid} onChange={e=>setSourceForm(f=>({...f,gid:e.target.value}))} placeholder="Dejar vacío = primera hoja. Ej: Hoja 2" style={INP} />
-                    <div style={{ color:'#52525b', fontSize:11, marginTop:5 }}>Si el Sheet tiene varias hojas, escribí acá el nombre exacto de la pestaña (tal como aparece abajo en Google Sheets, ej: "Hoja 2"). Cada hoja se conecta como una fuente de datos separada.</div>
+                    <div style={{ color:'#858C87', fontSize:11, marginTop:5 }}>Si el Sheet tiene varias hojas, escribí acá el nombre exacto de la pestaña (tal como aparece abajo en Google Sheets, ej: "Hoja 2"). Cada hoja se conecta como una fuente de datos separada.</div>
                   </div>
                   <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-                    <button type="button" onClick={()=>{setShowNewSource(false);setSourceError('')}} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
-                    <button type="submit" disabled={savingSource} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingSource?0.6:1 }}>
+                    <button type="button" onClick={()=>{setShowNewSource(false);setSourceError('')}} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
+                    <button type="submit" disabled={savingSource} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingSource?0.6:1 }}>
                       {savingSource?'Conectando…':'Conectar'}
                     </button>
                   </div>
@@ -962,15 +962,15 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
 
           {viewingSource && (
             <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.8)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={()=>setViewingSource(null)}>
-              <div style={{ background:'#0d0d0d', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:20, width:'95vw', maxWidth:1500, height:'88vh', display:'flex', flexDirection:'column' }} onClick={e=>e.stopPropagation()}>
+              <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.14)', borderRadius:16, padding:20, width:'95vw', maxWidth:1500, height:'88vh', display:'flex', flexDirection:'column' }} onClick={e=>e.stopPropagation()}>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
-                  <div style={{ color:'white', fontSize:15, fontWeight:700 }}>📊 {viewingSource.name}</div>
+                  <div style={{ color:'#121714', fontSize:15, fontWeight:700 }}>📊 {viewingSource.name}</div>
                   <div style={{ display:'flex', gap:8, alignItems:'center' }}>
                     {resolveChartConfig(viewingSource, sourceData) && (
                       <>
-                        <div style={{ display:'flex', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:8, padding:2 }}>
+                        <div style={{ display:'flex', background:'rgba(18,23,20,0.04)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:8, padding:2 }}>
                           {(['tabla','grafico'] as const).map(v => (
-                            <button key={v} onClick={()=>setSourceView(v)} style={{ padding:'5px 11px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:sourceView===v?'rgba(49,174,121,0.15)':'none', color:sourceView===v?'#31AE79':'#71717a' }}>
+                            <button key={v} onClick={()=>setSourceView(v)} style={{ padding:'5px 11px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:sourceView===v?'rgba(49,174,121,0.15)':'none', color:sourceView===v?'#31AE79':'#4E5651' }}>
                               {v==='tabla'?'Tabla':'Gráfico'}
                             </button>
                           ))}
@@ -980,15 +980,15 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                             const cfg = resolveChartConfig(viewingSource, sourceData)!
                             setChartCfgDraft({ type: cfg.type, labelCol: cfg.labelIdx, valueCol: cfg.valueIdx })
                             setChartCfgOpen(o=>!o)
-                          }} style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', color:'#a1a1aa', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>⚙ Configurar</button>
+                          }} style={{ background:'rgba(18,23,20,0.04)', border:'1px solid rgba(18,23,20,0.12)', color:'#4E5651', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>⚙ Configurar</button>
                         )}
                       </>
                     )}
-                    <button onClick={()=>setViewingSource(null)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'7px 14px', borderRadius:8, cursor:'pointer' }}>✕ Cerrar</button>
+                    <button onClick={()=>setViewingSource(null)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:13, padding:'7px 14px', borderRadius:8, cursor:'pointer' }}>✕ Cerrar</button>
                   </div>
                 </div>
                 {sourceView === 'grafico' && chartCfgOpen && chartCfgDraft && sourceData && (
-                  <div style={{ display:'flex', gap:14, alignItems:'flex-end', flexWrap:'wrap', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:10, padding:14, marginBottom:14 }}>
+                  <div style={{ display:'flex', gap:14, alignItems:'flex-end', flexWrap:'wrap', background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.16)', borderRadius:10, padding:14, marginBottom:14, boxShadow:'0 1px 3px rgba(18,23,20,0.05)' }}>
                     <div>
                       <label style={LBL}>Tipo de gráfico</label>
                       <select value={chartCfgDraft.type} onChange={e=>setChartCfgDraft(c=>c && ({...c, type: e.target.value as ChartType}))} style={SEL}>
@@ -1009,15 +1009,15 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                         {sourceData.headers.map((h,i)=><option key={i} value={i}>{h}</option>)}
                       </select>
                     </div>
-                    <button onClick={saveChartCfg} disabled={savingChartCfg} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 16px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingChartCfg?0.6:1 }}>
+                    <button onClick={saveChartCfg} disabled={savingChartCfg} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:13, padding:'9px 16px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingChartCfg?0.6:1 }}>
                       {savingChartCfg?'Guardando…':'Guardar'}
                     </button>
-                    <button onClick={()=>setChartCfgOpen(false)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 14px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
+                    <button onClick={()=>setChartCfgOpen(false)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:13, padding:'9px 14px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
                   </div>
                 )}
                 <div style={{ overflow:'auto', flex:1 }}>
                   {loadingSourceData ? (
-                    <div style={{ color:'#52525b', fontSize:13, padding:24, textAlign:'center' }}>Cargando…</div>
+                    <div style={{ color:'#858C87', fontSize:13, padding:24, textAlign:'center' }}>Cargando…</div>
                   ) : sourceDataError ? (
                     <div style={{ color:'#f87171', fontSize:13, padding:24, textAlign:'center' }}>{sourceDataError}</div>
                   ) : sourceData && sourceData.rows.length > 0 ? (
@@ -1029,15 +1029,15 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                       <thead>
                         <tr>
                           {sourceData.headers.map((h,i)=>(
-                            <th key={i} style={{ textAlign:'left', color:'#52525b', padding:'7px 10px', borderBottom:'1px solid rgba(255,255,255,0.08)', position:'sticky', top:0, background:'#0d0d0d', whiteSpace:'nowrap' }}>{h}</th>
+                            <th key={i} style={{ textAlign:'left', color:'#858C87', padding:'7px 10px', borderBottom:'1px solid rgba(18,23,20,0.12)', position:'sticky', top:0, background:'#FFFFFF', whiteSpace:'nowrap' }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
                         {sourceData.rows.map((row,i)=>(
-                          <tr key={i} style={{ borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
+                          <tr key={i} style={{ borderBottom:'1px solid rgba(18,23,20,0.04)' }}>
                             {row.map((cell,j)=>(
-                              <td key={j} style={{ color:'#d4d4d8', padding:'6px 10px', whiteSpace:'nowrap' }}>{cell}</td>
+                              <td key={j} style={{ color:'#121714', padding:'6px 10px', whiteSpace:'nowrap' }}>{cell}</td>
                             ))}
                           </tr>
                         ))}
@@ -1045,7 +1045,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     </table>
                     )
                   ) : (
-                    <div style={{ color:'#52525b', fontSize:13, padding:24, textAlign:'center' }}>Sin filas de datos.</div>
+                    <div style={{ color:'#858C87', fontSize:13, padding:24, textAlign:'center' }}>Sin filas de datos.</div>
                   )}
                 </div>
               </div>
@@ -1053,20 +1053,20 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
           )}
 
           <div className="cd-top-row">
-            <div style={{ display:'flex', alignItems:'center', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:10, padding:4, overflowX:'auto', maxWidth:'100%' }}>
+            <div style={{ display:'flex', alignItems:'center', background:'rgba(18,23,20,0.05)', border:'1px solid rgba(18,23,20,0.10)', borderRadius:10, padding:4, overflowX:'auto', maxWidth:'100%' }}>
               <div className="cd-tabs">
-                <button onClick={()=>setActiveTab('todos')} style={{ padding:'6px 12px', borderRadius:7, fontSize:12, fontWeight:500, border:'none', cursor:'pointer', background:activeTab==='todos'?'rgba(255,255,255,0.1)':'none', color:activeTab==='todos'?'white':'#71717a', whiteSpace:'nowrap' }}>
+                <button onClick={()=>setActiveTab('todos')} style={{ padding:'6px 12px', borderRadius:7, fontSize:12, fontWeight:500, border:'none', cursor:'pointer', background:activeTab==='todos'?'rgba(18,23,20,0.14)':'none', color:activeTab==='todos'?'#121714':'#4E5651', whiteSpace:'nowrap' }}>
                   Todos ({files.length})
                 </button>
                 {FILE_CATEGORIES.map(cat=>(
-                  <button key={cat.value} onClick={()=>setActiveTab(cat.value)} style={{ padding:'6px 10px', borderRadius:7, fontSize:12, fontWeight:500, border:'none', cursor:'pointer', background:activeTab===cat.value?'rgba(49,174,121,0.15)':'none', color:activeTab===cat.value?'#31AE79':'#71717a', display:'flex', alignItems:'center', gap:4, whiteSpace:'nowrap' }}>
+                  <button key={cat.value} onClick={()=>setActiveTab(cat.value)} style={{ padding:'6px 10px', borderRadius:7, fontSize:12, fontWeight:500, border:'none', cursor:'pointer', background:activeTab===cat.value?'rgba(49,174,121,0.15)':'none', color:activeTab===cat.value?'#31AE79':'#4E5651', display:'flex', alignItems:'center', gap:4, whiteSpace:'nowrap' }}>
                     <span>{cat.icon}</span><span>{cat.label}</span>
                     {countBy(cat.value)>0&&<span style={{ opacity:0.7 }}>({countBy(cat.value)})</span>}
                   </button>
                 ))}
               </div>
             </div>
-            <button onClick={()=>setShowUpload(!showUpload)} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:12, padding:'8px 16px', borderRadius:9, border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:6, boxShadow:'0 3px 12px rgba(49,174,121,0.25)', whiteSpace:'nowrap', flexShrink:0 }}>
+            <button onClick={()=>setShowUpload(!showUpload)} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:12, padding:'8px 16px', borderRadius:9, border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:6, boxShadow:'0 3px 12px rgba(49,174,121,0.25)', whiteSpace:'nowrap', flexShrink:0 }}>
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
               Subir archivos
             </button>
@@ -1074,20 +1074,20 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
 
           {availableYears.length > 0 && (
             <div className="filter-bar">
-              <span style={{ color:'#52525b', fontSize:11, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' }}>Período:</span>
-              <button onClick={()=>{setFilterYear(null);setFilterMonth(null)}} style={{ padding:'4px 10px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:filterYear===null?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.04)', color:filterYear===null?'white':'#71717a' }}>
+              <span style={{ color:'#858C87', fontSize:11, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' }}>Período:</span>
+              <button onClick={()=>{setFilterYear(null);setFilterMonth(null)}} style={{ padding:'4px 10px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:filterYear===null?'rgba(18,23,20,0.14)':'rgba(18,23,20,0.04)', color:filterYear===null?'#121714':'#4E5651' }}>
                 Todos
               </button>
               {availableYears.map(y=>(
-                <button key={y} onClick={()=>{setFilterYear(filterYear===y?null:y);setFilterMonth(null)}} style={{ padding:'4px 10px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:filterYear===y?'rgba(49,174,121,0.15)':'rgba(255,255,255,0.04)', color:filterYear===y?'#31AE79':'#71717a', fontWeight:filterYear===y?600:400 }}>
+                <button key={y} onClick={()=>{setFilterYear(filterYear===y?null:y);setFilterMonth(null)}} style={{ padding:'4px 10px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:filterYear===y?'rgba(49,174,121,0.15)':'rgba(18,23,20,0.04)', color:filterYear===y?'#31AE79':'#4E5651', fontWeight:filterYear===y?600:400 }}>
                   {y}
                 </button>
               ))}
               {filterYear !== null && (
                 <>
-                  <span style={{ color:'#3f3f46', fontSize:11 }}>|</span>
+                  <span style={{ color:'#858C87', fontSize:11 }}>|</span>
                   {[...new Set(files.filter(f=>f.fiscal_year===filterYear).map(f=>f.fiscal_month).filter(Boolean) as number[])].sort((a,b)=>a-b).map(m=>(
-                    <button key={m} onClick={()=>setFilterMonth(filterMonth===m?null:m)} style={{ padding:'4px 10px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:filterMonth===m?'rgba(96,165,250,0.15)':'rgba(255,255,255,0.04)', color:filterMonth===m?'#60a5fa':'#71717a' }}>
+                    <button key={m} onClick={()=>setFilterMonth(filterMonth===m?null:m)} style={{ padding:'4px 10px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:filterMonth===m?'rgba(96,165,250,0.15)':'rgba(18,23,20,0.04)', color:filterMonth===m?'#60a5fa':'#4E5651' }}>
                       {MONTHS[m-1]}
                     </button>
                   ))}
@@ -1098,9 +1098,9 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
 
           {availableTags.length > 0 && (
             <div className="filter-bar">
-              <span style={{ color:'#52525b', fontSize:11, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' }}>Etiquetas:</span>
+              <span style={{ color:'#858C87', fontSize:11, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase' }}>Etiquetas:</span>
               {availableTags.map(t=>(
-                <button key={t} onClick={()=>setFilterTag(filterTag===t?null:t)} style={{ padding:'4px 10px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:filterTag===t?'rgba(250,204,21,0.15)':'rgba(255,255,255,0.04)', color:filterTag===t?'#facc15':'#71717a' }}>
+                <button key={t} onClick={()=>setFilterTag(filterTag===t?null:t)} style={{ padding:'4px 10px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:filterTag===t?'rgba(250,204,21,0.15)':'rgba(18,23,20,0.04)', color:filterTag===t?'#facc15':'#4E5651' }}>
                   #{t}
                 </button>
               ))}
@@ -1108,16 +1108,16 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
           )}
 
           {showUpload && (
-            <div style={{ background:'rgba(14,14,14,0.95)', border:'1px solid rgba(49,174,121,0.2)', borderRadius:16, padding:20, marginBottom:20 }}>
+            <div style={{ background:'rgba(18,23,20,0.55)', border:'1px solid rgba(49,174,121,0.2)', borderRadius:16, padding:20, marginBottom:20 }}>
               <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:18 }}>
                 <div style={{ width:6, height:6, borderRadius:'50%', background:'#31AE79' }} />
-                <span style={{ color:'white', fontSize:14, fontWeight:600 }}>Nuevo grupo de archivos</span>
+                <span style={{ color:'#121714', fontSize:14, fontWeight:600 }}>Nuevo grupo de archivos</span>
               </div>
               {uploadError && <div style={{ background:'rgba(239,68,68,0.09)', border:'1px solid rgba(239,68,68,0.22)', borderRadius:10, padding:'9px 12px', marginBottom:16, color:'#f87171', fontSize:13 }}>{uploadError}</div>}
               <form onSubmit={handleUpload}>
                 <div style={{ marginBottom:16 }}>
                   <label style={LBL}>Título del grupo <span style={{ color:'#ef4444' }}>*</span></label>
-                  <input value={form.groupTitle} onChange={e=>setForm(f=>({...f,groupTitle:e.target.value}))} placeholder="Ej: 931 - Abril 2025, Balance Q1" style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
+                  <input value={form.groupTitle} onChange={e=>setForm(f=>({...f,groupTitle:e.target.value}))} placeholder="Ej: 931 - Abril 2025, Balance Q1" style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(18,23,20,0.14)'} />
                 </div>
 
                 <div className="cd-3col" style={{ marginBottom:16 }}>
@@ -1137,7 +1137,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                   </div>
                   <div>
                     <label style={LBL}>Fecha de vencimiento</label>
-                    <input type="date" value={form.dueDate} onChange={e=>setForm(f=>({...f,dueDate:e.target.value}))} style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
+                    <input type="date" value={form.dueDate} onChange={e=>setForm(f=>({...f,dueDate:e.target.value}))} style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(18,23,20,0.14)'} />
                   </div>
                 </div>
 
@@ -1145,7 +1145,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                   <label style={LBL}>Categoría</label>
                   <div className="cd-cat-grid">
                     {FILE_CATEGORIES.map(cat=>(
-                      <button key={cat.value} type="button" onClick={()=>setForm(f=>({...f,category:cat.value,taxSub:null}))} style={{ padding:'10px 8px', borderRadius:10, border:form.category===cat.value?'1px solid rgba(49,174,121,0.4)':'1px solid rgba(255,255,255,0.08)', background:form.category===cat.value?'rgba(49,174,121,0.1)':'rgba(255,255,255,0.03)', color:form.category===cat.value?'#31AE79':'#71717a', cursor:'pointer', fontSize:12, fontWeight:500, display:'flex', alignItems:'center', justifyContent:'center', gap:5 }}>
+                      <button key={cat.value} type="button" onClick={()=>setForm(f=>({...f,category:cat.value,taxSub:null}))} style={{ padding:'10px 8px', borderRadius:10, border:form.category===cat.value?'1px solid rgba(49,174,121,0.4)':'1px solid rgba(18,23,20,0.12)', background:form.category===cat.value?'rgba(49,174,121,0.1)':'rgba(18,23,20,0.05)', color:form.category===cat.value?'#31AE79':'#4E5651', cursor:'pointer', fontSize:12, fontWeight:500, display:'flex', alignItems:'center', justifyContent:'center', gap:5 }}>
                         <span style={{ fontSize:15 }}>{cat.icon}</span><span>{cat.label}</span>
                       </button>
                     ))}
@@ -1157,7 +1157,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     <label style={LBL}>Tipo de impuesto</label>
                     <div className="cd-tax-grid">
                       {TAX_SUBCATEGORIES.map(sub=>(
-                        <button key={sub.value} type="button" onClick={()=>setForm(f=>({...f,taxSub:sub.value}))} style={{ padding:'10px 12px', borderRadius:10, border:form.taxSub===sub.value?'1px solid rgba(49,174,121,0.5)':'1px solid rgba(255,255,255,0.08)', background:form.taxSub===sub.value?'rgba(49,174,121,0.12)':'rgba(255,255,255,0.02)', color:form.taxSub===sub.value?'#31AE79':'#71717a', cursor:'pointer', fontSize:12, fontWeight:500, textAlign:'left', display:'flex', alignItems:'center', gap:8 }}>
+                        <button key={sub.value} type="button" onClick={()=>setForm(f=>({...f,taxSub:sub.value}))} style={{ padding:'10px 12px', borderRadius:10, border:form.taxSub===sub.value?'1px solid rgba(49,174,121,0.5)':'1px solid rgba(18,23,20,0.12)', background:form.taxSub===sub.value?'rgba(49,174,121,0.12)':'rgba(18,23,20,0.05)', color:form.taxSub===sub.value?'#31AE79':'#4E5651', cursor:'pointer', fontSize:12, fontWeight:500, textAlign:'left', display:'flex', alignItems:'center', gap:8 }}>
                           <span>{sub.icon}</span><span>{sub.label}</span>
                         </button>
                       ))}
@@ -1166,13 +1166,13 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                 )}
 
                 <div style={{ marginBottom:16 }}>
-                  <label style={LBL}>Etiquetas <span style={{ color:'#52525b', textTransform:'none', fontWeight:400 }}>(separadas por coma, opcional)</span></label>
-                  <input value={form.tags} onChange={e=>setForm(f=>({...f,tags:e.target.value}))} placeholder="Ej: urgente, socio-A, revisar" style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
+                  <label style={LBL}>Etiquetas <span style={{ color:'#858C87', textTransform:'none', fontWeight:400 }}>(separadas por coma, opcional)</span></label>
+                  <input value={form.tags} onChange={e=>setForm(f=>({...f,tags:e.target.value}))} placeholder="Ej: urgente, socio-A, revisar" style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(18,23,20,0.14)'} />
                 </div>
 
                 <div style={{ marginBottom:18 }}>
                   <label style={LBL}>Descripción (opcional)</label>
-                  <input value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="Ej: Período Abril 2025" style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
+                  <input value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="Ej: Período Abril 2025" style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(18,23,20,0.14)'} />
                 </div>
 
                 <div style={{ marginBottom:20 }}>
@@ -1185,18 +1185,18 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                   </div>
                   <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                     {form.docs.map((doc,i)=>(
-                      <div key={i} style={{ background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:12, padding:14 }}>
+                      <div key={i} style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.16)', borderRadius:12, padding:14, boxShadow:'0 1px 3px rgba(18,23,20,0.05)' }}>
                         <div className="cd-doc-grid">
                           <div>
                             <label style={{ ...LBL, fontSize:10 }}>Nombre del documento</label>
-                            <input value={doc.label} onChange={e=>setDocLabel(i,e.target.value)} placeholder="Ej: Acuse, DJ, Pago, VEP" style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'} />
+                            <input value={doc.label} onChange={e=>setDocLabel(i,e.target.value)} placeholder="Ej: Acuse, DJ, Pago, VEP" style={INP} onFocus={e=>e.currentTarget.style.borderColor='rgba(49,174,121,0.55)'} onBlur={e=>e.currentTarget.style.borderColor='rgba(18,23,20,0.14)'} />
                           </div>
                           <div>
                             <label style={{ ...LBL, fontSize:10 }}>Archivo <span style={{ color:'#ef4444' }}>*</span></label>
                             <input type="file" ref={el=>{fileRefs.current[i]=el}} onChange={e=>setDocFile(i,e.target.files?.[0]??null)} style={{ ...INP, padding:'7px 10px', fontSize:12 }} />
                           </div>
                         </div>
-                        {doc.file && <div style={{ fontSize:11, color:'#52525b', marginTop:4 }}>📎 {doc.file.name} · {fmtSize(doc.file.size)}</div>}
+                        {doc.file && <div style={{ fontSize:11, color:'#858C87', marginTop:4 }}>📎 {doc.file.name} · {fmtSize(doc.file.size)}</div>}
                         {form.docs.length>1 && <button type="button" onClick={()=>removeDoc(i)} style={{ marginTop:8, background:'none', border:'none', color:'#f87171', fontSize:11, cursor:'pointer', opacity:0.7 }}>✕ Quitar</button>}
                       </div>
                     ))}
@@ -1204,18 +1204,18 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                 </div>
 
                 <div style={{ display:'flex', gap:8 }}>
-                  <button type="submit" disabled={uploading} style={{ flex:1, background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'10px', borderRadius:9, border:'none', cursor:uploading?'not-allowed':'pointer', opacity:uploading?0.7:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
-                    {uploading ? <><span style={{ width:13,height:13,border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'white',borderRadius:'50%',display:'inline-block',animation:'spin 0.7s linear infinite' }} />Subiendo...</> : `Subir ${form.docs.filter(d=>d.file).length} archivo(s)`}
+                  <button type="submit" disabled={uploading} style={{ flex:1, background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:13, padding:'10px', borderRadius:9, border:'none', cursor:uploading?'not-allowed':'pointer', opacity:uploading?0.7:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+                    {uploading ? <><span style={{ width:13,height:13,border:'2px solid rgba(18,23,20,0.3)',borderTopColor:'#121714',borderRadius:'50%',display:'inline-block',animation:'spin 0.7s linear infinite' }} />Subiendo...</> : `Subir ${form.docs.filter(d=>d.file).length} archivo(s)`}
                   </button>
-                  <button type="button" onClick={()=>{setShowUpload(false);setForm(defForm())}} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'10px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
+                  <button type="button" onClick={()=>{setShowUpload(false);setForm(defForm())}} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:13, padding:'10px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
                 </div>
               </form>
             </div>
           )}
 
           {Object.keys(grouped).length===0 ? (
-            <div style={{ border:'1px solid rgba(255,255,255,0.06)', borderRadius:14, padding:'40px 24px', textAlign:'center' }}>
-              <p style={{ color:'#52525b', fontSize:13 }}>{activeTab==='todos'?'No hay archivos para este cliente.':'No hay archivos en esta categoría.'}</p>
+            <div style={{ border:'1px solid rgba(18,23,20,0.08)', borderRadius:14, padding:'40px 24px', textAlign:'center' }}>
+              <p style={{ color:'#858C87', fontSize:13 }}>{activeTab==='todos'?'No hay archivos para este cliente.':'No hay archivos en esta categoría.'}</p>
             </div>
           ) : (
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
@@ -1227,14 +1227,14 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                 const multi = gf.length>1
 
                 return (
-                  <div key={gk} style={{ background:'rgba(255,255,255,0.025)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:14, overflow:'hidden' }}>
+                  <div key={gk} style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.16)', borderRadius:14, overflow:'hidden', boxShadow:'0 1px 3px rgba(18,23,20,0.05)' }}>
                     <div className="group-row">
-                      <div style={{ width:36,height:36,borderRadius:9,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:16 }}>
+                      <div style={{ width:36,height:36,borderRadius:9,background:'rgba(18,23,20,0.04)',border:'1px solid rgba(18,23,20,0.08)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:16 }}>
                         {taxSub?.icon||cat?.icon||'📄'}
                       </div>
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-                          <span style={{ color:'white', fontSize:13, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{first.group_title||first.name}</span>
+                          <span style={{ color:'#121714', fontSize:13, fontWeight:600, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{first.group_title||first.name}</span>
                           {(first.fiscal_month || first.fiscal_year) && (
                             <span style={{ fontSize:11, padding:'2px 7px', borderRadius:5, background:'rgba(96,165,250,0.08)', border:'1px solid rgba(96,165,250,0.15)', color:'#60a5fa', whiteSpace:'nowrap' }}>
                               {first.fiscal_month ? MONTHS[first.fiscal_month-1] : ''}{first.fiscal_month && first.fiscal_year ? ' ' : ''}{first.fiscal_year||''}
@@ -1243,8 +1243,8 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                         </div>
                         <div style={{ display:'flex', gap:8, marginTop:4, flexWrap:'wrap', alignItems:'center' }}>
                           {taxSub && <span style={{ color:'#31AE79', fontSize:11 }}>{taxSub.label}</span>}
-                          {first.description && <span style={{ color:'#52525b', fontSize:11 }}>{first.description}</span>}
-                          <span style={{ color:'#3f3f46', fontSize:11 }}>{fmt(first.created_at)}</span>
+                          {first.description && <span style={{ color:'#858C87', fontSize:11 }}>{first.description}</span>}
+                          <span style={{ color:'#858C87', fontSize:11 }}>{fmt(first.created_at)}</span>
                           <DueBadge due={first.due_date} />
                           {(first.tags||[]).map(t=>(
                             <span key={t} style={{ fontSize:10, padding:'2px 7px', borderRadius:5, background:'rgba(250,204,21,0.08)', border:'1px solid rgba(250,204,21,0.18)', color:'#facc15' }}>#{t}</span>
@@ -1253,28 +1253,28 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                       </div>
                       <div className="group-meta" style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
                         <StatusBadge status={first.doc_status} onClick={()=>cycleStatus(gf)} />
-                        <span style={{ color:'#52525b', fontSize:11, padding:'3px 8px', background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.04)', borderRadius:6 }}>{cat?.label}</span>
+                        <span style={{ color:'#858C87', fontSize:11, padding:'3px 8px', background:'rgba(18,23,20,0.06)', border:'1px solid rgba(18,23,20,0.10)', borderRadius:6 }}>{cat?.label}</span>
                         {multi && <span style={{ color:'#31AE79', fontSize:11, padding:'3px 8px', background:'rgba(49,174,121,0.08)', border:'1px solid rgba(49,174,121,0.15)', borderRadius:6 }}>{gf.length} docs</span>}
                         {!multi && first.version > 1 && <span style={{ color:'#60a5fa', fontSize:11, padding:'3px 8px', background:'rgba(96,165,250,0.08)', border:'1px solid rgba(96,165,250,0.15)', borderRadius:6 }}>v{first.version}</span>}
                       </div>
                       <div style={{ display:'flex', gap:6, flexShrink:0 }}>
                         {multi ? (
-                          <button onClick={()=>toggleGroup(gk)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>
+                          <button onClick={()=>toggleGroup(gk)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>
                             {expanded?'Ocultar':'Ver'}
                           </button>
                         ) : (
                           <>
                             {isHTML(first) ? (
-                              <button onClick={()=>router.push(`/view/${first.id}`)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>Ver</button>
+                              <button onClick={()=>router.push(`/view/${first.id}`)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>Ver</button>
                             ) : (
-                              <button onClick={()=>download(first.id,first.name)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#a1a1aa', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>↓</button>
+                              <button onClick={()=>download(first.id,first.name)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>↓</button>
                             )}
                             <input ref={el=>{versionFileRefs.current[first.id]=el}} type="file" style={{ display:'none' }} onChange={e=>{ const f=e.target.files?.[0]; if(f) uploadNewVersion(first.id,f); e.target.value='' }} />
                             <button onClick={()=>versionFileRefs.current[first.id]?.click()} disabled={uploadingVersionId===first.id} style={{ background:'none', border:'1px solid rgba(96,165,250,0.2)', color:'#60a5fa', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer', opacity:uploadingVersionId===first.id?0.5:1 }}>
                               {uploadingVersionId===first.id?'...':'↑ Nueva versión'}
                             </button>
                             {versionHistory(first.id).length>0 && (
-                              <button onClick={()=>toggleHistory(first.id)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>
+                              <button onClick={()=>toggleHistory(first.id)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:12, padding:'5px 12px', borderRadius:7, cursor:'pointer' }}>
                                 Historial ({versionHistory(first.id).length})
                               </button>
                             )}
@@ -1285,33 +1285,33 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     </div>
 
                     {!multi && expandedHistory.has(first.id) && (
-                      <div style={{ borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(0,0,0,0.2)' }}>
+                      <div style={{ borderTop:'1px solid rgba(18,23,20,0.06)', background:'rgba(0,0,0,0.2)' }}>
                         {versionHistory(first.id).map(v=>(
-                          <div key={v.id} style={{ padding:'8px 16px 8px 64px', display:'flex', alignItems:'center', gap:10, borderBottom:'1px solid rgba(255,255,255,0.03)' }}>
-                            <span style={{ color:'#52525b', fontSize:11, fontWeight:600 }}>v{v.version}</span>
-                            <span style={{ color:'#71717a', fontSize:12, flex:1 }}>{v.name}</span>
-                            <span style={{ color:'#3f3f46', fontSize:11 }}>{fmt(v.created_at)}</span>
-                            <button onClick={()=>download(v.id,v.name)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.08)', color:'#71717a', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer' }}>↓</button>
+                          <div key={v.id} style={{ padding:'8px 16px 8px 64px', display:'flex', alignItems:'center', gap:10, borderBottom:'1px solid rgba(18,23,20,0.08)' }}>
+                            <span style={{ color:'#858C87', fontSize:11, fontWeight:600 }}>v{v.version}</span>
+                            <span style={{ color:'#4E5651', fontSize:12, flex:1 }}>{v.name}</span>
+                            <span style={{ color:'#858C87', fontSize:11 }}>{fmt(v.created_at)}</span>
+                            <button onClick={()=>download(v.id,v.name)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.12)', color:'#4E5651', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer' }}>↓</button>
                           </div>
                         ))}
                       </div>
                     )}
 
                     {multi && expanded && (
-                      <div style={{ borderTop:'1px solid rgba(255,255,255,0.05)', background:'rgba(0,0,0,0.2)' }}>
+                      <div style={{ borderTop:'1px solid rgba(18,23,20,0.06)', background:'rgba(0,0,0,0.2)' }}>
                         {gf.map(f=>(
-                          <div key={f.id} className="doc-row-indent" style={{ padding:'10px 16px', display:'flex', alignItems:'center', gap:10, borderBottom:'1px solid rgba(255,255,255,0.03)' }}>
+                          <div key={f.id} className="doc-row-indent" style={{ padding:'10px 16px', display:'flex', alignItems:'center', gap:10, borderBottom:'1px solid rgba(18,23,20,0.08)' }}>
                             <span style={{ fontSize:14, flexShrink:0 }}>{fileIcon(f.mime_type,f.name)}</span>
                             <div style={{ flex:1, minWidth:0 }}>
-                              <span style={{ color:'#d4d4d8', fontSize:12, fontWeight:500 }}>{f.document_label||f.name}</span>
+                              <span style={{ color:'#121714', fontSize:12, fontWeight:500 }}>{f.document_label||f.name}</span>
                               {f.version > 1 && <span style={{ color:'#60a5fa', fontSize:10, marginLeft:6 }}>v{f.version}</span>}
-                              {f.file_size && <span style={{ color:'#3f3f46', fontSize:11, marginLeft:6 }}>{fmtSize(f.file_size)}</span>}
+                              {f.file_size && <span style={{ color:'#858C87', fontSize:11, marginLeft:6 }}>{fmtSize(f.file_size)}</span>}
                             </div>
                             <div style={{ display:'flex', gap:6, flexShrink:0 }}>
                               {isHTML(f) ? (
-                                <button onClick={()=>router.push(`/view/${f.id}`)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.08)', color:'#71717a', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer' }}>Ver</button>
+                                <button onClick={()=>router.push(`/view/${f.id}`)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.12)', color:'#4E5651', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer' }}>Ver</button>
                               ) : (
-                                <button onClick={()=>download(f.id,f.name)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.08)', color:'#71717a', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer' }}>↓</button>
+                                <button onClick={()=>download(f.id,f.name)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.12)', color:'#4E5651', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer' }}>↓</button>
                               )}
                               <input ref={el=>{versionFileRefs.current[f.id]=el}} type="file" style={{ display:'none' }} onChange={e=>{ const nf=e.target.files?.[0]; if(nf) uploadNewVersion(f.id,nf); e.target.value='' }} />
                               <button onClick={()=>versionFileRefs.current[f.id]?.click()} disabled={uploadingVersionId===f.id} style={{ background:'none', border:'1px solid rgba(96,165,250,0.15)', color:'#60a5fa', fontSize:11, padding:'4px 10px', borderRadius:6, cursor:'pointer', opacity:uploadingVersionId===f.id?0.4:0.6 }}>
