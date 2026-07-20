@@ -1,5 +1,12 @@
 # Changelog — BRUCK APP
 
+## 2026-07-17 — Fix: campo "Hoja" ahora acepta el nombre de la pestaña, no el gid
+
+- fix: el campo "Hoja" pedía el número de gid (poco usable, requería mirar la URL de cada pestaña); ahora acepta directamente el nombre de la hoja tal como aparece en Google Sheets (ej. "Hoja 2"). Internamente usa el endpoint público `gviz/tq?tqx=out:csv&sheet=NOMBRE` de Google en vez de `export?format=csv&gid=N` cuando se especifica un nombre.
+- `lib/google-sheets.ts`: `parseSheetUrl` reconoce un marcador `bruckSheet=` en la URL guardada; `fetchGoogleSheetData` elige el endpoint según haya nombre de hoja o gid numérico.
+- Nota: la fuente "prueba 2" creada antes de este fix quedó con un gid inválido (el nombre "Hoja 2" no matcheaba el patrón numérico) — hay que borrarla y volver a conectarla.
+- Build y typecheck verificados, sin errores nuevos.
+
 ## 2026-07-17 — Fuentes de datos: selección de hoja + modal a pantalla completa
 
 - feat: campo opcional "Hoja" al conectar un Google Sheet (`sourceForm.gid`) — permite pegar el gid de una pestaña específica del spreadsheet sin tener que copiar la URL completa de esa pestaña. Cada hoja se conecta como una fuente de datos independiente (mismo modelo de datos, sin migración: el gid se agrega al `url` guardado vía `withGid()`).

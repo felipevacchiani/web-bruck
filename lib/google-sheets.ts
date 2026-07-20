@@ -1,9 +1,11 @@
 // Lee un Google Sheet compartido públicamente ("cualquiera con el
 // link puede ver") como CSV en vivo, sin guardar copia de las filas.
 
-export function parseSheetUrl(url: string): { id: string; gid: string } | null {
+export function parseSheetUrl(url: string): { id: string; gid: string; sheetName?: string } | null {
   const idMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)
   if (!idMatch) return null
+  const nameMatch = url.match(/[?#&]bruckSheet=([^&#]+)/)
+  if (nameMatch) return { id: idMatch[1], gid: '0', sheetName: decodeURIComponent(nameMatch[1]) }
   const gidMatch = url.match(/[?#&]gid=(\d+)/)
   return { id: idMatch[1], gid: gidMatch ? gidMatch[1] : '0' }
 }
@@ -35,7 +37,9 @@ export async function fetchGoogleSheetData(url: string): Promise<{ headers: stri
   const parsed = parseSheetUrl(url)
   if (!parsed) throw new Error('URL de Google Sheet inválida')
 
-  const exportUrl = `https://docs.google.com/spreadsheets/d/${parsed.id}/export?format=csv&gid=${parsed.gid}`
+  const exportUrl = parsed.sheetName
+    ? `https://docs.google.com/spreadsheets/d/${parsed.id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(parsed.sheetName)}`
+    : `https://docs.google.com/spreadsheets/d/${parsed.id}/export?format=csv&gid=${parsed.gid}`
   const res = await fetch(exportUrl)
   if (!res.ok || res.url.includes('accounts.google.com')) {
     throw new Error('No se pudo leer el Sheet. Verificá que esté compartido como "Cualquiera con el link puede ver".')

@@ -33,10 +33,12 @@ function detectChartColumn(data: { headers: string[]; rows: string[][] } | null)
 }
 
 const toNum = (s: string) => Number(s.replace(/[.,](?=\d{3})/g, '').replace(',', '.')) || 0
-function withGid(url: string, gid: string): string {
-  if (!gid.trim()) return url
-  const cleaned = url.replace(/([?#&])gid=\d+&?/, '$1').replace(/[?#&]$/, '')
-  return `${cleaned}#gid=${gid.trim()}`
+function withGid(url: string, sheet: string): string {
+  const v = sheet.trim()
+  const cleaned = url.replace(/[?&]?(gid=\d+|bruckSheet=[^&#]+)/g, '').replace(/[?&]$/, '')
+  if (!v) return cleaned
+  const sep = cleaned.includes('?') ? '&' : '?'
+  return /^\d+$/.test(v) ? `${cleaned}${sep}gid=${v}` : `${cleaned}${sep}bruckSheet=${encodeURIComponent(v)}`
 }
 
 const daysUntilDue = (due: string | null): number | null => {
@@ -825,8 +827,8 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                   </div>
                   <div style={{ marginBottom:20 }}>
                     <label style={LBL}>Hoja (opcional)</label>
-                    <input value={sourceForm.gid} onChange={e=>setSourceForm(f=>({...f,gid:e.target.value}))} placeholder="Dejar vacío = primera hoja. O pegar el gid de la pestaña" style={INP} />
-                    <div style={{ color:'#52525b', fontSize:11, marginTop:5 }}>Si el Sheet tiene varias hojas: hacé clic en la pestaña deseada dentro de Google Sheets, mirá el número que aparece después de "gid=" en la URL, y pegalo acá. Cada hoja se conecta como una fuente de datos separada.</div>
+                    <input value={sourceForm.gid} onChange={e=>setSourceForm(f=>({...f,gid:e.target.value}))} placeholder="Dejar vacío = primera hoja. Ej: Hoja 2" style={INP} />
+                    <div style={{ color:'#52525b', fontSize:11, marginTop:5 }}>Si el Sheet tiene varias hojas, escribí acá el nombre exacto de la pestaña (tal como aparece abajo en Google Sheets, ej: "Hoja 2"). Cada hoja se conecta como una fuente de datos separada.</div>
                   </div>
                   <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
                     <button type="button" onClick={()=>{setShowNewSource(false);setSourceError('')}} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
