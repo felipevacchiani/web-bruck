@@ -1,5 +1,12 @@
 # Changelog — BRUCK APP
 
+## 2026-07-20 — Informes personalizados: editor visual (WYSIWYG) en vez de HTML crudo
+
+- fix: "Editar contenido" mostraba el HTML crudo en un textarea monoespaciado — poco intuitivo para uso no técnico. Ahora es un editor visual (`contentEditable`) que se ve con el mismo diseño del informe final (`bodyContentCss()` factorizado en `lib/report-template.ts`, compartido entre la plantilla real y el editor).
+- feat: barra de formato básica (Negrita, Título de sección, Párrafo, Lista) además de las herramientas existentes (convertir selección en tabla, insertar gráfico, detectar títulos), todo operando directo sobre el documento visual en vez de sobre texto con etiquetas.
+- fix: al alternar entre "Vista previa" y "Editar contenido" ya no se pierden los cambios sin guardar — el editor queda montado siempre (oculto con `display:none` en vez de desmontarse).
+- Build y typecheck verificados, sin errores nuevos.
+
 ## 2026-07-20 — Informes personalizados: detección de títulos + gráficos insertables
 
 - fix: `lib/report-format.ts` (`promoteBoldNumberedHeadings`) — muchos Word no usan los estilos "Heading" de Word sino texto en negrita con numeración manual ("1. Objetivo", "2) Alcance"); antes esto quedaba como una sola masa de párrafos sin jerarquía. Ahora se detecta ese patrón (regex sobre el HTML, determinístico) y se separa en un `<h2>` real + el resto del párrafo. Se aplica automáticamente al parsear un Word nuevo, y hay un botón "🔧 Detectar títulos" en "Editar contenido" para aplicarlo a informes ya creados.
