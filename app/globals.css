@@ -1,6 +1,40 @@
+:root {
+  --bruck-green: #31AE79;
+  --bruck-green-light: #99D0B8;
+  --bruck-green-dark: #163C30;
+  --bruck-green-deep: #0E241D;
+
+  --background-primary: #090B0A;
+  --background-secondary: #111512;
+  --background-tertiary: #171C19;
+
+  --cream-primary: #F3EFE5;
+  --cream-secondary: #E8E1D2;
+  --white-warm: #F5F5F2;
+
+  --text-primary: #F5F5F2;
+  --text-secondary: #B8BDB9;
+  --text-tertiary: #858C87;
+  --text-dark: #121714;
+
+  --border-dark: #2A302C;
+  --border-light: #D8D1C4;
+
+  --error: #E47B68;
+  --warning: #D9AD5B;
+
+  --radius-small: 12px;
+  --radius-medium: 16px;
+  --radius-large: 24px;
+  --radius-pill: 999px;
+
+  --font-sans: var(--font-geist-sans), "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
-body { background-color: #0a0a0a; color: #fff; font-family: var(--font-inter), system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+body { background-color: var(--background-primary); color: var(--text-primary); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
 
 /* Layout */
 .min-h-screen { min-height: 100vh; }
@@ -112,14 +146,14 @@ th, td { padding: 0; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #111; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #444; }
+::-webkit-scrollbar-track { background: var(--background-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
 /* Input */
-input { background-color: #18181b; border: 1px solid #3f3f46; color: #fff; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; width: 100%; outline: none; }
-input:focus { border-color: #31AE79; }
-input::placeholder { color: #52525b; }
+input { background-color: var(--background-secondary); border: 1px solid rgba(255,255,255,0.12); color: var(--text-primary); border-radius: var(--radius-small); padding: 0.625rem 1rem; font-size: 0.875rem; width: 100%; outline: none; }
+input:focus { border-color: var(--bruck-green); box-shadow: 0 0 0 3px rgba(49,174,121,0.14); }
+input::placeholder { color: var(--text-tertiary); }
 
 /* Button */
 button { cursor: pointer; font-family: inherit; }

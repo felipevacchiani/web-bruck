@@ -1,5 +1,14 @@
 # Changelog — BRUCK APP
 
+## 2026-07-17 — Rediseño de identidad BRUCK: Fase A (tokens + tipografía base)
+
+- feat: instalada tipografía Geist Sans/Geist Mono (paquete `geist`) vía `app/layout.tsx`.
+- feat: `lib/ui/theme.ts` — objeto TS con toda la paleta de la guía de marca (verdes, fondos, cremas, textos, bordes, error/warning, radios).
+- feat: `app/globals.css` — variables CSS (`:root`) con la misma paleta; fondo/texto base del `body` ahora usan `var(--background-primary)` (`#090B0A`) y `var(--text-primary)` (`#F5F5F2`) en vez del negro/blanco puro anteriores; inputs y scrollbar actualizados a los nuevos tokens.
+- feat: `tailwind.config.js` extendido con la paleta completa y `fontFamily` (queda preparado pero inerte: el proyecto no tiene `postcss.config.js`, así que Tailwind nunca se compiló — ver `docs/DECISIONES.md`).
+- Alcance: esta fase es solo la base (fuente + tokens + fondo global). El resto de las pantallas (login, portal del cliente, panel admin) todavía usan sus colores hardcodeados anteriores — se van a migrar en las próximas fases (B/C/D), cada una verificada en el navegador antes de seguir.
+- Build y typecheck verificados, sin errores nuevos.
+
 ## 2026-07-17 — Configuración de gráfico: tipo (barras/línea/torta) y columnas elegibles por el admin
 
 - feat: migración `bruck-migration-v23.sql` agrega `chart_type`, `chart_label_col`, `chart_value_col` a `data_sources` (nullable — si quedan vacíos se mantiene la detección automática anterior).

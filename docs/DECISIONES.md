@@ -1,6 +1,16 @@
 # Decisiones — BRUCK APP
 
-_Última actualización: 2026-07-14_
+_Última actualización: 2026-07-17_
+
+## 2026-07-17 — Rediseño de identidad visual: Fase A (base de tokens)
+
+**Contexto:** el usuario pidió aplicar la guía de identidad visual de BRUCK (paleta, tipografía Geist, radios, sombras) a todo el portal. Relevamiento previo: ~700 colores hardcodeados en estilos inline repartidos en 13 archivos (`client-detail.tsx` 161, `contabilidad-panel.tsx` 205, `client-dashboard.tsx` 157, resto de páginas admin/login/auditoría el resto). Además se detectó que `tailwind.config.js` existe pero **no está wireado** (no hay `postcss.config.js` ni directivas `@tailwind` en `globals.css`) — las clases de Tailwind nunca se compilaron; lo que sí se usa es un micro-set de clases utilitarias escritas a mano en `globals.css` (para login/reset-password) más `style={{}}` inline con hex literal en el resto del código.
+
+**Decisiones:**
+- No reescribir los ~700 usos de color de una sola vez: se aborda en fases (A base → B portal cliente → C panel admin → D resto), cada una verificada en el navegador por el usuario antes de seguir.
+- No wirear Tailwind ahora (agregar `postcss.config.js` real) — sería un cambio de infraestructura no pedido, con riesgo de romper todo el CSS existente de golpe. Se actualiza `tailwind.config.js` con la paleta completa igual, por si se decide wirear más adelante, pero queda inerte por ahora.
+- Se centralizan los tokens en dos lugares: variables CSS en `app/globals.css` (`:root`, usables incluso desde `style={{ background: 'var(--bruck-green)' }}`) y un objeto TS en `lib/ui/theme.ts` (para casos donde se necesite el valor hex real, ej. cálculos de `rgba()` con opacidad variable). Las fases B/C/D deben importar de `theme.ts` en vez de repetir hex literales nuevos.
+- Tipografía: se instaló el paquete `geist` (oficial de Vercel, wrapper de `next/font/local`) en vez de `next/font/google`, porque Next 14.2 embebe una lista de Google Fonts fija al momento de su release y es probable que no incluya Geist (agregada después a Google Fonts).
 
 ## 2026-07-14 — Saneamiento inicial (Fase 0)
 
