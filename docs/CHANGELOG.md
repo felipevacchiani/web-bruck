@@ -1,5 +1,15 @@
 # Changelog — BRUCK APP
 
+## 2026-07-20 — Informes personalizados: paleta de color, contenido editable y nombre de organización real
+
+- feat: migración `bruck-migration-v25.sql` agrega `body_html` (contenido crudo, sin la plantilla envolvente — permite editar y re-generar sin perder el original) y `accent_color` a `custom_reports`.
+- feat: `lib/report-colors.ts` — paleta de 8 colores (`REPORT_PALETTE`) y `deriveReportTheme()` que calcula tonos claro/oscuro del color elegido para el degradado del header, bordes y tintes de tabla.
+- feat: selector de color (círculos de paleta) al crear un informe y también dentro de la vista previa, para cambiarlo sin tener que recrear el informe.
+- feat: modo "Editar contenido" en la vista previa — textarea con el HTML crudo y un botón "Convertir selección en tabla": tomás líneas separadas por coma/punto y coma/tab (primera línea = encabezados) y las convierte en una tabla HTML real, insertada en el lugar de la selección.
+- fix: el header y el pie del informe decían "BRUCK" fijo — ahora usan el nombre real de la organización dueña del cliente (`organizations.name`), importante porque el portal es multi-tenant y otras consultoras usan el mismo sistema.
+- Verificado generando informes de muestra con `tsx` (color azul + nombre de organización distinto) y revisándolos como Artifact antes de aplicar el cambio.
+- Build y typecheck verificados, sin errores nuevos.
+
 ## 2026-07-20 — Informes personalizados: plantilla HTML mucho más "pro"
 
 - feat: `lib/report-template.ts` rediseñado — página "papel" blanca centrada con sombra sobre fondo gris cálido (efecto documento), header con degradado verde oscuro + glow radial + logo BRUCK, tablas presentadas como tarjetas con encabezado degradado y filas alternadas, imágenes con sombra, footer con marca.

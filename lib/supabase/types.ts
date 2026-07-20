@@ -290,6 +290,8 @@ export interface CustomReport {
   source_type: ReportSourceType
   source_ref: string | null
   html_content: string
+  body_html: string
+  accent_color: string
   status: ReportStatus
   created_at: string
   updated_at: string

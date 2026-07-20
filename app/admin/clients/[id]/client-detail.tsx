@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Profile, FileRecord, FileCategory, TaxSubcategory, DocStatus, ChartType } from '@/lib/supabase/types'
+import { REPORT_PALETTE } from '@/lib/report-colors'
 import { FILE_CATEGORIES, TAX_SUBCATEGORIES, DOC_STATUSES, MONTHS, FISCAL_YEARS, TASK_STATUSES } from '@/lib/supabase/types'
 
 interface Props { client: Profile; files: FileRecord[] }
@@ -323,14 +324,16 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
 
   const [reports, setReports] = useState<any[]>([])
   const [showNewReport, setShowNewReport] = useState(false)
-  const [reportForm, setReportForm] = useState({ title: '', client_display_name: '', source_type: 'google_sheet' as 'google_sheet'|'word_docx', url: '' })
+  const [reportForm, setReportForm] = useState({ title: '', client_display_name: '', source_type: 'google_sheet' as 'google_sheet'|'word_docx', url: '', accent_color: '#31AE79' })
   const reportFileRef = useRef<HTMLInputElement>(null)
   const [savingReport, setSavingReport] = useState(false)
   const [reportError, setReportError] = useState('')
   const [viewingReport, setViewingReport] = useState<any>(null)
-  const [reportDraft, setReportDraft] = useState({ title: '', client_display_name: '' })
+  const [reportDraft, setReportDraft] = useState({ title: '', client_display_name: '', body_html: '' })
+  const [reportEditMode, setReportEditMode] = useState<'preview'|'editar'>('preview')
   const [savingReportEdit, setSavingReportEdit] = useState(false)
   const [regeneratingReport, setRegeneratingReport] = useState(false)
+  const reportBodyRef = useRef<HTMLTextAreaElement>(null)
 
   const loadReports = () => {
     fetch(`/api/admin/clients/${client.id}/custom-reports`)
@@ -346,6 +349,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
     fd.set('title', reportForm.title)
     fd.set('client_display_name', reportForm.client_display_name)
     fd.set('source_type', reportForm.source_type)
+    fd.set('accent_color', reportForm.accent_color)
     if (reportForm.source_type === 'google_sheet') {
       fd.set('url', reportForm.url)
     } else if (reportFileRef.current?.files?.[0]) {
@@ -358,17 +362,17 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
     setSavingReport(false)
     if (!res.ok) { setReportError(d.error || 'Error al generar el informe'); return }
     setShowNewReport(false)
-    setReportForm({ title: '', client_display_name: '', source_type: 'google_sheet', url: '' })
+    setReportForm({ title: '', client_display_name: '', source_type: 'google_sheet', url: '', accent_color: '#31AE79' })
     if (reportFileRef.current) reportFileRef.current.value = ''
     loadReports()
     viewReport(d.data)
   }
 
   const viewReport = async (r: any) => {
-    setViewingReport(r); setReportDraft({ title: r.title, client_display_name: r.client_display_name || '' })
+    setViewingReport(r); setReportDraft({ title: r.title, client_display_name: r.client_display_name || '', body_html: r.body_html || '' }); setReportEditMode('preview')
     const res = await fetch(`/api/admin/clients/${client.id}/custom-reports/${r.id}`)
     const d = await res.json()
-    if (res.ok) setViewingReport(d.data)
+    if (res.ok) { setViewingReport(d.data); setReportDraft({ title: d.data.title, client_display_name: d.data.client_display_name || '', body_html: d.data.body_html || '' }) }
   }
 
   const saveReportEdit = async (extra?: Record<string, any>) => {
@@ -380,7 +384,27 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
     })
     const d = await res.json()
     setSavingReportEdit(false)
-    if (res.ok) { setViewingReport(d.data); loadReports() }
+    if (res.ok) { setViewingReport(d.data); setReportDraft(rd=>({...rd, body_html: d.data.body_html})); loadReports() }
+  }
+
+  const saveReportColor = (color: string) => saveReportEdit({ accent_color: color })
+
+  const saveReportContent = () => saveReportEdit({ body_html: reportDraft.body_html })
+
+  const convertSelectionToTable = () => {
+    const ta = reportBodyRef.current
+    if (!ta) return
+    const { selectionStart, selectionEnd, value } = ta
+    const selected = value.slice(selectionStart, selectionEnd)
+    if (!selected.trim()) { alert('Seleccioná el texto (líneas) que querés convertir en tabla.'); return }
+    const lines = selected.split('\n').map(l => l.trim()).filter(Boolean)
+    const delim = lines[0].includes('\t') ? '\t' : lines[0].includes(';') ? ';' : ','
+    const rows = lines.map(l => l.split(delim).map(c => c.trim()))
+    const escape = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    const [head, ...body] = rows
+    const table = `<table><thead><tr>${head.map(h=>`<th>${escape(h)}</th>`).join('')}</tr></thead><tbody>${body.map(r=>`<tr>${r.map(c=>`<td>${escape(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`
+    const newValue = value.slice(0, selectionStart) + table + value.slice(selectionEnd)
+    setReportDraft(d => ({ ...d, body_html: newValue }))
   }
 
   const regenerateReport = async () => {
@@ -1036,16 +1060,25 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     </div>
                   </div>
                   {reportForm.source_type === 'google_sheet' ? (
-                    <div style={{ marginBottom:20 }}>
+                    <div style={{ marginBottom:14 }}>
                       <label style={LBL}>URL del Google Sheet</label>
                       <input required value={reportForm.url} onChange={e=>setReportForm(f=>({...f,url:e.target.value}))} placeholder="https://docs.google.com/spreadsheets/d/…" style={INP} />
                     </div>
                   ) : (
-                    <div style={{ marginBottom:20 }}>
+                    <div style={{ marginBottom:14 }}>
                       <label style={LBL}>Archivo Word (.docx)</label>
                       <input ref={reportFileRef} type="file" accept=".docx" required style={INP} />
                     </div>
                   )}
+                  <div style={{ marginBottom:20 }}>
+                    <label style={LBL}>Color del informe</label>
+                    <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                      {REPORT_PALETTE.map(p => (
+                        <button key={p.value} type="button" onClick={()=>setReportForm(f=>({...f,accent_color:p.value}))} title={p.label}
+                          style={{ width:28, height:28, borderRadius:'50%', background:p.value, border:reportForm.accent_color===p.value?'2px solid #121714':'2px solid transparent', boxShadow:'0 0 0 1px rgba(18,23,20,0.12)', cursor:'pointer', padding:0 }} />
+                      ))}
+                    </div>
+                  </div>
                   <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
                     <button type="button" onClick={()=>{setShowNewReport(false);setReportError('')}} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
                     <button type="submit" disabled={savingReport} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:13, padding:'9px 18px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingReport?0.6:1 }}>
@@ -1060,7 +1093,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
           {viewingReport && (
             <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.8)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={()=>setViewingReport(null)}>
               <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.14)', borderRadius:16, padding:20, width:'95vw', maxWidth:1100, height:'88vh', display:'flex', flexDirection:'column' }} onClick={e=>e.stopPropagation()}>
-                <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:14, gap:12, flexWrap:'wrap' }}>
+                <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:10, gap:12, flexWrap:'wrap' }}>
                   <div style={{ display:'flex', gap:10, flexWrap:'wrap', flex:1, minWidth:260 }}>
                     <input value={reportDraft.title} onChange={e=>setReportDraft(d=>({...d,title:e.target.value}))} placeholder="Título" style={{ ...INP, width:220 }} />
                     <input value={reportDraft.client_display_name} onChange={e=>setReportDraft(d=>({...d,client_display_name:e.target.value}))} placeholder="Nombre del cliente" style={{ ...INP, width:200 }} />
@@ -1078,8 +1111,36 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     <button onClick={()=>setViewingReport(null)} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:13, padding:'7px 14px', borderRadius:8, cursor:'pointer' }}>✕ Cerrar</button>
                   </div>
                 </div>
-                <div style={{ flex:1, borderRadius:12, overflow:'hidden', border:'1px solid rgba(18,23,20,0.10)' }}>
-                  <iframe srcDoc={viewingReport.html_content} style={{ width:'100%', height:'100%', border:'none', background:'#fff' }} sandbox="" />
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10, gap:12, flexWrap:'wrap' }}>
+                  <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+                    <span style={{ color:'#858C87', fontSize:11, marginRight:4 }}>Color:</span>
+                    {REPORT_PALETTE.map(p => (
+                      <button key={p.value} type="button" onClick={()=>saveReportColor(p.value)} title={p.label}
+                        style={{ width:22, height:22, borderRadius:'50%', background:p.value, border:viewingReport.accent_color===p.value?'2px solid #121714':'2px solid transparent', boxShadow:'0 0 0 1px rgba(18,23,20,0.12)', cursor:'pointer', padding:0 }} />
+                    ))}
+                  </div>
+                  <div style={{ display:'flex', background:'rgba(18,23,20,0.05)', border:'1px solid rgba(18,23,20,0.12)', borderRadius:8, padding:2 }}>
+                    {(['preview','editar'] as const).map(m => (
+                      <button key={m} onClick={()=>setReportEditMode(m)} style={{ padding:'5px 12px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:reportEditMode===m?'rgba(49,174,121,0.15)':'none', color:reportEditMode===m?'#31AE79':'#4E5651' }}>
+                        {m==='preview'?'Vista previa':'Editar contenido'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ flex:1, borderRadius:12, overflow:'hidden', border:'1px solid rgba(18,23,20,0.10)', display:'flex', flexDirection:'column' }}>
+                  {reportEditMode === 'preview' ? (
+                    <iframe srcDoc={viewingReport.html_content} style={{ width:'100%', height:'100%', border:'none', background:'#fff' }} sandbox="" />
+                  ) : (
+                    <>
+                      <div style={{ display:'flex', gap:8, padding:8, borderBottom:'1px solid rgba(18,23,20,0.10)', background:'#FBFAF6' }}>
+                        <button onClick={convertSelectionToTable} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>▦ Convertir selección en tabla</button>
+                        <span style={{ color:'#858C87', fontSize:11, alignSelf:'center' }}>Seleccioná líneas separadas por coma, punto y coma o tab (la primera línea son los encabezados)</span>
+                        <button onClick={saveReportContent} disabled={savingReportEdit} style={{ marginLeft:'auto', background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:12, padding:'6px 14px', borderRadius:8, border:'none', cursor:'pointer', opacity:savingReportEdit?0.6:1 }}>{savingReportEdit?'Guardando…':'Guardar contenido'}</button>
+                      </div>
+                      <textarea ref={reportBodyRef} value={reportDraft.body_html} onChange={e=>setReportDraft(d=>({...d,body_html:e.target.value}))}
+                        style={{ flex:1, width:'100%', border:'none', outline:'none', resize:'none', padding:16, fontFamily:'ui-monospace,monospace', fontSize:12.5, color:'#121714', background:'#fff' }} />
+                    </>
+                  )}
                 </div>
               </div>
             </div>

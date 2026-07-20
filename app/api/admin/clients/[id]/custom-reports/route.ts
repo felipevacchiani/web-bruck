@@ -46,6 +46,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   const title = (formData.get('title') as string || '').trim()
   const clientDisplayName = (formData.get('client_display_name') as string || '').trim() || null
   const sourceType = formData.get('source_type') as string
+  const accentColor = (formData.get('accent_color') as string || '').trim() || '#31AE79'
 
   if (!title) return NextResponse.json({ error: 'El título es requerido' }, { status: 400 })
   if (!['google_sheet', 'word_docx'].includes(sourceType)) {
@@ -83,7 +84,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
   }
 
-  const htmlContent = buildReportHtml({ title, clientName: clientDisplayName, bodyHtml })
+  const { data: org } = await (admin.from('organizations') as any).select('name').eq('id', client.organization_id).single()
+  const htmlContent = buildReportHtml({ title, clientName: clientDisplayName, bodyHtml, orgName: org?.name, accentColor })
 
   const { data, error } = await (admin.from('custom_reports') as any).insert({
     organization_id: client.organization_id,
@@ -93,6 +95,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     client_display_name: clientDisplayName,
     source_type: sourceType,
     source_ref: sourceRef,
+    body_html: bodyHtml,
+    accent_color: accentColor,
     html_content: htmlContent,
     status: 'borrador',
   }).select().single()

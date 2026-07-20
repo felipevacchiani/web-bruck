@@ -45,27 +45,27 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   if (typeof body.title === 'string' && body.title.trim()) update.title = body.title.trim()
   if ('client_display_name' in body) update.client_display_name = (body.client_display_name || '').trim() || null
+  if (typeof body.accent_color === 'string' && /^#[0-9a-fA-F]{3,6}$/.test(body.accent_color)) update.accent_color = body.accent_color
+  if (typeof body.body_html === 'string') update.body_html = body.body_html
 
   if (body.regenerate && report.source_type === 'google_sheet') {
     try {
       const sheetData = await fetchGoogleSheetData(report.source_ref)
-      const bodyHtml = sheetDataToReportBody(sheetData)
-      update.html_content = buildReportHtml({
-        title: update.title || report.title,
-        clientName: 'client_display_name' in update ? update.client_display_name : report.client_display_name,
-        bodyHtml,
-      })
+      update.body_html = sheetDataToReportBody(sheetData)
     } catch (e: any) {
       return NextResponse.json({ error: e.message || 'Error al releer el Sheet' }, { status: 502 })
     }
-  } else if (update.title || 'client_display_name' in update) {
-    // Título o nombre de cliente cambiaron sin regenerar el contenido: re-envolver el body actual con el header actualizado.
-    const bodyMatch = report.html_content.match(/<div class="report-body">([\s\S]*)<\/div>\s*<div class="report-footer">/)
-    const bodyHtml = bodyMatch ? bodyMatch[1] : report.html_content
+  }
+
+  const needsRebuild = update.title || 'client_display_name' in update || update.accent_color || update.body_html !== undefined
+  if (needsRebuild) {
+    const { data: org } = await (admin.from('organizations') as any).select('name').eq('id', client.organization_id).single()
     update.html_content = buildReportHtml({
       title: update.title || report.title,
       clientName: 'client_display_name' in update ? update.client_display_name : report.client_display_name,
-      bodyHtml,
+      bodyHtml: update.body_html !== undefined ? update.body_html : report.body_html,
+      orgName: org?.name,
+      accentColor: update.accent_color || report.accent_color,
     })
   }
 
