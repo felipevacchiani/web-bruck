@@ -1,5 +1,11 @@
 # Changelog — BRUCK APP
 
+## 2026-07-17 — Login: layout split-screen con foto real de oficina BRUCK
+
+- feat: `app/login/page.tsx` rediseñado como split-screen (mockup provisto por el usuario): panel izquierdo con foto real de la oficina BRUCK (`public/login-hero.png`) + overlay oscuro + titular "Optimizamos tu trabajo." y tagline; panel derecho con el formulario de login sobre fondo crema, sin tarjeta flotante. En mobile (`max-width:860px`) el panel de la foto se oculta y solo queda el formulario.
+- Imagen agregada a `public/` (nuevo directorio del proyecto) para que Next.js la sirva como asset estático.
+- Build y typecheck verificados, sin errores nuevos.
+
 ## 2026-07-17 — Rediseño de identidad BRUCK: Fase C (Panel del Admin)
 
 - feat: `app/admin/clients/[id]/contabilidad/contabilidad-panel.tsx` (205 colores, compartido entre la ficha de cliente del admin y la pestaña "Contabilidad" del portal del cliente) y `app/admin/clients/[id]/client-detail.tsx` (ficha de cliente completa: archivos, solicitudes, tareas, usuarios, perfil de empresa, fuentes de datos) migrados a la paleta clara de la guía, mismo mapeo de tokens que la Fase B.
