@@ -37,6 +37,28 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }
 }
 
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const { id, sourceId } = await params
+  const { admin, client } = await verifyAdminForClient(id)
+  if (!admin || !client) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+
+  const body = await req.json()
+  const chartType = body.chart_type
+  if (chartType !== null && !['barras', 'linea', 'torta'].includes(chartType)) {
+    return NextResponse.json({ error: 'Tipo de gráfico inválido' }, { status: 400 })
+  }
+
+  const { error } = await (admin.from('data_sources') as any)
+    .update({
+      chart_type: chartType,
+      chart_label_col: body.chart_label_col,
+      chart_value_col: body.chart_value_col,
+    })
+    .eq('id', sourceId).eq('company_id', client.company_id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
+}
+
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const { id, sourceId } = await params
   const { admin, client } = await verifyAdminForClient(id)

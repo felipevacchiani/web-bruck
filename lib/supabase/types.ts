@@ -258,6 +258,7 @@ export interface ClientRequest {
 // ── Fuentes de datos externas (Centro de Datos) ────────────────────────────
 
 export type DataSourceType = 'google_sheet'
+export type ChartType = 'barras' | 'linea' | 'torta'
 
 export interface DataSource {
   id: string
@@ -267,6 +268,9 @@ export interface DataSource {
   name: string
   type: DataSourceType
   url: string
+  chart_type: ChartType | null
+  chart_label_col: number | null
+  chart_value_col: number | null
   created_at: string
   updated_at: string
 }

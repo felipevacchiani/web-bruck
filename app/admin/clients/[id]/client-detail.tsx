@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import type { Profile, FileRecord, FileCategory, TaxSubcategory, DocStatus } from '@/lib/supabase/types'
+import type { Profile, FileRecord, FileCategory, TaxSubcategory, DocStatus, ChartType } from '@/lib/supabase/types'
 import { FILE_CATEGORIES, TAX_SUBCATEGORIES, DOC_STATUSES, MONTHS, FISCAL_YEARS, TASK_STATUSES } from '@/lib/supabase/types'
 
 interface Props { client: Profile; files: FileRecord[] }
@@ -33,6 +33,107 @@ function detectChartColumn(data: { headers: string[]; rows: string[][] } | null)
 }
 
 const toNum = (s: string) => Number(s.replace(/[.,](?=\d{3})/g, '').replace(',', '.')) || 0
+function resolveChartConfig(source: any, data: { headers: string[]; rows: string[][] } | null): { type: ChartType; labelIdx: number; valueIdx: number } | null {
+  if (!data || !data.rows.length) return null
+  if (source && source.chart_label_col != null && source.chart_value_col != null &&
+      source.chart_label_col < data.headers.length && source.chart_value_col < data.headers.length) {
+    return { type: source.chart_type || 'barras', labelIdx: source.chart_label_col, valueIdx: source.chart_value_col }
+  }
+  const auto = detectChartColumn(data)
+  if (!auto) return null
+  return { type: 'barras', labelIdx: auto.labelIdx, valueIdx: auto.valueIdx }
+}
+
+const CHART_COLORS = ['#31AE79','#3b82f6','#f59e0b','#ef4444','#a855f7','#06b6d4','#ec4899','#84cc16']
+
+function ChartRender({ data, labelIdx, valueIdx, type }: { data: { headers: string[]; rows: string[][] }; labelIdx: number; valueIdx: number; type: ChartType }) {
+  const values = data.rows.map(r => toNum(r[valueIdx]))
+  const labels = data.rows.map(r => r[labelIdx] || '')
+  const W = 1400, H = 560, padB = 60, padT = 20, padL = 20, padR = 20
+
+  if (type === 'torta') {
+    const total = values.reduce((a,b) => a + Math.abs(b), 0) || 1
+    const cx = W/2, cy = H/2 - 20, r = Math.min(W,H)/2 - 60
+    let angle = -Math.PI/2
+    const slices = values.map((v,i) => {
+      const frac = Math.abs(v) / total
+      const start = angle
+      const end = angle + frac * Math.PI * 2
+      angle = end
+      const x1 = cx + r*Math.cos(start), y1 = cy + r*Math.sin(start)
+      const x2 = cx + r*Math.cos(end), y2 = cy + r*Math.sin(end)
+      const large = end - start > Math.PI ? 1 : 0
+      return { path: `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z`, color: CHART_COLORS[i % CHART_COLORS.length], pct: (frac*100).toFixed(1) }
+    })
+    return (
+      <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
+        <svg viewBox={`0 0 ${W} ${H}`} style={{ display:'block', width:'100%', flex:1, minHeight:0 }}>
+          {slices.map((s,i) => <path key={i} d={s.path} fill={s.color} stroke="#0d0d0d" strokeWidth={2} />)}
+        </svg>
+        <div style={{ display:'flex', flexWrap:'wrap', gap:12, justifyContent:'center', marginTop:8 }}>
+          {labels.map((l,i) => (
+            <div key={i} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color:'#a1a1aa' }}>
+              <span style={{ width:10, height:10, borderRadius:3, background:CHART_COLORS[i%CHART_COLORS.length], display:'inline-block' }} />
+              {l} ({slices[i].pct}%)
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const maxV = Math.max(1, ...values.map(v => Math.abs(v)))
+  const innerW = W - padL - padR
+
+  if (type === 'linea') {
+    const step = data.rows.length > 1 ? innerW / (data.rows.length - 1) : 0
+    const points = values.map((v,i) => {
+      const x = padL + i * step
+      const y = H - padB - (Math.abs(v)/maxV) * (H-padB-padT)
+      return { x, y }
+    })
+    const path = points.map((p,i) => `${i===0?'M':'L'}${p.x},${p.y}`).join(' ')
+    return (
+      <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
+        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display:'block', width:'100%', flex:1, minHeight:0 }}>
+          <line x1={padL} y1={H-padB} x2={W-padR} y2={H-padB} stroke="rgba(255,255,255,0.1)" />
+          <path d={path} fill="none" stroke="#31AE79" strokeWidth={3} />
+          {points.map((p,i) => (
+            <g key={i}>
+              <circle cx={p.x} cy={p.y} r={5} fill="#31AE79" />
+              <text x={p.x} y={H-padB+22} fill="#52525b" fontSize={14} textAnchor="middle">{labels[i].slice(0,12)}</text>
+              <text x={p.x} y={p.y-12} fill="#a1a1aa" fontSize={13} textAnchor="middle">{data.rows[i][valueIdx]}</text>
+            </g>
+          ))}
+        </svg>
+        <div style={{ color:'#52525b', fontSize:11, marginTop:8 }}>{data.headers[labelIdx]} vs. {data.headers[valueIdx]}</div>
+      </div>
+    )
+  }
+
+  const barGap = 16
+  const barW = Math.max(8, Math.min(90, innerW / data.rows.length - barGap))
+  return (
+    <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display:'block', width:'100%', flex:1, minHeight:0 }}>
+        <line x1={padL} y1={H-padB} x2={W-padR} y2={H-padB} stroke="rgba(255,255,255,0.1)" />
+        {values.map((v, i) => {
+          const h = (Math.abs(v) / maxV) * (H - padB - padT)
+          const x = padL + i * (barW + barGap)
+          return (
+            <g key={i}>
+              <rect x={x} y={H-padB-h} width={barW} height={h} fill="#31AE79" rx={2} />
+              <text x={x+barW/2} y={H-padB+22} fill="#52525b" fontSize={14} textAnchor="middle">{labels[i].slice(0,12)}</text>
+              <text x={x+barW/2} y={H-padB-h-8} fill="#a1a1aa" fontSize={13} textAnchor="middle">{data.rows[i][valueIdx]}</text>
+            </g>
+          )
+        })}
+      </svg>
+      <div style={{ color:'#52525b', fontSize:11, marginTop:8 }}>{data.headers[labelIdx]} vs. {data.headers[valueIdx]}</div>
+    </div>
+  )
+}
+
 function withGid(url: string, sheet: string): string {
   const v = sheet.trim()
   const cleaned = url.replace(/[?&]?(gid=\d+|bruckSheet=[^&#]+)/g, '').replace(/[?&]$/, '')
@@ -181,6 +282,9 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const [sourceDataError, setSourceDataError] = useState('')
   const [loadingSourceData, setLoadingSourceData] = useState(false)
   const [sourceView, setSourceView] = useState<'tabla'|'grafico'>('tabla')
+  const [chartCfgOpen, setChartCfgOpen] = useState(false)
+  const [chartCfgDraft, setChartCfgDraft] = useState<{ type: ChartType; labelCol: number; valueCol: number } | null>(null)
+  const [savingChartCfg, setSavingChartCfg] = useState(false)
 
   const loadDataSources = () => {
     fetch(`/api/admin/clients/${client.id}/data-sources`)
@@ -209,12 +313,27 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   }
 
   const viewSource = async (source: any) => {
-    setViewingSource(source); setSourceData(null); setSourceDataError(''); setLoadingSourceData(true); setSourceView('tabla')
+    setViewingSource(source); setSourceData(null); setSourceDataError(''); setLoadingSourceData(true); setSourceView('tabla'); setChartCfgOpen(false); setChartCfgDraft(null)
     const res = await fetch(`/api/admin/clients/${client.id}/data-sources/${source.id}`)
     const d = await res.json()
     setLoadingSourceData(false)
     if (!res.ok) { setSourceDataError(d.error || 'Error al leer el Sheet'); return }
     setSourceData(d)
+  }
+
+  const saveChartCfg = async () => {
+    if (!chartCfgDraft || !viewingSource) return
+    setSavingChartCfg(true)
+    const res = await fetch(`/api/admin/clients/${client.id}/data-sources/${viewingSource.id}`, {
+      method: 'PATCH', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ chart_type: chartCfgDraft.type, chart_label_col: chartCfgDraft.labelCol, chart_value_col: chartCfgDraft.valueCol }),
+    })
+    setSavingChartCfg(false)
+    if (!res.ok) return
+    const updated = { ...viewingSource, chart_type: chartCfgDraft.type, chart_label_col: chartCfgDraft.labelCol, chart_value_col: chartCfgDraft.valueCol }
+    setViewingSource(updated)
+    setDataSources(list => list.map(s => s.id === updated.id ? updated : s))
+    setChartCfgOpen(false)
   }
 
   const [showNewTask, setShowNewTask] = useState(false)
@@ -847,54 +966,64 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
                   <div style={{ color:'white', fontSize:15, fontWeight:700 }}>📊 {viewingSource.name}</div>
                   <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-                    {detectChartColumn(sourceData) && (
-                      <div style={{ display:'flex', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:8, padding:2 }}>
-                        {(['tabla','grafico'] as const).map(v => (
-                          <button key={v} onClick={()=>setSourceView(v)} style={{ padding:'5px 11px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:sourceView===v?'rgba(49,174,121,0.15)':'none', color:sourceView===v?'#31AE79':'#71717a' }}>
-                            {v==='tabla'?'Tabla':'Gráfico'}
-                          </button>
-                        ))}
-                      </div>
+                    {resolveChartConfig(viewingSource, sourceData) && (
+                      <>
+                        <div style={{ display:'flex', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:8, padding:2 }}>
+                          {(['tabla','grafico'] as const).map(v => (
+                            <button key={v} onClick={()=>setSourceView(v)} style={{ padding:'5px 11px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer', background:sourceView===v?'rgba(49,174,121,0.15)':'none', color:sourceView===v?'#31AE79':'#71717a' }}>
+                              {v==='tabla'?'Tabla':'Gráfico'}
+                            </button>
+                          ))}
+                        </div>
+                        {sourceView === 'grafico' && (
+                          <button onClick={()=>{
+                            const cfg = resolveChartConfig(viewingSource, sourceData)!
+                            setChartCfgDraft({ type: cfg.type, labelCol: cfg.labelIdx, valueCol: cfg.valueIdx })
+                            setChartCfgOpen(o=>!o)
+                          }} style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', color:'#a1a1aa', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>⚙ Configurar</button>
+                        )}
+                      </>
                     )}
                     <button onClick={()=>setViewingSource(null)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'7px 14px', borderRadius:8, cursor:'pointer' }}>✕ Cerrar</button>
                   </div>
                 </div>
+                {sourceView === 'grafico' && chartCfgOpen && chartCfgDraft && sourceData && (
+                  <div style={{ display:'flex', gap:14, alignItems:'flex-end', flexWrap:'wrap', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:10, padding:14, marginBottom:14 }}>
+                    <div>
+                      <label style={LBL}>Tipo de gráfico</label>
+                      <select value={chartCfgDraft.type} onChange={e=>setChartCfgDraft(c=>c && ({...c, type: e.target.value as ChartType}))} style={SEL}>
+                        <option value="barras">Barras</option>
+                        <option value="linea">Línea</option>
+                        <option value="torta">Torta</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={LBL}>Columna etiqueta</label>
+                      <select value={chartCfgDraft.labelCol} onChange={e=>setChartCfgDraft(c=>c && ({...c, labelCol: Number(e.target.value)}))} style={SEL}>
+                        {sourceData.headers.map((h,i)=><option key={i} value={i}>{h}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={LBL}>Columna valor</label>
+                      <select value={chartCfgDraft.valueCol} onChange={e=>setChartCfgDraft(c=>c && ({...c, valueCol: Number(e.target.value)}))} style={SEL}>
+                        {sourceData.headers.map((h,i)=><option key={i} value={i}>{h}</option>)}
+                      </select>
+                    </div>
+                    <button onClick={saveChartCfg} disabled={savingChartCfg} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'white', fontWeight:600, fontSize:13, padding:'9px 16px', borderRadius:9, border:'none', cursor:'pointer', opacity:savingChartCfg?0.6:1 }}>
+                      {savingChartCfg?'Guardando…':'Guardar'}
+                    </button>
+                    <button onClick={()=>setChartCfgOpen(false)} style={{ background:'none', border:'1px solid rgba(255,255,255,0.1)', color:'#71717a', fontSize:13, padding:'9px 14px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>
+                  </div>
+                )}
                 <div style={{ overflow:'auto', flex:1 }}>
                   {loadingSourceData ? (
                     <div style={{ color:'#52525b', fontSize:13, padding:24, textAlign:'center' }}>Cargando…</div>
                   ) : sourceDataError ? (
                     <div style={{ color:'#f87171', fontSize:13, padding:24, textAlign:'center' }}>{sourceDataError}</div>
                   ) : sourceData && sourceData.rows.length > 0 ? (
-                    sourceView === 'grafico' && detectChartColumn(sourceData) ? (() => {
-                      const { labelIdx, valueIdx } = detectChartColumn(sourceData)!
-                      const values = sourceData.rows.map(r => toNum(r[valueIdx]))
-                      const maxV = Math.max(1, ...values.map(v => Math.abs(v)))
-                      const W = 1400, barGap = 16
-                      const barW = Math.max(8, Math.min(90, (W - 40) / sourceData.rows.length - barGap))
-                      const H = 560, padB = 60, padT = 20
-                      return (
-                        <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
-                          <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display:'block', width:'100%', flex:1, minHeight:0 }}>
-                            <line x1={20} y1={H-padB} x2={W-20} y2={H-padB} stroke="rgba(255,255,255,0.1)" />
-                            {values.map((v, i) => {
-                              const h = (Math.abs(v) / maxV) * (H - padB - padT)
-                              const x = 20 + i * (barW + barGap)
-                              return (
-                                <g key={i}>
-                                  <rect x={x} y={H-padB-h} width={barW} height={h} fill="#31AE79" rx={2} />
-                                  <text x={x+barW/2} y={H-padB+22} fill="#52525b" fontSize={14} textAnchor="middle">
-                                    {(sourceData.rows[i][labelIdx]||'').slice(0,12)}
-                                  </text>
-                                  <text x={x+barW/2} y={H-padB-h-8} fill="#a1a1aa" fontSize={13} textAnchor="middle">
-                                    {sourceData.rows[i][valueIdx]}
-                                  </text>
-                                </g>
-                              )
-                            })}
-                          </svg>
-                          <div style={{ color:'#52525b', fontSize:11, marginTop:8 }}>{sourceData.headers[labelIdx]} vs. {sourceData.headers[valueIdx]}</div>
-                        </div>
-                      )
+                    sourceView === 'grafico' && resolveChartConfig(viewingSource, sourceData) ? (() => {
+                      const cfg = resolveChartConfig(viewingSource, sourceData)!
+                      return <ChartRender data={sourceData} labelIdx={cfg.labelIdx} valueIdx={cfg.valueIdx} type={cfg.type} />
                     })() : (
                     <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
                       <thead>

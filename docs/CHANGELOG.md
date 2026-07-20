@@ -1,5 +1,14 @@
 # Changelog — BRUCK APP
 
+## 2026-07-17 — Configuración de gráfico: tipo (barras/línea/torta) y columnas elegibles por el admin
+
+- feat: migración `bruck-migration-v23.sql` agrega `chart_type`, `chart_label_col`, `chart_value_col` a `data_sources` (nullable — si quedan vacíos se mantiene la detección automática anterior).
+- feat: `PATCH /api/admin/clients/[id]/data-sources/[sourceId]` guarda la configuración.
+- feat: botón "⚙ Configurar" dentro de la vista "Gráfico" (solo admin) — permite elegir tipo de gráfico (Barras/Línea/Torta) y qué columna usar como etiqueta y como valor, en vez de depender de la detección automática de la primera columna numérica.
+- feat: nuevo tipo de gráfico Torta (SVG con arcos calculados a mano) y Línea (path + puntos), reutilizando el mismo patrón sin librerías externas. `ChartRender` centraliza el renderizado de los 3 tipos, usado tanto en la ficha de cliente del admin como en el portal del cliente (que solo lee la configuración guardada, no la edita).
+- Build y typecheck verificados, sin errores nuevos.
+- Pendiente: usuario debe correr `bruck-migration-v23.sql` en Supabase antes de que la configuración persista (sin la migración, el PATCH falla con error de columna inexistente).
+
 ## 2026-07-17 — Fix: campo "Hoja" ahora acepta el nombre de la pestaña, no el gid
 
 - fix: el campo "Hoja" pedía el número de gid (poco usable, requería mirar la URL de cada pestaña); ahora acepta directamente el nombre de la hoja tal como aparece en Google Sheets (ej. "Hoja 2"). Internamente usa el endpoint público `gviz/tq?tqx=out:csv&sheet=NOMBRE` de Google en vez de `export?format=csv&gid=N` cuando se especifica un nombre.
