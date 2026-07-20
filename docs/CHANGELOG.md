@@ -1,5 +1,13 @@
 # Changelog — BRUCK APP
 
+## 2026-07-20 — Informes personalizados: detección de títulos + gráficos insertables
+
+- fix: `lib/report-format.ts` (`promoteBoldNumberedHeadings`) — muchos Word no usan los estilos "Heading" de Word sino texto en negrita con numeración manual ("1. Objetivo", "2) Alcance"); antes esto quedaba como una sola masa de párrafos sin jerarquía. Ahora se detecta ese patrón (regex sobre el HTML, determinístico) y se separa en un `<h2>` real + el resto del párrafo. Se aplica automáticamente al parsear un Word nuevo, y hay un botón "🔧 Detectar títulos" en "Editar contenido" para aplicarlo a informes ya creados.
+- feat: `lib/report-charts.ts` — genera un `<svg>` estático (barras/línea/torta) a partir de filas "etiqueta, valor" pegadas a mano. Botón "📊 Insertar gráfico" en el modo "Editar contenido": elegís tipo, pegás los datos, se inserta en la posición del cursor.
+- Verificado generando un informe de muestra con `tsx` (títulos detectados + gráfico de barras) y revisado como Artifact antes de aplicar el cambio.
+- Sin migración: usa las columnas `body_html`/`accent_color` ya agregadas en la v25.
+- Build y typecheck verificados, sin errores nuevos.
+
 ## 2026-07-20 — Informes personalizados: paleta de color, contenido editable y nombre de organización real
 
 - feat: migración `bruck-migration-v25.sql` agrega `body_html` (contenido crudo, sin la plantilla envolvente — permite editar y re-generar sin perder el original) y `accent_color` a `custom_reports`.

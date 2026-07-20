@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { fetchGoogleSheetData } from '@/lib/google-sheets'
 import { buildReportHtml, sheetDataToReportBody } from '@/lib/report-template'
+import { promoteBoldNumberedHeadings } from '@/lib/report-format'
 import { NextRequest, NextResponse } from 'next/server'
 
 interface Params { params: Promise<{ id: string; reportId: string }> }
@@ -55,6 +56,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     } catch (e: any) {
       return NextResponse.json({ error: e.message || 'Error al releer el Sheet' }, { status: 502 })
     }
+  }
+
+  if (body.fix_headings) {
+    update.body_html = promoteBoldNumberedHeadings(update.body_html !== undefined ? update.body_html : report.body_html)
   }
 
   const needsRebuild = update.title || 'client_display_name' in update || update.accent_color || update.body_html !== undefined

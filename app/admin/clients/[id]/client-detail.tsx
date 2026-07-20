@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Profile, FileRecord, FileCategory, TaxSubcategory, DocStatus, ChartType } from '@/lib/supabase/types'
 import { REPORT_PALETTE } from '@/lib/report-colors'
+import { buildChartHtml, type ReportChartType } from '@/lib/report-charts'
 import { FILE_CATEGORIES, TAX_SUBCATEGORIES, DOC_STATUSES, MONTHS, FISCAL_YEARS, TASK_STATUSES } from '@/lib/supabase/types'
 
 interface Props { client: Profile; files: FileRecord[] }
@@ -334,6 +335,9 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
   const [savingReportEdit, setSavingReportEdit] = useState(false)
   const [regeneratingReport, setRegeneratingReport] = useState(false)
   const reportBodyRef = useRef<HTMLTextAreaElement>(null)
+  const [showChartInsert, setShowChartInsert] = useState(false)
+  const [chartInsertType, setChartInsertType] = useState<ReportChartType>('barras')
+  const [chartInsertData, setChartInsertData] = useState('')
 
   const loadReports = () => {
     fetch(`/api/admin/clients/${client.id}/custom-reports`)
@@ -405,6 +409,23 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
     const table = `<table><thead><tr>${head.map(h=>`<th>${escape(h)}</th>`).join('')}</tr></thead><tbody>${body.map(r=>`<tr>${r.map(c=>`<td>${escape(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`
     const newValue = value.slice(0, selectionStart) + table + value.slice(selectionEnd)
     setReportDraft(d => ({ ...d, body_html: newValue }))
+  }
+
+  const insertChart = () => {
+    const rows = chartInsertData.split('\n').map(l => l.trim()).filter(Boolean).map(line => {
+      const idx = line.lastIndexOf(',')
+      const label = (idx === -1 ? line : line.slice(0, idx)).trim()
+      const value = Number((idx === -1 ? '' : line.slice(idx + 1)).replace(/[.,](?=\d{3})/g, '').replace(',', '.')) || 0
+      return { label, value }
+    })
+    if (!rows.length) { alert('Ingresá al menos una fila "etiqueta, valor".'); return }
+    const chartHtml = buildChartHtml(chartInsertType, rows, viewingReport?.accent_color || '#31AE79')
+    const ta = reportBodyRef.current
+    const value = reportDraft.body_html
+    const pos = ta ? ta.selectionStart : value.length
+    const newValue = value.slice(0, pos) + chartHtml + value.slice(pos)
+    setReportDraft(d => ({ ...d, body_html: newValue }))
+    setShowChartInsert(false); setChartInsertData('')
   }
 
   const regenerateReport = async () => {
@@ -1132,11 +1153,28 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                     <iframe srcDoc={viewingReport.html_content} style={{ width:'100%', height:'100%', border:'none', background:'#fff' }} sandbox="" />
                   ) : (
                     <>
-                      <div style={{ display:'flex', gap:8, padding:8, borderBottom:'1px solid rgba(18,23,20,0.10)', background:'#FBFAF6' }}>
+                      <div style={{ display:'flex', gap:8, padding:8, borderBottom:'1px solid rgba(18,23,20,0.10)', background:'#FBFAF6', flexWrap:'wrap' }}>
                         <button onClick={convertSelectionToTable} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>▦ Convertir selección en tabla</button>
-                        <span style={{ color:'#858C87', fontSize:11, alignSelf:'center' }}>Seleccioná líneas separadas por coma, punto y coma o tab (la primera línea son los encabezados)</span>
+                        <button onClick={()=>setShowChartInsert(o=>!o)} style={{ background:showChartInsert?'rgba(49,174,121,0.1)':'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>📊 Insertar gráfico</button>
+                        <button onClick={()=>saveReportEdit({ fix_headings: true })} disabled={savingReportEdit} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:12, padding:'6px 12px', borderRadius:8, cursor:'pointer' }}>🔧 Detectar títulos</button>
                         <button onClick={saveReportContent} disabled={savingReportEdit} style={{ marginLeft:'auto', background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:12, padding:'6px 14px', borderRadius:8, border:'none', cursor:'pointer', opacity:savingReportEdit?0.6:1 }}>{savingReportEdit?'Guardando…':'Guardar contenido'}</button>
                       </div>
+                      {showChartInsert && (
+                        <div style={{ padding:12, borderBottom:'1px solid rgba(18,23,20,0.10)', background:'#FBFAF6', display:'flex', flexDirection:'column', gap:8 }}>
+                          <div style={{ display:'flex', gap:8 }}>
+                            {(['barras','linea','torta'] as const).map(t => (
+                              <button key={t} onClick={()=>setChartInsertType(t)} style={{ padding:'6px 12px', borderRadius:8, fontSize:12, border:chartInsertType===t?'1px solid rgba(49,174,121,0.4)':'1px solid rgba(18,23,20,0.12)', background:chartInsertType===t?'rgba(49,174,121,0.1)':'none', color:chartInsertType===t?'#31AE79':'#4E5651', cursor:'pointer' }}>
+                                {t==='barras'?'Barras':t==='linea'?'Línea':'Torta'}
+                              </button>
+                            ))}
+                          </div>
+                          <textarea value={chartInsertData} onChange={e=>setChartInsertData(e.target.value)} placeholder={'Una fila por línea, etiqueta y valor separados por coma:\nComercial, 3680000\nOperaciones, 4950000\nAdministración, 1080000'}
+                            rows={4} style={{ width:'100%', border:'1px solid rgba(18,23,20,0.14)', borderRadius:8, padding:10, fontFamily:'ui-monospace,monospace', fontSize:12, color:'#121714', background:'#fff', outline:'none', resize:'vertical' }} />
+                          <div>
+                            <button onClick={insertChart} style={{ background:'linear-gradient(135deg,#31AE79,#27a06d)', color:'#121714', fontWeight:600, fontSize:12, padding:'7px 14px', borderRadius:8, border:'none', cursor:'pointer' }}>Insertar gráfico</button>
+                          </div>
+                        </div>
+                      )}
                       <textarea ref={reportBodyRef} value={reportDraft.body_html} onChange={e=>setReportDraft(d=>({...d,body_html:e.target.value}))}
                         style={{ flex:1, width:'100%', border:'none', outline:'none', resize:'none', padding:16, fontFamily:'ui-monospace,monospace', fontSize:12.5, color:'#121714', background:'#fff' }} />
                     </>

@@ -107,6 +107,8 @@ export function buildReportHtml({ title, clientName, bodyHtml, orgName, accentCo
 
   .report-body img { max-width:100%; border-radius:12px; margin:16px 0; display:block; box-shadow:0 8px 24px rgba(18,23,20,0.12); }
 
+  .report-chart { background:#FBFAF6; border:1px solid var(--border); border-radius:14px; padding:16px; margin:18px 0 26px; box-shadow:0 1px 3px rgba(18,23,20,0.04); }
+
   .report-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; border-top:1px solid var(--border); padding:22px 48px; background:#FBFAF6; flex-wrap:wrap; }
   .report-footer .fbrand { display:flex; align-items:center; gap:8px; color:var(--text-tertiary); font-size:12px; font-weight:600; letter-spacing:0.04em; }
   .report-footer .fdot { width:16px; height:16px; border-radius:5px; background:linear-gradient(135deg,var(--accent),var(--accent-light)); flex-shrink:0; }

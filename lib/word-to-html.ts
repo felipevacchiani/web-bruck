@@ -1,4 +1,5 @@
 import mammoth from 'mammoth'
+import { promoteBoldNumberedHeadings } from './report-format'
 
 // Convierte un .docx a HTML semántico real (títulos, párrafos, listas,
 // tablas, imágenes embebidas como data URI) usando mammoth — sin IA,
@@ -16,5 +17,6 @@ export async function parseWordDocument(buffer: Buffer): Promise<{ html: string;
       ],
     }
   )
-  return { html: result.value, warnings: result.messages.map(m => m.message) }
+  const html = promoteBoldNumberedHeadings(result.value)
+  return { html, warnings: result.messages.map(m => m.message) }
 }
