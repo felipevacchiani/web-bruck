@@ -137,6 +137,9 @@ export default function ClientDashboard({ profile, files }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [informesOpen, setInformesOpen] = useState(true)
+  const [actividadOpen, setActividadOpen] = useState(true)
+  const [empresaOpen, setEmpresaOpen] = useState(true)
+  const [contabilidadOpen, setContabilidadOpen] = useState(true)
   const [contabTab, setContabTab] = useState<string | null>(null)
   const [showRequests, setShowRequests] = useState(false)
   const [myRequests, setMyRequests] = useState<any[]>([])
@@ -391,73 +394,78 @@ export default function ClientDashboard({ profile, files }: Props) {
               <span style={{ color:'#858C87', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' }}>Informes</span>
               <span style={{ color:'#858C87', fontSize:12 }}>{informesOpen ? '▾' : '▸'}</span>
             </button>
-            {informesOpen && [
-              {value:'todos' as const,label:'Todos',icon:'📋',count:currentFiles.length},
-              ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
-            ].map(cat=>(
-              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
-                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px 8px 20px', borderRadius:9, border:activeCategory===cat.value&&!contabTab?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#4E5651', marginBottom:2, textAlign:'left' }}>
+            {informesOpen && <>
+              {[
+                {value:'todos' as const,label:'Todos',icon:'📋',count:currentFiles.length},
+                ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
+              ].map(cat=>(
+                <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px 8px 20px', borderRadius:9, border:activeCategory===cat.value&&!contabTab?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#4E5651', marginBottom:2, textAlign:'left' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:9 }}>
+                    <span style={{ fontSize:14 }}>{cat.icon}</span>
+                    <span style={{ fontSize:13, fontWeight:activeCategory===cat.value&&!contabTab?500:400 }}>{cat.label}</span>
+                  </div>
+                  {cat.count>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(18,23,20,0.09)', color:'#4E5651' }}>{cat.count}</span>}
+                </button>
+              ))}
+              <button onClick={()=>{ setShowReports(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false); setShowSources(false) }}
+                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px 8px 20px', borderRadius:9, border:showReports?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:showReports?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:showReports?'#31AE79':'#4E5651', marginBottom:2, textAlign:'left' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:9 }}>
-                  <span style={{ fontSize:14 }}>{cat.icon}</span>
-                  <span style={{ fontSize:13, fontWeight:activeCategory===cat.value&&!contabTab?500:400 }}>{cat.label}</span>
+                  <span style={{ fontSize:14 }}>📑</span>
+                  <span style={{ fontSize:13, fontWeight:showReports?500:400 }}>Informes personalizados</span>
                 </div>
-                {cat.count>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(18,23,20,0.09)', color:'#4E5651' }}>{cat.count}</span>}
               </button>
-            ))}
-            <button onClick={()=>{ setShowReports(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false); setShowSources(false) }}
-              style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px 8px 20px', borderRadius:9, border:showReports?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:showReports?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:showReports?'#31AE79':'#4E5651', marginBottom:2, textAlign:'left' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:9 }}>
-                <span style={{ fontSize:14 }}>📑</span>
-                <span style={{ fontSize:13, fontWeight:showReports?500:400 }}>Informes personalizados</span>
-              </div>
-            </button>
+            </>}
 
-            {/* SOLICITUDES */}
+            {/* ACTIVIDAD */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(18,23,20,0.12)' }}>
-              <button onClick={()=>{ setShowRequests(true); setContabTab(null); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
-                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px', borderRadius:9, background:showRequests?'rgba(49,174,121,0.1)':'none', border:showRequests?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showRequests?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
-                <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📥</span><span style={{ fontSize:13 }}>Solicitudes</span></span>
-                {pendingRequestsCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingRequestsCount}</span>}
+              <button onClick={()=>setActividadOpen(o=>!o)} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 10px 8px', borderRadius:9, border:'none', background:'none', cursor:'pointer' }}>
+                <span style={{ color:'#858C87', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' }}>Actividad</span>
+                <span style={{ color:'#858C87', fontSize:12 }}>{actividadOpen ? '▾' : '▸'}</span>
               </button>
+              {actividadOpen && <>
+                <button onClick={()=>{ setShowRequests(true); setContabTab(null); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px', borderRadius:9, background:showRequests?'rgba(49,174,121,0.1)':'none', border:showRequests?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showRequests?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
+                  <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📥</span><span style={{ fontSize:13 }}>Solicitudes</span></span>
+                  {pendingRequestsCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingRequestsCount}</span>}
+                </button>
+                <button onClick={()=>{ setShowTasks(true); setContabTab(null); setShowRequests(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px', borderRadius:9, background:showTasks?'rgba(49,174,121,0.1)':'none', border:showTasks?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showTasks?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
+                  <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📝</span><span style={{ fontSize:13 }}>Tareas</span></span>
+                  {pendingTasksCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingTasksCount}</span>}
+                </button>
+                <button onClick={()=>{ setShowActivity(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showActivity?'rgba(49,174,121,0.1)':'none', border:showActivity?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showActivity?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
+                  <span style={{ fontSize:14 }}>🕐</span><span style={{ fontSize:13 }}>Actividad reciente</span>
+                </button>
+              </>}
             </div>
 
-            {/* TAREAS */}
-            <div>
-              <button onClick={()=>{ setShowTasks(true); setContabTab(null); setShowRequests(false); setSidebarOpen(false) }}
-                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 10px', borderRadius:9, background:showTasks?'rgba(49,174,121,0.1)':'none', border:showTasks?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showTasks?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
-                <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📝</span><span style={{ fontSize:13 }}>Tareas</span></span>
-                {pendingTasksCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingTasksCount}</span>}
+            {/* EMPRESA */}
+            <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(18,23,20,0.12)' }}>
+              <button onClick={()=>setEmpresaOpen(o=>!o)} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 10px 8px', borderRadius:9, border:'none', background:'none', cursor:'pointer' }}>
+                <span style={{ color:'#858C87', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' }}>Empresa</span>
+                <span style={{ color:'#858C87', fontSize:12 }}>{empresaOpen ? '▾' : '▸'}</span>
               </button>
-            </div>
-
-            {/* ACTIVIDAD RECIENTE */}
-            <div>
-              <button onClick={()=>{ setShowActivity(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
-                style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showActivity?'rgba(49,174,121,0.1)':'none', border:showActivity?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showActivity?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
-                <span style={{ fontSize:14 }}>🕐</span><span style={{ fontSize:13 }}>Actividad reciente</span>
-              </button>
-            </div>
-
-            {/* MI EMPRESA */}
-            <div>
-              <button onClick={()=>{ setShowCompany(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowSources(false); setShowReports(false); setSidebarOpen(false) }}
-                style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showCompany?'rgba(49,174,121,0.1)':'none', border:showCompany?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showCompany?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
-                <span style={{ fontSize:14 }}>🏢</span><span style={{ fontSize:13 }}>Mi empresa</span>
-              </button>
-            </div>
-
-            {/* FUENTES DE DATOS */}
-            <div>
-              <button onClick={()=>{ setShowSources(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false); setSidebarOpen(false) }}
-                style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showSources?'rgba(49,174,121,0.1)':'none', border:showSources?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showSources?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
-                <span style={{ fontSize:14 }}>🔗</span><span style={{ fontSize:13 }}>Fuentes de datos</span>
-              </button>
+              {empresaOpen && <>
+                <button onClick={()=>{ setShowCompany(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowSources(false); setShowReports(false); setSidebarOpen(false) }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showCompany?'rgba(49,174,121,0.1)':'none', border:showCompany?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showCompany?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
+                  <span style={{ fontSize:14 }}>🏢</span><span style={{ fontSize:13 }}>Mi empresa</span>
+                </button>
+                <button onClick={()=>{ setShowSources(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false); setShowReports(false); setSidebarOpen(false) }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showSources?'rgba(49,174,121,0.1)':'none', border:showSources?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showSources?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
+                  <span style={{ fontSize:14 }}>🔗</span><span style={{ fontSize:13 }}>Conexiones</span>
+                </button>
+              </>}
             </div>
 
             {/* CONTABILIDAD INTERNA */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(18,23,20,0.12)' }}>
-              <div style={{ color:'#858C87', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 10px', marginBottom:6 }}>Contabilidad</div>
-              {CI_TABS.map(t => (
+              <button onClick={()=>setContabilidadOpen(o=>!o)} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 10px 6px', borderRadius:9, border:'none', background:'none', cursor:'pointer' }}>
+                <span style={{ color:'#858C87', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' }}>Contabilidad</span>
+                <span style={{ color:'#858C87', fontSize:12 }}>{contabilidadOpen ? '▾' : '▸'}</span>
+              </button>
+              {contabilidadOpen && CI_TABS.map(t => (
                 <button key={t.id} onClick={()=>{ setContabTab(t.id); setShowRequests(false); setShowTasks(false); setShowActivity(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
                   style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:contabTab===t.id?'rgba(49,174,121,0.1)':'none', border:contabTab===t.id?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:contabTab===t.id?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
                   <span style={{ fontSize:14 }}>{t.icon}</span>
@@ -485,73 +493,78 @@ export default function ClientDashboard({ profile, files }: Props) {
               <span style={{ color:'#858C87', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' }}>Informes</span>
               <span style={{ color:'#858C87', fontSize:11 }}>{informesOpen ? '▾' : '▸'}</span>
             </button>
-            {informesOpen && [
-              {value:'todos' as const,label:'Todos',icon:'📋',count:currentFiles.length},
-              ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
-            ].map(cat=>(
-              <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
-                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px 7px 20px', borderRadius:9, border:activeCategory===cat.value&&!contabTab?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#4E5651', marginBottom:2, textAlign:'left' }}>
+            {informesOpen && <>
+              {[
+                {value:'todos' as const,label:'Todos',icon:'📋',count:currentFiles.length},
+                ...FILE_CATEGORIES.map(c=>({...c,count:countBy(c.value)}))
+              ].map(cat=>(
+                <button key={cat.value} onClick={()=>{ setActiveCategory(cat.value as any); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px 7px 20px', borderRadius:9, border:activeCategory===cat.value&&!contabTab?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#4E5651', marginBottom:2, textAlign:'left' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:9 }}>
+                    <span style={{ fontSize:14 }}>{cat.icon}</span>
+                    <span style={{ fontSize:13, fontWeight:activeCategory===cat.value&&!contabTab?500:400 }}>{cat.label}</span>
+                  </div>
+                  {cat.count>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.2)':'rgba(18,23,20,0.09)', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#858C87' }}>{cat.count}</span>}
+                </button>
+              ))}
+              <button onClick={()=>{ setShowReports(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false); setShowSources(false) }}
+                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px 7px 20px', borderRadius:9, border:showReports?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:showReports?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:showReports?'#31AE79':'#4E5651', marginBottom:2, textAlign:'left' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:9 }}>
-                  <span style={{ fontSize:14 }}>{cat.icon}</span>
-                  <span style={{ fontSize:13, fontWeight:activeCategory===cat.value&&!contabTab?500:400 }}>{cat.label}</span>
+                  <span style={{ fontSize:14 }}>📑</span>
+                  <span style={{ fontSize:13, fontWeight:showReports?500:400 }}>Informes personalizados</span>
                 </div>
-                {cat.count>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:activeCategory===cat.value&&!contabTab?'rgba(49,174,121,0.2)':'rgba(18,23,20,0.09)', color:activeCategory===cat.value&&!contabTab?'#31AE79':'#858C87' }}>{cat.count}</span>}
               </button>
-            ))}
-            <button onClick={()=>{ setShowReports(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false); setShowSources(false) }}
-              style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px 7px 20px', borderRadius:9, border:showReports?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', background:showReports?'rgba(49,174,121,0.1)':'none', cursor:'pointer', color:showReports?'#31AE79':'#4E5651', marginBottom:2, textAlign:'left' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:9 }}>
-                <span style={{ fontSize:14 }}>📑</span>
-                <span style={{ fontSize:13, fontWeight:showReports?500:400 }}>Informes personalizados</span>
-              </div>
-            </button>
+            </>}
 
-            {/* SOLICITUDES */}
+            {/* ACTIVIDAD */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(18,23,20,0.12)' }}>
-              <button onClick={()=>{ setShowRequests(true); setContabTab(null); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
-                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px', borderRadius:9, background:showRequests?'rgba(49,174,121,0.1)':'none', border:showRequests?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showRequests?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
-                <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📥</span><span style={{ fontSize:13 }}>Solicitudes</span></span>
-                {pendingRequestsCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingRequestsCount}</span>}
+              <button onClick={()=>setActividadOpen(o=>!o)} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 10px 7px', borderRadius:9, border:'none', background:'none', cursor:'pointer' }}>
+                <span style={{ color:'#858C87', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' }}>Actividad</span>
+                <span style={{ color:'#858C87', fontSize:11 }}>{actividadOpen ? '▾' : '▸'}</span>
               </button>
+              {actividadOpen && <>
+                <button onClick={()=>{ setShowRequests(true); setContabTab(null); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px', borderRadius:9, background:showRequests?'rgba(49,174,121,0.1)':'none', border:showRequests?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showRequests?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
+                  <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📥</span><span style={{ fontSize:13 }}>Solicitudes</span></span>
+                  {pendingRequestsCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingRequestsCount}</span>}
+                </button>
+                <button onClick={()=>{ setShowTasks(true); setContabTab(null); setShowRequests(false); setShowActivity(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px', borderRadius:9, background:showTasks?'rgba(49,174,121,0.1)':'none', border:showTasks?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showTasks?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
+                  <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📝</span><span style={{ fontSize:13 }}>Tareas</span></span>
+                  {pendingTasksCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingTasksCount}</span>}
+                </button>
+                <button onClick={()=>{ setShowActivity(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'7px 10px', borderRadius:9, background:showActivity?'rgba(49,174,121,0.1)':'none', border:showActivity?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showActivity?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
+                  <span style={{ fontSize:14 }}>🕐</span><span style={{ fontSize:13 }}>Actividad reciente</span>
+                </button>
+              </>}
             </div>
 
-            {/* TAREAS */}
-            <div>
-              <button onClick={()=>{ setShowTasks(true); setContabTab(null); setShowRequests(false) }}
-                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px', borderRadius:9, background:showTasks?'rgba(49,174,121,0.1)':'none', border:showTasks?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showTasks?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
-                <span style={{ display:'flex', alignItems:'center', gap:9 }}><span style={{ fontSize:14 }}>📝</span><span style={{ fontSize:13 }}>Tareas</span></span>
-                {pendingTasksCount>0 && <span style={{ fontSize:11, padding:'1px 7px', borderRadius:5, background:'rgba(250,204,21,0.15)', color:'#facc15' }}>{pendingTasksCount}</span>}
+            {/* EMPRESA */}
+            <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(18,23,20,0.12)' }}>
+              <button onClick={()=>setEmpresaOpen(o=>!o)} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 10px 7px', borderRadius:9, border:'none', background:'none', cursor:'pointer' }}>
+                <span style={{ color:'#858C87', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' }}>Empresa</span>
+                <span style={{ color:'#858C87', fontSize:11 }}>{empresaOpen ? '▾' : '▸'}</span>
               </button>
-            </div>
-
-            {/* ACTIVIDAD RECIENTE */}
-            <div>
-              <button onClick={()=>{ setShowActivity(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setSidebarOpen(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
-                style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showActivity?'rgba(49,174,121,0.1)':'none', border:showActivity?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showActivity?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
-                <span style={{ fontSize:14 }}>🕐</span><span style={{ fontSize:13 }}>Actividad reciente</span>
-              </button>
-            </div>
-
-            {/* MI EMPRESA */}
-            <div>
-              <button onClick={()=>{ setShowCompany(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowSources(false); setShowReports(false); setSidebarOpen(false) }}
-                style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showCompany?'rgba(49,174,121,0.1)':'none', border:showCompany?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showCompany?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
-                <span style={{ fontSize:14 }}>🏢</span><span style={{ fontSize:13 }}>Mi empresa</span>
-              </button>
-            </div>
-
-            {/* FUENTES DE DATOS */}
-            <div>
-              <button onClick={()=>{ setShowSources(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false); setSidebarOpen(false) }}
-                style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:9, background:showSources?'rgba(49,174,121,0.1)':'none', border:showSources?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showSources?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
-                <span style={{ fontSize:14 }}>🔗</span><span style={{ fontSize:13 }}>Fuentes de datos</span>
-              </button>
+              {empresaOpen && <>
+                <button onClick={()=>{ setShowCompany(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowSources(false); setShowReports(false); setSidebarOpen(false) }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'7px 10px', borderRadius:9, background:showCompany?'rgba(49,174,121,0.1)':'none', border:showCompany?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showCompany?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
+                  <span style={{ fontSize:14 }}>🏢</span><span style={{ fontSize:13 }}>Mi empresa</span>
+                </button>
+                <button onClick={()=>{ setShowSources(true); setContabTab(null); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false); setShowReports(false); setSidebarOpen(false) }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'7px 10px', borderRadius:9, background:showSources?'rgba(49,174,121,0.1)':'none', border:showSources?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:showSources?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left' }}>
+                  <span style={{ fontSize:14 }}>🔗</span><span style={{ fontSize:13 }}>Conexiones</span>
+                </button>
+              </>}
             </div>
 
             {/* CONTABILIDAD INTERNA */}
             <div style={{ marginTop:16, paddingTop:16, borderTop:'1px solid rgba(18,23,20,0.12)' }}>
-              <div style={{ color:'#858C87', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', padding:'0 10px', marginBottom:6 }}>Contabilidad</div>
-              {CI_TABS.map(t => (
+              <button onClick={()=>setContabilidadOpen(o=>!o)} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 10px 6px', borderRadius:9, border:'none', background:'none', cursor:'pointer' }}>
+                <span style={{ color:'#858C87', fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' }}>Contabilidad</span>
+                <span style={{ color:'#858C87', fontSize:11 }}>{contabilidadOpen ? '▾' : '▸'}</span>
+              </button>
+              {contabilidadOpen && CI_TABS.map(t => (
                 <button key={t.id} onClick={()=>{ setContabTab(t.id); setShowRequests(false); setShowTasks(false); setShowActivity(false); setShowHome(false); setShowCompany(false); setShowSources(false); setShowReports(false) }}
                   style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'7px 10px', borderRadius:9, background:contabTab===t.id?'rgba(49,174,121,0.1)':'none', border:contabTab===t.id?'1px solid rgba(49,174,121,0.25)':'1px solid transparent', color:contabTab===t.id?'#31AE79':'#4E5651', cursor:'pointer', textAlign:'left', marginBottom:2 }}>
                   <span style={{ fontSize:14 }}>{t.icon}</span>

@@ -1,5 +1,13 @@
 # Changelog — BRUCK APP
 
+## 2026-07-20 — Portal del cliente: sidebar reorganizado en secciones desplegables
+
+- feat: el sidebar del portal del cliente ahora agrupa todo en 4 secciones colapsables con título, mismo patrón que "Informes" ya tenía: **Informes** (categorías + Informes personalizados), **Actividad** (Solicitudes, Tareas, Actividad reciente), **Empresa** (Mi empresa, Conexiones) y **Contabilidad** (los tabs de Contabilidad Interna, que antes no se podían colapsar).
+- fix: "Informes personalizados" no respetaba el colapso de "Informes" — quedaba visible aunque el grupo estuviera cerrado. Ahora es parte del mismo grupo.
+- fix: "Fuentes de datos" renombrado a **"Conexiones"** (nombre pedido por el usuario) — mismo módulo (Google Sheets en vivo), solo cambia la etiqueta del menú.
+- fix de paso: se unificó qué estados se resetean al cambiar de vista (algunos botones no reseteaban `showReports`/`showSources` de forma consistente) — ahora todos los ítems del sidebar resetean el mismo conjunto de vistas.
+- Build y typecheck verificados, sin errores nuevos.
+
 ## 2026-07-20 — Informes personalizados: editor visual (WYSIWYG) en vez de HTML crudo
 
 - fix: "Editar contenido" mostraba el HTML crudo en un textarea monoespaciado — poco intuitivo para uso no técnico. Ahora es un editor visual (`contentEditable`) que se ve con el mismo diseño del informe final (`bodyContentCss()` factorizado en `lib/report-template.ts`, compartido entre la plantilla real y el editor).
