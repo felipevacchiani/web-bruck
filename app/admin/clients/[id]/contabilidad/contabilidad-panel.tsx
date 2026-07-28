@@ -13,6 +13,7 @@ interface Props {
   backLabel?: string
   defaultTab?: string
   onBack?: () => void
+  canWrite?: boolean
 }
 
 type Tab = 'dashboard' | 'movimientos' | 'bancos' | 'cuentas' | 'contables' | 'rubros' | 'conciliaciones' | 'presupuestos' | 'flujo'
@@ -139,7 +140,7 @@ const LBL: React.CSSProperties = { color: '#4E5651', fontSize: 11, fontWeight: 6
 const BTN_P: React.CSSProperties = { background: 'linear-gradient(135deg,#31AE79,#27a06d)', color: '#07120D', fontWeight: 600, fontSize: 13, padding: '9px 16px', borderRadius: 999, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
 const BTN_S: React.CSSProperties = { background: 'rgba(18,23,20,0.04)', border: '1px solid rgba(18,23,20,0.14)', color: '#4E5651', fontSize: 12, padding: '7px 13px', borderRadius: 999, cursor: 'pointer' }
 
-export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBaseProp, backHref, backLabel, defaultTab, onBack }: Props) {
+export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBaseProp, backHref, backLabel, defaultTab, onBack, canWrite = true }: Props) {
   const base = apiBaseProp ?? `/api/admin/ci/${clientId}`
 
   const [tab, setTab] = useState<Tab>((defaultTab as Tab) || 'dashboard')
@@ -457,13 +458,15 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
   const openModal = (type: string, item?: any) => {
     setSaveError(''); setBulkResult(null); setPasteText(''); setParsedRows([])
     setMovModalMode('manual')
-    if (type === 'mov') setMovForm({
+    if (type === 'mov' || type === 'mov-edit') setMovForm({
       fecha: item?.fecha || '',
       descripcion: item?.descripcion || '',
       monto: String(item ? (item.credito > 0 ? item.credito : item.debito) : ''),
       cuenta_bancaria_id: item?.cuenta_bancaria_id || '',
       cuenta_contable_id: item?.cuenta_contable_id || '',
       tipo_movimiento: item?.tipo_movimiento || 'gasto',
+      factura: item?.factura || false,
+      comentario: item?.comentario || '',
     })
     if (type === 'cuenta') setCuentaForm({ nombre: item?.nombre || '', banco: item?.banco || '', numero_cuenta: item?.numero_cuenta || '', tipo: item?.tipo || 'corriente', saldo_inicial: String(item?.saldo_inicial || ''), disponible: String(item?.disponible || '') })
     if (type === 'rubro') setRubroForm({ nombre: item?.nombre || '' })
@@ -488,7 +491,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
       const { type, item } = modal!
       let endpoint = ''; let body: any = {}; const isEdit = !!item?.id
 
-      if (type === 'mov') {
+      if (type === 'mov' || type === 'mov-edit') {
         endpoint = 'movimientos'
         const monto = cleanNum(movForm.monto)
         const { debito, credito } = calcDebitCredit(monto, selectedContable, movForm.tipo_movimiento)
@@ -811,7 +814,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <div style={{ color: '#858C87', fontSize: 12 }}>{movCount} movimiento{movCount !== 1 ? 's' : ''}</div>
-                <button onClick={() => openModal('mov')} style={BTN_P}><span>+</span> Nuevo movimiento</button>
+                {canWrite && <button onClick={() => openModal('mov')} style={BTN_P}><span>+</span> Nuevo movimiento</button>}
               </div>
               {!movs.length ? (
                 <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
@@ -868,8 +871,9 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                           </td>
                           <td style={{ padding: '6px 8px', whiteSpace: 'nowrap' }}>
                             <div style={{ display: 'flex', gap: 4 }}>
-                              <button onClick={() => openModal('clasificar', m)} style={{ ...BTN_S, fontSize: 10, padding: '3px 8px', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.2)' }}>Clas.</button>
-                              <button onClick={() => apiDelete('movimientos', m.id)} style={{ ...BTN_S, fontSize: 10, padding: '3px 7px', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)' }}>✕</button>
+                              {canWrite && <button onClick={() => openModal('mov-edit', m)} style={{ ...BTN_S, fontSize: 10, padding: '3px 8px' }}>✎</button>}
+                              {canWrite && <button onClick={() => openModal('clasificar', m)} style={{ ...BTN_S, fontSize: 10, padding: '3px 8px', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.2)' }}>Clas.</button>}
+                              {canWrite && <button onClick={() => apiDelete('movimientos', m.id)} style={{ ...BTN_S, fontSize: 10, padding: '3px 7px', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)' }}>✕</button>}
                             </div>
                           </td>
                         </tr>
@@ -981,12 +985,12 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
                   {/* Acciones */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-                    <button onClick={() => {
+                    {canWrite && <button onClick={() => {
                       setSaveError(''); setMovModalMode('manual')
                       setMovForm(f => ({ ...f, cuenta_bancaria_id: bCuenta, fecha: '', descripcion: '', monto: '', cuenta_contable_id: '' }))
                       setModal({ type: 'mov' })
-                    }} style={BTN_P}><span>+</span> Movimiento manual</button>
-                    <button onClick={() => csvRef.current?.click()} style={{ ...BTN_S, color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)' }}>📂 Importar archivo</button>
+                    }} style={BTN_P}><span>+</span> Movimiento manual</button>}
+                    {canWrite && <button onClick={() => csvRef.current?.click()} style={{ ...BTN_S, color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)' }}>📂 Importar archivo</button>}
                     <div style={{ flex: 1 }} />
                     {bMovs.some(m => m.estado !== 'conciliado') && (
                       <button onClick={conciliarAll} style={{ ...BTN_S, color: '#34d399', border: '1px solid rgba(52,211,153,0.3)' }}>✓ Conciliar todo</button>
@@ -1024,14 +1028,15 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                               <td style={{ padding: '10px 12px', color: '#4E5651', fontSize: 11, whiteSpace: 'nowrap' }}>{m.cuenta_contable?.nombre || '—'}</td>
                               <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
                                 <div style={{ display: 'flex', gap: 5 }}>
-                                  <button onClick={() => openModal('clasificar', m)} style={{ ...BTN_S, fontSize: 11, padding: '4px 9px', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.2)' }}>Clasificar</button>
-                                  {m.estado !== 'conciliado' && (
+                                  {canWrite && <button onClick={() => openModal('mov-edit', m)} style={{ ...BTN_S, fontSize: 11, padding: '4px 9px' }}>✎</button>}
+                                  {canWrite && <button onClick={() => openModal('clasificar', m)} style={{ ...BTN_S, fontSize: 11, padding: '4px 9px', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.2)' }}>Clasificar</button>}
+                                  {canWrite && m.estado !== 'conciliado' && (
                                     <button onClick={async () => {
                                       await fetch(`${base}/movimientos/${m.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: 'conciliado', clasificacion_origen: 'manual' }) })
                                       loadBankMovs(bMovPage)
                                     }} style={{ ...BTN_S, fontSize: 11, padding: '4px 9px', color: '#34d399', border: '1px solid rgba(52,211,153,0.2)' }}>✓</button>
                                   )}
-                                  <button onClick={() => apiDelete('movimientos', m.id)} style={{ ...BTN_S, fontSize: 11, padding: '4px 9px', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)' }}>✕</button>
+                                  {canWrite && <button onClick={() => apiDelete('movimientos', m.id)} style={{ ...BTN_S, fontSize: 11, padding: '4px 9px', color: '#f87171', border: '1px solid rgba(248,113,113,0.2)' }}>✕</button>}
                                 </div>
                               </td>
                             </tr>
@@ -1057,7 +1062,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
           {tab === 'cuentas' && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-                <button onClick={() => openModal('cuenta')} style={BTN_P}>+ Nueva cuenta</button>
+                {canWrite && <button onClick={() => openModal('cuenta')} style={BTN_P}>+ Nueva cuenta</button>}
               </div>
               {!cuentas.length ? (
                 <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
@@ -1070,8 +1075,8 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                         <div style={{ color: '#121714', fontSize: 14, fontWeight: 600 }}>{c.nombre}</div>
                         <div style={{ display: 'flex', gap: 5 }}>
-                          <button onClick={() => openModal('cuenta', c)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px' }}>✎</button>
-                          <button onClick={() => apiDelete('cuentas-bancarias', c.id)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px', color: '#f87171' }}>✕</button>
+                          {canWrite && <button onClick={() => openModal('cuenta', c)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px' }}>✎</button>}
+                          {canWrite && <button onClick={() => apiDelete('cuentas-bancarias', c.id)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px', color: '#f87171' }}>✕</button>}
                         </div>
                       </div>
                       <div style={{ color: '#4E5651', fontSize: 12, marginBottom: 4 }}>{c.banco || '—'} · {c.numero_cuenta || 'sin número'}</div>
@@ -1097,7 +1102,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
           {tab === 'contables' && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-                <button onClick={() => openModal('contable')} style={BTN_P}>+ Nueva cuenta contable</button>
+                {canWrite && <button onClick={() => openModal('contable')} style={BTN_P}>+ Nueva cuenta contable</button>}
               </div>
               {!contables.length ? (
                 <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
@@ -1129,8 +1134,8 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                             </td>
                             <td style={{ padding: '10px 14px' }}>
                               <div style={{ display: 'flex', gap: 5 }}>
-                                <button onClick={() => openModal('contable', c)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px' }}>✎</button>
-                                <button onClick={() => apiDelete('cuentas-contables', c.id)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px', color: '#f87171' }}>✕</button>
+                                {canWrite && <button onClick={() => openModal('contable', c)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px' }}>✎</button>}
+                                {canWrite && <button onClick={() => apiDelete('cuentas-contables', c.id)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px', color: '#f87171' }}>✕</button>}
                               </div>
                             </td>
                           </tr>
@@ -1147,7 +1152,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
           {tab === 'rubros' && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-                <button onClick={() => openModal('rubro')} style={BTN_P}>+ Nuevo rubro</button>
+                {canWrite && <button onClick={() => openModal('rubro')} style={BTN_P}>+ Nuevo rubro</button>}
               </div>
               {!rubros.length ? (
                 <div style={{ border: '1px solid rgba(18,23,20,0.08)', borderRadius: 14, padding: '48px', textAlign: 'center' }}>
@@ -1159,8 +1164,8 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                     <div key={r.id} style={{ background: '#FFFFFF', border: '1px solid rgba(18,23,20,0.16)', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(18,23,20,0.05)' }}>
                       <div style={{ color: '#121714', fontSize: 13, fontWeight: 600 }}>{r.nombre}</div>
                       <div style={{ display: 'flex', gap: 5 }}>
-                        <button onClick={() => openModal('rubro', r)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px' }}>✎</button>
-                        <button onClick={() => apiDelete('rubros', r.id)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px', color: '#f87171' }}>✕</button>
+                        {canWrite && <button onClick={() => openModal('rubro', r)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px' }}>✎</button>}
+                        {canWrite && <button onClick={() => apiDelete('rubros', r.id)} style={{ ...BTN_S, fontSize: 11, padding: '3px 8px', color: '#f87171' }}>✕</button>}
                       </div>
                     </div>
                   ))}
@@ -1246,7 +1251,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
 
                   {cError && <div style={{ marginBottom: 12, color: '#f87171', fontSize: 13 }}>{cError}</div>}
 
-                  {cPeriodo.existing ? (
+                  {canWrite && (cPeriodo.existing ? (
                     cPeriodo.existing.estado === 'cerrado' && (
                       <button onClick={() => reabrirPeriodo(cPeriodo.existing.id)} style={BTN_S}>Reabrir período</button>
                     )
@@ -1254,7 +1259,7 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                     <button onClick={cerrarPeriodo} disabled={cSaving} style={{ ...BTN_P, opacity: cSaving ? 0.6 : 1 }}>
                       {cSaving ? 'Cerrando…' : 'Cerrar período'}
                     </button>
-                  )}
+                  ))}
                 </div>
               )}
 
@@ -1319,15 +1324,15 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                     return (
                       <div key={row.rubro.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 8, alignItems: 'center', padding: '8px 16px', borderTop: i ? '1px solid rgba(18,23,20,0.06)' : undefined }}>
                         <span style={{ color: '#121714', fontSize: 13 }}>{row.rubro.nombre}</span>
-                        <input type="number" step="0.01" value={draft}
+                        <input type="number" step="0.01" value={draft} disabled={!canWrite}
                           onChange={e => setPDrafts(d => ({ ...d, [row.rubro.id]: e.target.value }))}
                           style={{ ...INP, fontSize: 12, padding: '6px 9px' }} />
                         <span style={{ color: '#4E5651', fontSize: 13 }}>{fmt(ejecutado)}</span>
                         <span style={{ color: desvioColor, fontSize: 13, fontWeight: 600 }}>{montoNum === 0 ? '—' : fmt(desvio)}</span>
-                        <button onClick={() => savePresupuesto(row.rubro.id, draft)} disabled={!dirty || pSavingId === row.rubro.id}
+                        {canWrite && <button onClick={() => savePresupuesto(row.rubro.id, draft)} disabled={!dirty || pSavingId === row.rubro.id}
                           style={{ ...BTN_S, fontSize: 11, padding: '5px 11px', opacity: dirty ? 1 : 0.4, color: dirty ? '#31AE79' : '#858C87', border: dirty ? '1px solid rgba(49,174,121,0.3)' : BTN_S.border }}>
                           {pSavingId === row.rubro.id ? '…' : 'Guardar'}
-                        </button>
+                        </button>}
                       </div>
                     )
                   })}
@@ -1796,6 +1801,49 @@ export default function ContabilidadPanel({ clientId, clientName, apiBase: apiBa
                     <label style={LBL}>Keywords (separadas por coma)</label>
                     <input value={contForm.keywords} onChange={e => setContForm(f => ({ ...f, keywords: e.target.value }))} style={INP} placeholder="pago, honorario, factura..." />
                     <div style={{ color: '#858C87', fontSize: 11, marginTop: 4 }}>Se usan para auto-clasificar movimientos</div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {modal.type === 'mov-edit' && (
+              <>
+                <div style={{ color: '#121714', fontSize: 16, fontWeight: 700, marginBottom: 20 }}>Editar movimiento</div>
+                <div style={{ display: 'grid', gap: 14 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <div><label style={LBL}>Fecha *</label><input type="date" value={movForm.fecha} onChange={e => setMovForm(f => ({ ...f, fecha: e.target.value }))} style={INP} /></div>
+                    <div><label style={LBL}>Monto *</label><input type="number" step="0.01" value={movForm.monto} onChange={e => setMovForm(f => ({ ...f, monto: e.target.value }))} style={INP} placeholder="0.00" /></div>
+                  </div>
+                  <div><label style={LBL}>Descripción *</label><input value={movForm.descripcion} onChange={e => setMovForm(f => ({ ...f, descripcion: e.target.value }))} style={INP} /></div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <div><label style={LBL}>Cuenta bancaria</label>
+                      <select value={movForm.cuenta_bancaria_id} onChange={e => setMovForm(f => ({ ...f, cuenta_bancaria_id: e.target.value }))} style={SEL}>
+                        <option value="">Sin cuenta</option>
+                        {cuentas.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                      </select>
+                    </div>
+                    <div><label style={LBL}>Cuenta contable</label>
+                      <select value={movForm.cuenta_contable_id} onChange={e => setMovForm(f => ({ ...f, cuenta_contable_id: e.target.value }))} style={SEL}>
+                        <option value="">Sin cuenta contable</option>
+                        {contables.map((c: any) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div><label style={LBL}>Tipo</label>
+                    <select value={movForm.tipo_movimiento} onChange={e => setMovForm(f => ({ ...f, tipo_movimiento: e.target.value }))} style={SEL}>
+                      <option value="ingreso">Ingreso</option>
+                      <option value="gasto">Gasto</option>
+                      <option value="transferencia">Transferencia</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input type="checkbox" checked={movForm.factura} onChange={e => setMovForm(f => ({ ...f, factura: e.target.checked }))}
+                      style={{ accentColor: '#31AE79', width: 15, height: 15, cursor: 'pointer' }} />
+                    <label style={{ ...LBL, marginBottom: 0 }}>Factura</label>
+                  </div>
+                  <div><label style={LBL}>Comentario</label>
+                    <textarea value={movForm.comentario} onChange={e => setMovForm(f => ({ ...f, comentario: e.target.value }))}
+                      placeholder="Opcional..." rows={3} style={{ ...INP, resize: 'vertical', height: 'auto' }} />
                   </div>
                 </div>
               </>

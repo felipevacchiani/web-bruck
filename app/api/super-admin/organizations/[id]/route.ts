@@ -28,8 +28,9 @@ export async function PUT(req: NextRequest, { params }: Params) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   await logAudit({
-    userId:     user.id,
-    userEmail:  user.email,
+    userId:         user.id,
+    userEmail:      user.email,
+    organizationId: id,
     action:     'client_update',
     entityType: 'organization',
     entityId:   id,

@@ -216,6 +216,7 @@ export interface AuditLog {
   id: string
   user_id: string | null
   user_email: string | null
+  organization_id: string | null
   action: AuditAction
   entity_type: string
   entity_id: string | null
@@ -365,19 +366,19 @@ export const NOTIFICATION_ICONS: Record<NotificationType, string> = {
 export type Database = {
   public: {
     Tables: {
-      organizations: { Row: Organization; Insert: Partial<Organization>; Update: Partial<Organization> }
-      companies: { Row: Company; Insert: Partial<Company>; Update: Partial<Company> }
-      memberships: { Row: Membership; Insert: Partial<Membership>; Update: Partial<Membership> }
-      permission_templates: { Row: PermissionTemplate; Insert: Partial<PermissionTemplate>; Update: Partial<PermissionTemplate> }
-      permission_template_actions: { Row: PermissionTemplateAction; Insert: Partial<PermissionTemplateAction>; Update: Partial<PermissionTemplateAction> }
-      notifications: { Row: Notification; Insert: Partial<Notification>; Update: Partial<Notification> }
-      requests: { Row: ClientRequest; Insert: Partial<ClientRequest>; Update: Partial<ClientRequest> }
-      tasks: { Row: ClientTask; Insert: Partial<ClientTask>; Update: Partial<ClientTask> }
-      data_sources: { Row: DataSource; Insert: Partial<DataSource>; Update: Partial<DataSource> }
-      custom_reports: { Row: CustomReport; Insert: Partial<CustomReport>; Update: Partial<CustomReport> }
-      profiles:   { Row: Profile;    Insert: Partial<Profile>;    Update: Partial<Profile>    }
-      files:      { Row: FileRecord; Insert: Partial<FileRecord>; Update: Partial<FileRecord> }
-      audit_logs: { Row: AuditLog;   Insert: Partial<AuditLog>;  Update: Partial<AuditLog>  }
+      organizations: { Row: Organization; Insert: Partial<Organization>; Update: Partial<Organization>; Relationships: [] }
+      companies: { Row: Company; Insert: Partial<Company>; Update: Partial<Company>; Relationships: [] }
+      memberships: { Row: Membership; Insert: Partial<Membership>; Update: Partial<Membership>; Relationships: [] }
+      permission_templates: { Row: PermissionTemplate; Insert: Partial<PermissionTemplate>; Update: Partial<PermissionTemplate>; Relationships: [] }
+      permission_template_actions: { Row: PermissionTemplateAction; Insert: Partial<PermissionTemplateAction>; Update: Partial<PermissionTemplateAction>; Relationships: [] }
+      notifications: { Row: Notification; Insert: Partial<Notification>; Update: Partial<Notification>; Relationships: [] }
+      requests: { Row: ClientRequest; Insert: Partial<ClientRequest>; Update: Partial<ClientRequest>; Relationships: [] }
+      tasks: { Row: ClientTask; Insert: Partial<ClientTask>; Update: Partial<ClientTask>; Relationships: [] }
+      data_sources: { Row: DataSource; Insert: Partial<DataSource>; Update: Partial<DataSource>; Relationships: [] }
+      custom_reports: { Row: CustomReport; Insert: Partial<CustomReport>; Update: Partial<CustomReport>; Relationships: [] }
+      profiles:   { Row: Profile;    Insert: Partial<Profile>;    Update: Partial<Profile>;    Relationships: [] }
+      files:      { Row: FileRecord; Insert: Partial<FileRecord>; Update: Partial<FileRecord>; Relationships: [] }
+      audit_logs: { Row: AuditLog;   Insert: Partial<AuditLog>;  Update: Partial<AuditLog>;   Relationships: [] }
     }
   }
 }

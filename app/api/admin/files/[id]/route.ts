@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles').select('role, organization_id').eq('id', user.id).single()
-  if (!['admin','super_admin'].includes(profile?.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  if (!profile || !['admin','super_admin'].includes(profile.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const { data: existing } = await (admin.from('files') as any).select('is_current, client_id').eq('id', id).single()
   if (existing && !existing.is_current) {
@@ -51,8 +51,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const action = 'doc_status' in update ? 'file_status_change' : 'file_update'
   await logAudit({
-    userId:     user.id,
-    userEmail:  user.email,
+    userId:         user.id,
+    userEmail:      user.email,
+    organizationId: profile.organization_id,
     action,
     entityType: 'file',
     entityId:   id,
@@ -70,7 +71,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
 
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles').select('role, organization_id').eq('id', user.id).single()
-  if (!['admin','super_admin'].includes(profile?.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  if (!profile || !['admin','super_admin'].includes(profile.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const body = await req.json().catch(() => ({}))
 
@@ -94,8 +95,9 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   await logAudit({
-    userId:     user.id,
-    userEmail:  user.email,
+    userId:         user.id,
+    userEmail:      user.email,
+    organizationId: profile.organization_id,
     action:     'file_delete',
     entityType: 'file',
     entityId:   id,

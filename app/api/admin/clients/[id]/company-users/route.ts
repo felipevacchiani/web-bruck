@@ -81,7 +81,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   })
 
   await logAudit({
-    userId: user.id, userEmail: user.email, action: 'client_create',
+    userId: user.id, userEmail: user.email, organizationId, action: 'client_create',
     entityType: 'client', entityId: newUser.user.id,
     details: { email, full_name, invited_to_company: client.company_id },
   })

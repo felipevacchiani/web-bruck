@@ -106,7 +106,7 @@ export default function NewClientPage() {
                         : <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8c1.2-3 4-5 7-5s5.8 2 7 5c-1.2 3-4 5-7 5S2.2 11 1 8z" stroke="currentColor" strokeWidth="1.3"/><circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/></svg>}
                     </button>
                   </div>
-                  <div style={{ color:'#858C87', fontSize:12, marginTop:6 }}>El cliente puede cambiarla desde "Olvidé mi contraseña"</div>
+                  <div style={{ color:'#858C87', fontSize:12, marginTop:6 }}>El cliente puede cambiarla desde &ldquo;Olvidé mi contraseña&rdquo;</div>
                 </div>
 
                 <div style={{ display:'flex', gap:10 }}>

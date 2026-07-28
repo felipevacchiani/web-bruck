@@ -69,8 +69,9 @@ export async function POST(req: NextRequest, { params }: Params) {
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
 
   await logAudit({
-    userId:     user.id,
-    userEmail:  user.email,
+    userId:         user.id,
+    userEmail:      user.email,
+    organizationId: profile.organization_id,
     action:     'file_update',
     entityType: 'file',
     entityId:   newFile.id,

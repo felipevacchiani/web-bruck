@@ -50,13 +50,7 @@ export default async function AuditoriaPage({
 
   if (action) query = query.eq('action', action)
 
-  // La actividad se registra con el user_id de quien la ejecuta
-  // (siempre un admin/consultor). Filtramos por los consultores de
-  // la propia organización para no mezclar auditoría entre orgs.
-  if (!isSuperAdmin) {
-    const { data: orgAdmins } = await adminSb.from('profiles').select('id').eq('organization_id', profile?.organization_id).eq('role', 'admin')
-    query = query.in('user_id', (orgAdmins || []).map((a: any) => a.id))
-  }
+  if (!isSuperAdmin) query = query.eq('organization_id', profile?.organization_id)
 
   const { data: logs, count } = await query
 

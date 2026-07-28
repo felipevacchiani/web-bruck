@@ -9,7 +9,7 @@ export async function GET() {
 
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles').select('role, organization_id').eq('id', user.id).single()
-  if (!['admin','super_admin'].includes(profile?.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  if (!profile || !['admin','super_admin'].includes(profile.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   let query = admin
     .from('profiles')

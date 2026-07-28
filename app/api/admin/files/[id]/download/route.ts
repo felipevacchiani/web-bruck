@@ -19,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (!isAdminRole && (file as any).client_id !== user.id) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
-  if (isAdminRole && profile?.role !== 'super_admin') {
+  if (isAdminRole && profile && profile.role !== 'super_admin') {
     const { data: targetClient } = await admin.from('profiles').select('organization_id').eq('id', (file as any).client_id).single()
     if (!targetClient || (targetClient as any).organization_id !== profile.organization_id) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 })

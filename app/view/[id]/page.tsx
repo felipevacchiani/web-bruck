@@ -22,7 +22,7 @@ export default async function ViewPage({ params }: Props) {
 
   if (error || !file) redirect(isAdminRole ? '/admin' : '/dashboard')
 
-  if (isAdminRole && profile?.role !== 'super_admin') {
+  if (isAdminRole && profile && profile.role !== 'super_admin') {
     const { data: fileOwner } = await admin.from('profiles').select('organization_id').eq('id', (file as any).client_id).single()
     if (!fileOwner || (fileOwner as any).organization_id !== profile.organization_id) redirect('/admin')
   }

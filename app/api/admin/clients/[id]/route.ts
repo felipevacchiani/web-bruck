@@ -11,17 +11,17 @@ async function verifyAdminAndGetUser(clientId: string) {
   if (!user) return { admin: null, user: null }
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles').select('role, organization_id').eq('id', user.id).single()
-  if (!['admin','super_admin'].includes(profile?.role)) return { admin: null, user: null }
+  if (!profile || !['admin','super_admin'].includes(profile.role)) return { admin: null, user: null, organizationId: null }
   if (profile.role !== 'super_admin') {
     const { data: client } = await admin.from('profiles').select('organization_id').eq('id', clientId).single()
-    if (!client || client.organization_id !== profile.organization_id) return { admin: null, user: null }
+    if (!client || client.organization_id !== profile.organization_id) return { admin: null, user: null, organizationId: null }
   }
-  return { admin, user }
+  return { admin, user, organizationId: profile.organization_id }
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   const { id } = await params
-  const { admin, user } = await verifyAdminAndGetUser(id)
+  const { admin, user, organizationId } = await verifyAdminAndGetUser(id)
   if (!admin || !user) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const body = await req.json()
@@ -34,8 +34,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   await logAudit({
-    userId:     user.id,
-    userEmail:  user.email,
+    userId:         user.id,
+    userEmail:      user.email,
+    organizationId,
     action:     'client_update',
     entityType: 'client',
     entityId:   id,
@@ -47,7 +48,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const { id } = await params
-  const { admin, user } = await verifyAdminAndGetUser(id)
+  const { admin, user, organizationId } = await verifyAdminAndGetUser(id)
   if (!admin || !user) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   // Fetch client info for audit before deleting
@@ -68,8 +69,9 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   await logAudit({
-    userId:     user.id,
-    userEmail:  user.email,
+    userId:         user.id,
+    userEmail:      user.email,
+    organizationId,
     action:     'client_delete',
     entityType: 'client',
     entityId:   id,

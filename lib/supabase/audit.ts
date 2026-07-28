@@ -4,6 +4,7 @@ import type { AuditAction } from './types'
 export async function logAudit({
   userId,
   userEmail,
+  organizationId,
   action,
   entityType,
   entityId,
@@ -11,6 +12,7 @@ export async function logAudit({
 }: {
   userId: string
   userEmail?: string
+  organizationId?: string | null
   action: AuditAction
   entityType: string
   entityId?: string
@@ -19,8 +21,9 @@ export async function logAudit({
   try {
     const admin = createAdminClient()
     await (admin.from('audit_logs') as any).insert({
-      user_id:     userId,
-      user_email:  userEmail ?? null,
+      user_id:         userId,
+      user_email:      userEmail ?? null,
+      organization_id: organizationId ?? null,
       action,
       entity_type: entityType,
       entity_id:   entityId ?? null,

@@ -10,8 +10,8 @@ export async function GET(req: NextRequest) {
 
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles').select('role, organization_id').eq('id', user.id).single()
-  if (!['admin','super_admin'].includes(profile?.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
-  const isSuperAdmin = profile?.role === 'super_admin'
+  if (!profile || !['admin','super_admin'].includes(profile.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  const isSuperAdmin = profile.role === 'super_admin'
 
   const sp = req.nextUrl.searchParams
   const clientId   = sp.get('client_id') || ''

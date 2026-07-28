@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles').select('role, organization_id').eq('id', user.id).single()
-  if (!['admin','super_admin'].includes(profile?.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  if (!profile || !['admin','super_admin'].includes(profile.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const formData = await req.formData()
   const file = formData.get('file') as File | null
@@ -73,8 +73,9 @@ export async function POST(req: NextRequest) {
   }
 
   await logAudit({
-    userId:     user.id,
-    userEmail:  user.email,
+    userId:         user.id,
+    userEmail:      user.email,
+    organizationId: profile.organization_id,
     action:     'file_upload',
     entityType: 'file',
     entityId:   fileRecord.id,

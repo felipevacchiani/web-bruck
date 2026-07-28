@@ -109,8 +109,9 @@ export async function POST(req: NextRequest) {
   if (profileError) return NextResponse.json({ error: profileError.message }, { status: 500 })
 
   await logAudit({
-    userId:     user.id,
-    userEmail:  user.email,
+    userId:         user.id,
+    userEmail:      user.email,
+    organizationId: org.id,
     action:     'client_create',
     entityType: 'organization',
     entityId:   org.id,

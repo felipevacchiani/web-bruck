@@ -1265,7 +1265,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
             <div style={{ position:'fixed', inset:0, zIndex:50, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
               <div style={{ background:'#FFFFFF', border:'1px solid rgba(18,23,20,0.14)', borderRadius:16, padding:24, maxWidth:440, width:'100%' }}>
                 <div style={{ color:'#121714', fontSize:16, fontWeight:700, marginBottom:6 }}>Conectar Google Sheet</div>
-                <div style={{ color:'#4E5651', fontSize:12, marginBottom:18 }}>El Sheet debe estar compartido como "Cualquiera con el link puede ver".</div>
+                <div style={{ color:'#4E5651', fontSize:12, marginBottom:18 }}>El Sheet debe estar compartido como &ldquo;Cualquiera con el link puede ver&rdquo;.</div>
                 {sourceError && <div style={{ background:'rgba(239,68,68,0.09)', border:'1px solid rgba(239,68,68,0.22)', borderRadius:10, padding:'9px 12px', marginBottom:14, color:'#f87171', fontSize:13 }}>{sourceError}</div>}
                 <form onSubmit={submitSource}>
                   <div style={{ marginBottom:14 }}>
@@ -1279,7 +1279,7 @@ export default function ClientDetail({ client, files: initialFiles }: Props) {
                   <div style={{ marginBottom:20 }}>
                     <label style={LBL}>Hoja (opcional)</label>
                     <input value={sourceForm.gid} onChange={e=>setSourceForm(f=>({...f,gid:e.target.value}))} placeholder="Dejar vacío = primera hoja. Ej: Hoja 2" style={INP} />
-                    <div style={{ color:'#858C87', fontSize:11, marginTop:5 }}>Si el Sheet tiene varias hojas, escribí acá el nombre exacto de la pestaña (tal como aparece abajo en Google Sheets, ej: "Hoja 2"). Cada hoja se conecta como una fuente de datos separada.</div>
+                    <div style={{ color:'#858C87', fontSize:11, marginTop:5 }}>Si el Sheet tiene varias hojas, escribí acá el nombre exacto de la pestaña (tal como aparece abajo en Google Sheets, ej: &ldquo;Hoja 2&rdquo;). Cada hoja se conecta como una fuente de datos separada.</div>
                   </div>
                   <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
                     <button type="button" onClick={()=>{setShowNewSource(false);setSourceError('')}} style={{ background:'none', border:'1px solid rgba(18,23,20,0.14)', color:'#4E5651', fontSize:13, padding:'9px 16px', borderRadius:9, cursor:'pointer' }}>Cancelar</button>

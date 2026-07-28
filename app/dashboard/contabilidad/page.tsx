@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { hasPermission } from '@/lib/supabase/permissions'
 import { redirect } from 'next/navigation'
 import ContabilidadPanel from '@/app/admin/clients/[id]/contabilidad/contabilidad-panel'
 
@@ -21,6 +22,10 @@ export default async function ClienteContabilidadPage({ searchParams }: { search
   const params = await searchParams
   const defaultTab = params.tab || 'dashboard'
 
+  const canWrite = (await Promise.all(
+    (['crear', 'editar', 'eliminar'] as const).map(action => hasPermission(admin, user.id, 'contabilidad', action))
+  )).every(Boolean)
+
   return (
     <ContabilidadPanel
       clientName={clientName}
@@ -28,6 +33,7 @@ export default async function ClienteContabilidadPage({ searchParams }: { search
       backHref="/dashboard"
       backLabel="Mi portal"
       defaultTab={defaultTab}
+      canWrite={canWrite}
     />
   )
 }

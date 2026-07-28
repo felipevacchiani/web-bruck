@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles').select('role, organization_id').eq('id', user.id).single()
-  if (!['admin','super_admin'].includes(profile?.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  if (!profile || !['admin','super_admin'].includes(profile.role)) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   if (!profile.organization_id) return NextResponse.json({ error: 'Tu cuenta no tiene una organización asignada' }, { status: 400 })
 
   const body = await req.json()
@@ -54,8 +54,9 @@ export async function POST(req: NextRequest) {
   }
 
   await logAudit({
-    userId:     user.id,
-    userEmail:  user.email,
+    userId:         user.id,
+    userEmail:      user.email,
+    organizationId: profile.organization_id,
     action:     'client_create',
     entityType: 'client',
     entityId:   newUser.user.id,
